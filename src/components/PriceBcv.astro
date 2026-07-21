@@ -1,0 +1,48 @@
+---
+import { formatUsd, formatRate, timeAgo } from '../lib/format';
+import type { BcvRate } from '../lib/types';
+
+interface Props {
+  priceUsd: number;
+  bcv: BcvRate;
+  /** sm = tarjeta · lg = detalle · hero = etiqueta flotante del hero */
+  size?: 'sm' | 'lg' | 'hero';
+}
+
+const { priceUsd, bcv, size = 'sm' } = Astro.props;
+
+const bs = Math.round(priceUsd * bcv.rate);
+const hasRealRate = bcv.fetched_at !== null;
+const mainClass =
+  size === 'lg'
+    ? 'text-[2.4375rem] leading-none font-semibold'
+    : size === 'hero'
+      ? 'text-[1.5625rem] leading-none font-semibold'
+      : 'text-[1.25rem] leading-none font-semibold';
+---
+
+<div
+  class="bcv-price flex flex-col gap-1.5"
+  data-bcv-price
+  data-usd={priceUsd}
+  data-rate={bcv.rate}
+  data-showing="usd"
+>
+  <button
+    type="button"
+    data-bcv-main
+    class={`num ${mainClass} w-fit cursor-pointer text-left text-ink`}
+    title="Tocar para cambiar entre USD y Bs"
+  >{formatUsd(priceUsd)}</button>
+
+  {hasRealRate && (
+    <span class="num flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[0.75rem] text-ink-soft">
+      <span data-bs-target={bs}>Bs {new Intl.NumberFormat('es-VE', { maximumFractionDigits: 0 }).format(bs)}</span>
+      <span aria-hidden="true">·</span>
+      <span>BCV {formatRate(bcv.rate)}</span>
+      <span aria-hidden="true">·</span>
+      <span class="bcv-dot" aria-hidden="true"></span>
+      <span>actualizado {timeAgo(bcv.fetched_at)}</span>
+    </span>
+  )}
+</div>

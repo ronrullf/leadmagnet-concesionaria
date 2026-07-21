@@ -1,0 +1,150 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { supabaseAdmin } from '../../lib/supabase';
+import { outreachMessage } from '../../lib/whatsapp';
+import { timeAgo } from '../../lib/format';
+
+let demos: any[] | null = [];
+let visits: any[] | null = [];
+let allProps: any[] | null = [];
+let dbError: string | null = null;
+
+try {
+  const db = supabaseAdmin();
+  [{ data: demos }, { data: visits }, { data: allProps }] = await Promise.all([
+    db.from('demos').select('*').order('created_at', { ascending: false }),
+    db.from('demo_visits').select('demo_id, visited_at').eq('is_owner_view', false),
+    db.from('properties').select('demo_id, title, is_featured'),
+  ]);
+} catch (e) {
+  dbError = e instanceof Error ? e.message : 'Error de conexión';
+}
+
+const siteUrl = import.meta.env.SITE_URL || 'https://demo.tiendapana.com';
+
+const stats = new Map<string, { count: number; last: string | null }>();
+for (const v of visits ?? []) {
+  const s = stats.get(v.demo_id) ?? { count: 0, last: null };
+  s.count++;
+  if (!s.last || v.visited_at > s.last) s.last = v.visited_at;
+  stats.set(v.demo_id, s);
+}
+
+const featuredTitles = new Map<string, string>();
+for (const p of allProps ?? []) {
+  if (p.is_featured || !featuredTitles.has(p.demo_id)) featuredTitles.set(p.demo_id, p.title);
+}
+
+const rows = (demos ?? [])
+  .map((d) => {
+    const s = stats.get(d.id) ?? { count: 0, last: null };
+    const link = `${siteUrl}/${d.slug}`;
+    return {
+      ...d,
+      visitCount: s.count,
+      lastVisit: s.last,
+      link,
+      outreach: outreachMessage(d.agency_name, featuredTitles.get(d.id) ?? 'inventario', link),
+    };
+  })
+  // Lo primero que se ve: quién acaba de abrir su demo.
+  .sort((a, b) => (b.lastVisit ?? '').localeCompare(a.lastVisit ?? ''));
+
+const dateFmt = new Intl.DateTimeFormat('es-VE', { day: '2-digit', month: 'short' });
+---
+
+<AdminLayout title="Demos">
+  <h1 class="mb-6 text-[1.5625rem] font-bold">Demos</h1>
+
+  {dbError && (
+    <div class="mb-6 rounded-[8px] border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
+      <p class="font-semibold">Supabase no está configurado.</p>
+      <p class="mt-1">Llena <code class="num">PUBLIC_SUPABASE_URL</code>, <code class="num">PUBLIC_SUPABASE_ANON_KEY</code> y <code class="num">SUPABASE_SERVICE_ROLE_KEY</code> en las variables de entorno y ejecuta la migración SQL. Detalle: {dbError}</p>
+    </div>
+  )}
+
+  {rows.length === 0 ? (
+    <div class="rounded-[8px] border border-line bg-paper p-10 text-center text-ink-soft">
+      <p>No hay demos todavía.</p>
+      <a href="/admin/nuevo" class="mt-3 inline-block rounded-[4px] bg-ink px-4 py-2 text-sm font-semibold text-white">Crear el primero</a>
+    </div>
+  ) : (
+    <div class="overflow-x-auto rounded-[8px] border border-line bg-paper">
+      <table class="w-full min-w-[760px] text-sm">
+        <thead>
+          <tr class="border-b border-line text-left text-[0.75rem] uppercase tracking-wide text-ink-soft">
+            <th class="px-4 py-3">Agencia</th>
+            <th class="px-4 py-3">Slug</th>
+            <th class="px-4 py-3">Creado</th>
+            <th class="px-4 py-3">Visitas</th>
+            <th class="px-4 py-3">Última visita</th>
+            <th class="px-4 py-3">Estado</th>
+            <th class="px-4 py-3">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((d) => (
+            <tr class="border-b border-line last:border-0">
+              <td class="px-4 py-3 font-medium">{d.agency_name}</td>
+              <td class="num px-4 py-3 text-ink-soft">{d.slug}</td>
+              <td class="num px-4 py-3 text-ink-soft">{dateFmt.format(new Date(d.created_at))}</td>
+              <td class="num px-4 py-3 font-semibold">{d.visitCount}</td>
+              <td class="num px-4 py-3">
+                {d.lastVisit ? (
+                  <span class={Date.now() - new Date(d.lastVisit).getTime() < 24 * 3600 * 1000 ? 'font-semibold text-green-700' : 'text-ink-soft'}>
+                    {timeAgo(d.lastVisit)}
+                  </span>
+                ) : (
+                  <span class="text-ink-soft">—</span>
+                )}
+              </td>
+              <td class="px-4 py-3">
+                <button
+                  type="button"
+                  data-toggle
+                  data-id={d.id}
+                  data-active={String(d.is_active)}
+                  class={`rounded-[4px] px-2 py-1 text-[0.75rem] font-semibold ${d.is_active ? 'bg-green-100 text-green-800' : 'bg-paper-alt text-ink-soft'}`}
+                >{d.is_active ? 'Activo' : 'Inactivo'}</button>
+              </td>
+              <td class="px-4 py-3">
+                <div class="flex flex-wrap items-center gap-2">
+                  <a href={`${d.link}?v=0`} target="_blank" rel="noopener" class="text-[0.75rem] font-medium underline">Ver</a>
+                  <a href={`/admin/${d.slug}/editar`} class="text-[0.75rem] font-medium underline">Editar</a>
+                  <button type="button" data-copy={d.link} class="rounded-[4px] border border-line px-2 py-1 text-[0.75rem] font-medium">Copiar link</button>
+                  <button type="button" data-copy={d.outreach} class="rounded-[4px] border border-line px-2 py-1 text-[0.75rem] font-medium">Copiar mensaje</button>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )}
+
+  <script>
+    document.addEventListener('click', async (e) => {
+      const target = e.target as HTMLElement;
+
+      const copyBtn = target.closest('[data-copy]') as HTMLElement | null;
+      if (copyBtn) {
+        await navigator.clipboard.writeText(copyBtn.dataset.copy || '');
+        const original = copyBtn.textContent;
+        copyBtn.textContent = '✓ Copiado';
+        setTimeout(() => (copyBtn.textContent = original), 1500);
+        return;
+      }
+
+      const toggleBtn = target.closest('[data-toggle]') as HTMLElement | null;
+      if (toggleBtn) {
+        const next = toggleBtn.dataset.active !== 'true';
+        const res = await fetch('/api/admin/toggle', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: toggleBtn.dataset.id, is_active: next }),
+        });
+        if (res.ok) location.reload();
+      }
+    });
+  </script>
+</AdminLayout>

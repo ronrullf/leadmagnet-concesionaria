@@ -1,0 +1,31 @@
+---
+import { waLink, tiendapanaMessage } from '../lib/whatsapp';
+import type { Demo } from '../lib/types';
+
+interface Props {
+  demo: Demo;
+}
+
+const { demo } = Astro.props;
+const tpPhone = import.meta.env.TIENDAPANA_WHATSAPP || '';
+const wa = waLink(tpPhone, tiendapanaMessage(demo.agency_name, demo.slug));
+---
+
+{/* Único elemento de marca TiendaPana. Aparece al 60% de scroll. */}
+<div
+  id="tp-closing-bar"
+  class="tp-bar fixed bottom-0 left-0 right-0 z-50 h-14 bg-ink text-white"
+>
+  <div class="mx-auto flex h-full max-w-[1200px] items-center justify-between gap-3 px-4 md:px-6">
+    <p class="min-w-0 truncate text-[0.75rem] leading-tight md:text-[0.875rem]">
+      <strong>Esta página es una demo.</strong>
+      <span class="hidden sm:inline"> Si quieres una 100% funcional, con muchas más funcionalidades y lista para vender, contáctanos.</span>
+    </p>
+    <a
+      href={wa}
+      target="_blank"
+      rel="noopener"
+      class="shrink-0 rounded-[4px] bg-[#F97316] px-3 py-2 text-[0.75rem] font-semibold text-white md:px-4 md:text-[0.875rem]"
+    >Hablar con TiendaPana</a>
+  </div>
+</div>

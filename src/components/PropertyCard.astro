@@ -1,0 +1,66 @@
+---
+import PriceBcv from './PriceBcv.astro';
+import type { Property, BcvRate } from '../lib/types';
+
+interface Props {
+  property: Property;
+  slug: string;
+  bcv: BcvRate;
+  stagger?: number;
+}
+
+const { property: p, slug, bcv, stagger = 0 } = Astro.props;
+
+const specs: string[] = [];
+if (p.bedrooms) specs.push(`${p.bedrooms} hab`);
+if (p.bathrooms) specs.push(`${p.bathrooms} ${p.bathrooms === 1 ? 'baño' : 'baños'}`);
+if (p.parking) specs.push(`${p.parking} pto`);
+if (p.area_m2) specs.push(`${p.area_m2} m²`);
+---
+
+<a
+  href={`/${slug}/inmueble/${p.ref_code}`}
+  class="property-card rise group block overflow-hidden rounded-[8px] border border-line bg-paper"
+  data-property
+  data-operation={p.operation}
+  data-type={p.property_type}
+  data-location={p.location}
+  data-price={p.price_usd}
+  data-bedrooms={p.bedrooms ?? 0}
+  data-stagger={stagger}
+>
+  <div class="relative aspect-[4/3] overflow-hidden">
+    <img
+      src={p.image_urls[0]}
+      alt={p.title}
+      loading="lazy"
+      class="card-img h-full w-full object-cover"
+    />
+    <span class="num absolute left-3 top-3 rounded-[4px] bg-ink/85 px-2 py-1 text-[0.75rem] uppercase tracking-[0.12em] text-white">
+      {p.operation}
+    </span>
+    <span class="num absolute right-3 top-3 rounded-[4px] bg-paper/90 px-2 py-1 text-[0.75rem] text-ink">
+      {p.ref_code}
+    </span>
+  </div>
+
+  <div class="flex flex-col gap-2.5 p-4">
+    <h3 class="line-clamp-2 font-display text-[1.25rem] font-semibold leading-snug">{p.title}</h3>
+
+    <p class="flex items-center gap-1.5 text-[0.875rem] text-ink-soft">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" class="shrink-0">
+        <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 1 1 16 0Z" />
+        <circle cx="12" cy="10" r="3" />
+      </svg>
+      {p.location}
+    </p>
+
+    {specs.length > 0 && (
+      <p class="num text-[0.875rem] text-ink-soft">{specs.join(' · ')}</p>
+    )}
+
+    <div class="border-t border-line pt-3">
+      <PriceBcv priceUsd={p.price_usd} bcv={bcv} size="sm" />
+    </div>
+  </div>
+</a>

@@ -1,0 +1,80 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import WhatsAppFloat from '../components/WhatsAppFloat.astro';
+import ClosingBar from '../components/ClosingBar.astro';
+import { accentInk } from '../lib/format';
+import type { Demo } from '../lib/types';
+
+interface Props {
+  demo: Demo;
+  title: string;
+  description?: string;
+  /** Página actual, para el tracking ("/", "/inmueble/A-102", "/contacto") */
+  path: string;
+  showClosingBar?: boolean;
+}
+
+const { demo, title, description, path, showClosingBar = true } = Astro.props;
+
+const siteUrl = import.meta.env.SITE_URL || 'https://demo.tiendapana.com';
+const ogImage = `${siteUrl}/api/og/${demo.slug}`;
+const canonical = `${siteUrl}/${demo.slug}`;
+const ink = accentInk(demo.accent_hex || '#0F5C4E');
+const desc = description || 'Vea nuestro catálogo de inmuebles disponibles con precios actualizados.';
+---
+
+<html lang="es" style={`--accent: ${demo.accent_hex || '#0F5C4E'}; --accent-ink: ${ink};`}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={desc} />
+    <meta name="robots" content="noindex, nofollow" />
+
+    <meta property="og:title" content={`${demo.agency_name} — Inmuebles en ${demo.agency_city}`} />
+    <meta property="og:description" content={desc} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='12' fill='%230F5C4E'/><text x='50' y='68' font-size='52' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='bold'>{demo.agency_name.charAt(0)}</text></svg>" />
+  </head>
+  <body class="bg-paper text-ink font-body min-h-screen antialiased">
+    <Header demo={demo} />
+    <slot />
+    <Footer demo={demo} />
+    <WhatsAppFloat demo={demo} />
+    {showClosingBar && <ClosingBar demo={demo} />}
+
+    <script is:inline define:vars={{ slug: demo.slug, path }}>
+      // Tracking fire-and-forget. La cookie tp_admin la filtra el servidor.
+      try {
+        const params = new URLSearchParams(location.search);
+        const payload = JSON.stringify({
+          slug,
+          path,
+          referrer: document.referrer || null,
+          owner: params.get('v') === '1',
+        });
+        if (navigator.sendBeacon) {
+          navigator.sendBeacon('/api/track', new Blob([payload], { type: 'application/json' }));
+        } else {
+          fetch('/api/track', { method: 'POST', body: payload, keepalive: true });
+        }
+      } catch {}
+    </script>
+
+    <script>
+      import '../scripts/demo-client.js';
+    </script>
+  </body>
+</html>

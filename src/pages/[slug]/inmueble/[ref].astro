@@ -1,0 +1,182 @@
+---
+import DemoLayout from '../../../layouts/DemoLayout.astro';
+import PriceBcv from '../../../components/PriceBcv.astro';
+import ActionBlock from '../../../components/ActionBlock.astro';
+import PropertyCard from '../../../components/PropertyCard.astro';
+import { getDemoBySlug, getProperties } from '../../../lib/demos';
+import { getBcvRate } from '../../../lib/bcv';
+import { notFoundResponse } from '../../../lib/not-found';
+
+const { slug, ref } = Astro.params;
+const demo = await getDemoBySlug(slug!);
+if (!demo) return notFoundResponse();
+
+const [properties, bcv] = await Promise.all([
+  getProperties(demo.id),
+  getBcvRate(),
+]);
+
+const property = properties.find((p) => p.ref_code === ref);
+if (!property) return notFoundResponse();
+
+const others = properties.filter((p) => p.ref_code !== ref).slice(0, 3);
+
+const typeLabels: Record<string, string> = {
+  apartamento: 'Apartamento',
+  casa: 'Casa',
+  terreno: 'Terreno',
+  local: 'Local',
+  quinta: 'Quinta',
+};
+
+const specs: { label: string; value: string }[] = [];
+if (property.bedrooms) specs.push({ label: 'Habitaciones', value: String(property.bedrooms) });
+if (property.bathrooms) specs.push({ label: 'Baños', value: String(property.bathrooms) });
+if (property.parking) specs.push({ label: 'Puestos', value: String(property.parking) });
+if (property.area_m2) specs.push({ label: 'Superficie', value: `${property.area_m2} m²` });
+specs.push({ label: 'Tipo', value: typeLabels[property.property_type] ?? property.property_type });
+specs.push({ label: 'Operación', value: property.operation === 'venta' ? 'Venta' : 'Alquiler' });
+
+const mapsQuery = property.maps_query || property.location;
+---
+
+<DemoLayout
+  demo={demo}
+  title={`${property.title} — ${demo.agency_name}`}
+  description={`${property.title}. ${property.location}.`}
+  path={`/inmueble/${property.ref_code}`}
+>
+  <article class="mx-auto max-w-[1200px] px-6 py-8 md:py-12">
+    {/* Galería */}
+    <div id="gallery" class="grid grid-cols-1 gap-3">
+      <button
+        id="gallery-main"
+        type="button"
+        class="block aspect-[16/10] w-full cursor-zoom-in overflow-hidden rounded-[8px] border border-line"
+        aria-label="Ampliar imagen"
+      >
+        <img src={property.image_urls[0]} alt={property.title} class="h-full w-full object-cover" fetchpriority="high" />
+      </button>
+
+      {property.image_urls.length > 1 && (
+        <div class="flex gap-2 overflow-x-auto pb-1">
+          {property.image_urls.map((url, i) => (
+            <button
+              type="button"
+              data-thumb={url}
+              class={`h-20 w-28 shrink-0 overflow-hidden rounded-[4px] border border-line ring-accent ${i === 0 ? 'ring-2' : ''}`}
+              aria-label={`Imagen ${i + 1}`}
+            >
+              <img src={url} alt="" loading="lazy" class="h-full w-full object-cover" />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+
+    {/* Lightbox */}
+    <div
+      id="lightbox"
+      class="fixed inset-0 z-[60] hidden items-center justify-center bg-ink/95 p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Galería de imágenes"
+    >
+      <img src={property.image_urls[0]} alt={property.title} class="max-h-[85vh] max-w-full rounded-[4px] object-contain" />
+      <button data-lb-close type="button" class="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white" aria-label="Cerrar">✕</button>
+      <button data-lb-prev type="button" class="absolute left-2 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white" aria-label="Anterior">‹</button>
+      <button data-lb-next type="button" class="absolute right-2 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white" aria-label="Siguiente">›</button>
+    </div>
+
+    <div class="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-[1fr_380px]">
+      <div class="flex flex-col gap-8">
+        <header>
+          <div class="num mb-2 flex items-center gap-2 text-[0.75rem] uppercase tracking-[0.12em] text-ink-soft">
+            <span class="rounded-[4px] bg-paper-alt px-2 py-1">{property.operation}</span>
+            <span>{property.ref_code}</span>
+          </div>
+          <h1 class="display-tight font-display text-[1.9375rem] font-bold leading-tight md:text-[2.4375rem]">
+            {property.title}
+          </h1>
+          <p class="mt-2 flex items-center gap-1.5 text-[1rem] text-ink-soft">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 1 1 16 0Z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
+            {property.location}
+          </p>
+        </header>
+
+        {/* Specs */}
+        <div class="grid grid-cols-2 gap-px overflow-hidden rounded-[8px] border border-line bg-line sm:grid-cols-3">
+          {specs.map((s) => (
+            <div class="flex flex-col gap-1 bg-paper p-4">
+              <span class="num text-[0.75rem] uppercase tracking-[0.12em] text-ink-soft">{s.label}</span>
+              <span class="num text-[1.25rem] font-medium">{s.value}</span>
+            </div>
+          ))}
+        </div>
+
+        {property.description && (
+          <div>
+            <h2 class="mb-3 font-display text-[1.25rem] font-semibold">Descripción</h2>
+            <p class="leading-relaxed text-ink-soft">{property.description}</p>
+          </div>
+        )}
+
+        {property.features && property.features.length > 0 && (
+          <div>
+            <h2 class="mb-3 font-display text-[1.25rem] font-semibold">Características</h2>
+            <ul class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              {property.features.map((f) => (
+                <li class="flex items-center gap-2 text-[0.875rem]">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" aria-hidden="true" class="shrink-0">
+                    <path d="m5 13 4 4L19 7" />
+                  </svg>
+                  {f}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Mapa */}
+        <div>
+          <h2 class="mb-3 font-display text-[1.25rem] font-semibold">Ubicación</h2>
+          <div class="aspect-[16/9] overflow-hidden rounded-[8px] border border-line">
+            <iframe
+              src={`https://www.google.com/maps?q=${encodeURIComponent(mapsQuery)}&output=embed`}
+              loading="lazy"
+              class="h-full w-full border-0"
+              title={`Mapa de ${property.location}`}
+              referrerpolicy="no-referrer-when-downgrade"
+            ></iframe>
+          </div>
+        </div>
+      </div>
+
+      {/* Columna derecha: precio + acción */}
+      <aside class="h-fit lg:sticky lg:top-24">
+        <div class="flex flex-col gap-6 rounded-[8px] border border-line bg-paper p-6">
+          <PriceBcv priceUsd={property.price_usd} bcv={bcv} size="lg" />
+          <ActionBlock demo={demo} property={property} />
+          <p class="text-center text-[0.75rem] text-ink-soft">
+            Atendemos de inmediato por WhatsApp
+          </p>
+        </div>
+      </aside>
+    </div>
+
+    {/* Otros inmuebles */}
+    {others.length > 0 && (
+      <section class="mt-16 border-t border-line pt-10">
+        <h2 class="display-tight mb-8 font-display text-[1.5625rem] font-bold">Otros inmuebles</h2>
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {others.map((p, i) => (
+            <PropertyCard property={p} slug={demo.slug} bcv={bcv} stagger={i * 40} />
+          ))}
+        </div>
+      </section>
+    )}
+  </article>
+</DemoLayout>

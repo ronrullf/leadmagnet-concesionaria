@@ -1,0 +1,25 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import AdminDemoForm from '../../../components/admin/AdminDemoForm.astro';
+import { supabaseAdmin } from '../../../lib/supabase';
+import type { Demo, Property } from '../../../lib/types';
+
+const { slug } = Astro.params;
+const db = supabaseAdmin();
+
+const { data: demo } = await db.from('demos').select('*').eq('slug', slug).maybeSingle();
+if (!demo) {
+  return Astro.redirect('/admin');
+}
+
+const { data: properties } = await db
+  .from('properties')
+  .select('*')
+  .eq('demo_id', demo.id)
+  .order('sort_order', { ascending: true });
+---
+
+<AdminLayout title={`Editar ${demo.agency_name}`}>
+  <h1 class="mb-6 text-[1.5625rem] font-bold">Editar: {demo.agency_name}</h1>
+  <AdminDemoForm demo={demo as Demo} properties={(properties ?? []) as Property[]} />
+</AdminLayout>

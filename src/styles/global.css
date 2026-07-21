@@ -1,0 +1,145 @@
+@import "tailwindcss";
+
+/* ============================================================
+   Tokens de diseño — Demo Fantasma
+   Base fija; --accent y --accent-ink se inyectan por agencia
+   desde la BD en el <html> de cada demo.
+   ============================================================ */
+:root {
+  --ink:        #12161A;
+  --ink-soft:   #4A5560;
+  --paper:      #FBFAF8;
+  --paper-alt:  #F1EFEA;
+  --line:       #DDD9D2;
+  --accent:     #0F5C4E;
+  --accent-ink: #FFFFFF;
+}
+
+@theme {
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-paper: var(--paper);
+  --color-paper-alt: var(--paper-alt);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+
+  --font-display: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* Escala tipográfica ratio 1.25, base 16 */
+  --text-scale-1: 0.75rem;    /* 12 */
+  --text-scale-2: 0.875rem;   /* 14 */
+  --text-scale-3: 1rem;       /* 16 */
+  --text-scale-4: 1.25rem;    /* 20 */
+  --text-scale-5: 1.5625rem;  /* 25 */
+  --text-scale-6: 1.9375rem;  /* 31 */
+  --text-scale-7: 2.4375rem;  /* 39 */
+  --text-scale-8: 3.0625rem;  /* 49 */
+  --text-scale-9: 3.8125rem;  /* 61 */
+}
+
+html {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+/* Números como datos financieros: monoespaciada, dígitos tabulares */
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+}
+
+/* Titulares grandes: tracking apretado */
+.display-tight {
+  letter-spacing: -0.03em;
+}
+
+/* ============================================================
+   Animaciones de entrada (hero escalonado, reveal del grid)
+   ============================================================ */
+.rise {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.6s cubic-bezier(0.2, 0, 0, 1), transform 0.6s cubic-bezier(0.2, 0, 0, 1);
+}
+.rise.in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* Hover de tarjeta: única sombra permitida + zoom de imagen */
+.property-card {
+  transition: box-shadow 0.4s cubic-bezier(0.2, 0, 0, 1);
+}
+.property-card:hover {
+  box-shadow: 0 8px 32px rgba(18, 22, 26, 0.09);
+}
+.property-card .card-img {
+  transition: transform 0.4s cubic-bezier(0.2, 0, 0, 1);
+}
+.property-card:hover .card-img {
+  transform: scale(1.03);
+}
+@media (prefers-reduced-motion: reduce) {
+  .property-card .card-img { transition: none; }
+}
+
+/* Punto verde pulsante de la tasa BCV */
+.bcv-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: #16A34A;
+  display: inline-block;
+  animation: bcv-pulse 2s ease-in-out infinite;
+}
+@keyframes bcv-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bcv-dot { animation: none; }
+}
+
+/* Barra de cierre TiendaPana */
+.tp-bar {
+  transform: translateY(100%);
+  transition: transform 0.45s cubic-bezier(0.2, 0, 0, 1);
+}
+.tp-bar.visible {
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .tp-bar { transition: none; }
+}
+
+/* Estados de foco visibles */
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}

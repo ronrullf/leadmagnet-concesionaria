@@ -1,0 +1,110 @@
+---
+import DemoLayout from '../../layouts/DemoLayout.astro';
+import { getDemoBySlug } from '../../lib/demos';
+import { notFoundResponse } from '../../lib/not-found';
+
+const { slug } = Astro.params;
+const demo = await getDemoBySlug(slug!);
+if (!demo) return notFoundResponse();
+
+const mapsQuery = demo.maps_query || `${demo.office_address ?? ''} ${demo.agency_city}`.trim();
+---
+
+<DemoLayout
+  demo={demo}
+  title={`Contacto — ${demo.agency_name}`}
+  path="/contacto"
+>
+  <section class="mx-auto max-w-[1200px] px-6 py-10 md:py-16">
+    <h1 class="display-tight rise font-display text-[2.4375rem] font-bold md:text-[3.0625rem]">Contacto</h1>
+    <p class="rise mt-2 max-w-[560px] text-ink-soft" data-stagger="60">
+      Escríbanos y le respondemos de inmediato por WhatsApp.
+    </p>
+
+    <div class="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-2">
+      {/* Formulario que abre WhatsApp con el mensaje compuesto */}
+      <form id="contact-form" class="rise flex flex-col gap-4" data-stagger="120">
+        <label class="flex flex-col gap-1.5">
+          <span class="text-[0.875rem] font-medium">Nombre</span>
+          <input
+            type="text"
+            name="nombre"
+            required
+            class="rounded-[4px] border border-line bg-paper px-3 py-2.5 text-[1rem]"
+            placeholder="Su nombre"
+          />
+        </label>
+
+        <label class="flex flex-col gap-1.5">
+          <span class="text-[0.875rem] font-medium">Teléfono</span>
+          <input
+            type="tel"
+            name="telefono"
+            class="rounded-[4px] border border-line bg-paper px-3 py-2.5 text-[1rem]"
+            placeholder="0414 123 4567"
+          />
+        </label>
+
+        <label class="flex flex-col gap-1.5">
+          <span class="text-[0.875rem] font-medium">¿Qué está buscando?</span>
+          <textarea
+            name="mensaje"
+            rows="4"
+            required
+            class="rounded-[4px] border border-line bg-paper px-3 py-2.5 text-[1rem]"
+            placeholder="Ej: Busco un apartamento de 2 habitaciones en Porlamar"
+          ></textarea>
+        </label>
+
+        <button
+          type="submit"
+          class="mt-2 rounded-[4px] bg-accent px-5 py-3.5 text-sm font-semibold text-accent-ink"
+        >Enviar por WhatsApp</button>
+      </form>
+
+      <div class="rise flex flex-col gap-6" data-stagger="180">
+        <div class="flex flex-col gap-2 rounded-[8px] border border-line p-6">
+          <p class="font-display text-[1.25rem] font-semibold">{demo.agency_name}</p>
+          {demo.office_address && <p class="text-[0.875rem] text-ink-soft">{demo.office_address}</p>}
+          {demo.contact_email && (
+            <a href={`mailto:${demo.contact_email}`} class="text-[0.875rem] text-ink-soft underline">{demo.contact_email}</a>
+          )}
+          {demo.instagram_handle && (
+            <a
+              href={`https://instagram.com/${demo.instagram_handle}`}
+              target="_blank"
+              rel="noopener"
+              class="text-[0.875rem] text-ink-soft underline"
+            >@{demo.instagram_handle}</a>
+          )}
+        </div>
+
+        {mapsQuery && (
+          <div class="aspect-[4/3] overflow-hidden rounded-[8px] border border-line">
+            <iframe
+              src={`https://www.google.com/maps?q=${encodeURIComponent(mapsQuery)}&output=embed`}
+              loading="lazy"
+              class="h-full w-full border-0"
+              title={`Mapa de ${demo.agency_city}`}
+              referrerpolicy="no-referrer-when-downgrade"
+            ></iframe>
+          </div>
+        )}
+      </div>
+    </div>
+  </section>
+
+  <script is:inline define:vars={{ phone: demo.whatsapp_e164, agencyName: demo.agency_name }}>
+    document.getElementById('contact-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const f = e.target;
+      const nombre = f.nombre.value.trim();
+      const telefono = f.telefono.value.trim();
+      const mensaje = f.mensaje.value.trim();
+      let text = `Hola ${agencyName}, soy ${nombre}.`;
+      if (telefono) text += ` Mi teléfono es ${telefono}.`;
+      text += `\n${mensaje}`;
+      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
+    });
+  </script>
+</DemoLayout>

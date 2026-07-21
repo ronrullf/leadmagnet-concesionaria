@@ -1,0 +1,88 @@
+---
+import type { Property } from '../lib/types';
+
+interface Props {
+  properties: Property[];
+}
+
+const { properties } = Astro.props;
+
+const locations = [...new Set(properties.map((p) => p.location))].sort();
+const types = [...new Set(properties.map((p) => p.property_type))].sort();
+
+const typeLabels: Record<string, string> = {
+  apartamento: 'Apartamento',
+  casa: 'Casa',
+  terreno: 'Terreno',
+  local: 'Local',
+  quinta: 'Quinta',
+};
+
+const priceRanges = [
+  { value: '50000', label: 'Hasta $50.000' },
+  { value: '100000', label: 'Hasta $100.000' },
+  { value: '150000', label: 'Hasta $150.000' },
+  { value: '250000', label: 'Hasta $250.000' },
+  { value: '1000000', label: 'Más de $250.000' },
+];
+---
+
+<form
+  id="search-bar"
+  class="mx-auto -mt-6 max-w-[1200px] px-6"
+  aria-label="Filtrar inmuebles"
+>
+  <div class="grid grid-cols-2 gap-3 rounded-[8px] border border-line bg-paper p-4 md:grid-cols-6">
+    <label class="flex flex-col gap-1">
+      <span class="text-[0.75rem] font-medium uppercase tracking-wide text-ink-soft">Operación</span>
+      <select name="operation" class="rounded-[4px] border border-line bg-paper px-2 py-2 text-sm">
+        <option value="">Todas</option>
+        <option value="venta">Venta</option>
+        <option value="alquiler">Alquiler</option>
+      </select>
+    </label>
+
+    <label class="flex flex-col gap-1">
+      <span class="text-[0.75rem] font-medium uppercase tracking-wide text-ink-soft">Tipo</span>
+      <select name="type" class="rounded-[4px] border border-line bg-paper px-2 py-2 text-sm">
+        <option value="">Todos</option>
+        {types.map((t) => <option value={t}>{typeLabels[t] ?? t}</option>)}
+      </select>
+    </label>
+
+    <label class="flex flex-col gap-1">
+      <span class="text-[0.75rem] font-medium uppercase tracking-wide text-ink-soft">Ubicación</span>
+      <select name="location" class="rounded-[4px] border border-line bg-paper px-2 py-2 text-sm">
+        <option value="">Todas</option>
+        {locations.map((l) => <option value={l}>{l}</option>)}
+      </select>
+    </label>
+
+    <label class="flex flex-col gap-1">
+      <span class="text-[0.75rem] font-medium uppercase tracking-wide text-ink-soft">Precio USD</span>
+      <select name="price_max" class="rounded-[4px] border border-line bg-paper px-2 py-2 text-sm">
+        <option value="">Cualquiera</option>
+        {priceRanges.map((r) => <option value={r.value}>{r.label}</option>)}
+      </select>
+    </label>
+
+    <label class="flex flex-col gap-1">
+      <span class="text-[0.75rem] font-medium uppercase tracking-wide text-ink-soft">Habitaciones</span>
+      <select name="bedrooms" class="rounded-[4px] border border-line bg-paper px-2 py-2 text-sm">
+        <option value="">Todas</option>
+        <option value="1">1+</option>
+        <option value="2">2+</option>
+        <option value="3">3+</option>
+        <option value="4">4+</option>
+      </select>
+    </label>
+
+    <div class="flex items-end">
+      <button
+        type="button"
+        id="search-reset"
+        class="w-full rounded-[4px] border border-line px-3 py-2 text-sm font-medium text-ink-soft hover:text-ink"
+      >Limpiar</button>
+    </div>
+  </div>
+</form>

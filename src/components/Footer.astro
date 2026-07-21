@@ -1,0 +1,49 @@
+---
+import { waLink, genericContactMessage } from '../lib/whatsapp';
+import type { Demo } from '../lib/types';
+
+interface Props {
+  demo: Demo;
+}
+
+const { demo } = Astro.props;
+const wa = waLink(demo.whatsapp_e164, genericContactMessage(demo.agency_name));
+---
+
+<footer class="border-t border-line bg-paper pb-[72px]">
+  <div class="mx-auto max-w-[1200px] px-6 py-12">
+    <div class="grid grid-cols-1 gap-8 md:grid-cols-3">
+      <div class="flex flex-col gap-2">
+        <p class="font-display text-[1.25rem] font-bold">{demo.agency_name}</p>
+        {demo.office_address && <p class="text-[0.875rem] text-ink-soft">{demo.office_address}</p>}
+      </div>
+
+      <div class="flex flex-col gap-2 text-[0.875rem]">
+        {demo.contact_email && (
+          <a href={`mailto:${demo.contact_email}`} class="text-ink-soft hover:text-ink">{demo.contact_email}</a>
+        )}
+        {demo.instagram_handle && (
+          <a
+            href={`https://instagram.com/${demo.instagram_handle}`}
+            target="_blank"
+            rel="noopener"
+            class="text-ink-soft hover:text-ink"
+          >@{demo.instagram_handle}</a>
+        )}
+      </div>
+
+      <div class="md:justify-self-end">
+        <a
+          href={wa}
+          target="_blank"
+          rel="noopener"
+          class="inline-flex items-center gap-2 rounded-[4px] bg-accent px-4 py-2.5 text-sm font-semibold text-accent-ink"
+        >Escribir por WhatsApp</a>
+      </div>
+    </div>
+
+    <div class="mt-10 border-t border-line pt-5 text-[0.75rem] text-ink-soft">
+      <p>{demo.agency_name} · {demo.agency_city} · Todos los derechos reservados</p>
+    </div>
+  </div>
+</footer>
