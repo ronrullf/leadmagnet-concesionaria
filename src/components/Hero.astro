@@ -1,18 +1,27 @@
 ---
 import PriceBcv from './PriceBcv.astro';
-import type { Demo, Property, BcvRate } from '../lib/types';
+import { verticalConfig } from '../lib/vertical';
+import type { Demo, BcvRate } from '../lib/types';
+
+interface FeaturedItem {
+  ref_code: string;
+  title: string;
+  price_usd: number;
+  image_urls: string[];
+}
 
 interface Props {
   demo: Demo;
-  featured?: Property | undefined;
+  featured?: FeaturedItem | undefined;
   bcv: BcvRate;
 }
 
 const { demo, featured, bcv } = Astro.props;
+const vc = verticalConfig(demo.vertical);
 
 const dataBits: string[] = [];
 if (demo.years_operating) dataBits.push(`${demo.years_operating} años`);
-if (demo.properties_sold) dataBits.push(`${demo.properties_sold} inmuebles vendidos`);
+if (demo.properties_sold) dataBits.push(`${demo.properties_sold} ${vc.soldLabel}`);
 dataBits.push(demo.agency_city);
 ---
 
@@ -30,9 +39,9 @@ dataBits.push(demo.agency_city);
       </p>
       <div class="rise flex gap-3 pt-2" data-stagger="180">
         <a
-          href="#inmuebles"
+          href="#catalogo"
           class="rounded-[4px] bg-accent px-5 py-3 text-sm font-semibold text-accent-ink"
-        >Ver inmuebles</a>
+        >Ver {vc.nounPlural.toLowerCase()}</a>
         <a
           href={`/${demo.slug}/contacto`}
           class="rounded-[4px] border border-line px-5 py-3 text-sm font-semibold"
@@ -42,7 +51,7 @@ dataBits.push(demo.agency_city);
 
     {featured && (
       <div class="rise relative md:justify-self-end" data-stagger="240">
-        <a href={`/${demo.slug}/inmueble/${featured.ref_code}`} class="block">
+        <a href={`/${demo.slug}/${vc.detailPath}/${featured.ref_code}`} class="block">
           <div class="aspect-[4/5] w-full max-w-[440px] overflow-hidden rounded-[8px] border border-line">
             <img
               src={featured.image_urls[0]}

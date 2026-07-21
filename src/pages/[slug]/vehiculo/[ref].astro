@@ -2,49 +2,56 @@
 import DemoLayout from '../../../layouts/DemoLayout.astro';
 import PriceBcv from '../../../components/PriceBcv.astro';
 import ActionBlock from '../../../components/ActionBlock.astro';
-import PropertyCard from '../../../components/PropertyCard.astro';
-import { getDemoBySlug, getProperties } from '../../../lib/demos';
+import VehicleCard from '../../../components/VehicleCard.astro';
+import { getDemoBySlug, getVehicles } from '../../../lib/demos';
 import { getBcvRate } from '../../../lib/bcv';
 import { notFoundResponse } from '../../../lib/not-found';
 
 const { slug, ref } = Astro.params;
 const demo = await getDemoBySlug(slug!);
-if (!demo || demo.vertical === 'concesionario') return notFoundResponse();
+if (!demo || demo.vertical !== 'concesionario') return notFoundResponse();
 
-const [properties, bcv] = await Promise.all([
-  getProperties(demo.id),
+const [vehicles, bcv] = await Promise.all([
+  getVehicles(demo.id),
   getBcvRate(),
 ]);
 
-const property = properties.find((p) => p.ref_code === ref);
-if (!property) return notFoundResponse();
+const vehicle = vehicles.find((v) => v.ref_code === ref);
+if (!vehicle) return notFoundResponse();
 
-const others = properties.filter((p) => p.ref_code !== ref).slice(0, 3);
+const others = vehicles.filter((v) => v.ref_code !== ref).slice(0, 3);
 
 const typeLabels: Record<string, string> = {
-  apartamento: 'Apartamento',
-  casa: 'Casa',
-  terreno: 'Terreno',
-  local: 'Local',
-  quinta: 'Quinta',
+  sedan: 'Sedán',
+  suv: 'SUV',
+  pickup: 'Pick-up',
+  hatchback: 'Hatchback',
+  camioneta: 'Camioneta',
+  moto: 'Moto',
+  camion: 'Camión',
 };
 
 const specs: { label: string; value: string }[] = [];
-if (property.bedrooms) specs.push({ label: 'Habitaciones', value: String(property.bedrooms) });
-if (property.bathrooms) specs.push({ label: 'Baños', value: String(property.bathrooms) });
-if (property.parking) specs.push({ label: 'Puestos', value: String(property.parking) });
-if (property.area_m2) specs.push({ label: 'Superficie', value: `${property.area_m2} m²` });
-specs.push({ label: 'Tipo', value: typeLabels[property.property_type] ?? property.property_type });
-specs.push({ label: 'Operación', value: property.operation === 'venta' ? 'Venta' : 'Alquiler' });
-
-const mapsQuery = property.maps_query || property.location;
+if (vehicle.brand) specs.push({ label: 'Marca', value: vehicle.brand });
+if (vehicle.model) specs.push({ label: 'Modelo', value: vehicle.model });
+if (vehicle.year) specs.push({ label: 'Año', value: String(vehicle.year) });
+specs.push({ label: 'Condición', value: vehicle.condition === 'nuevo' ? 'Nuevo' : 'Usado' });
+if (vehicle.vehicle_type) specs.push({ label: 'Tipo', value: typeLabels[vehicle.vehicle_type] ?? vehicle.vehicle_type });
+if (vehicle.mileage_km !== null && vehicle.mileage_km !== undefined) {
+  specs.push({ label: 'Kilometraje', value: `${new Intl.NumberFormat('es-VE').format(vehicle.mileage_km)} km` });
+}
+if (vehicle.transmission) {
+  specs.push({ label: 'Transmisión', value: vehicle.transmission === 'automatica' ? 'Automática' : vehicle.transmission === 'sincronica' ? 'Sincrónica' : vehicle.transmission });
+}
+if (vehicle.fuel) specs.push({ label: 'Combustible', value: vehicle.fuel.charAt(0).toUpperCase() + vehicle.fuel.slice(1) });
+if (vehicle.color) specs.push({ label: 'Color', value: vehicle.color });
 ---
 
 <DemoLayout
   demo={demo}
-  title={`${property.title} — ${demo.agency_name}`}
-  description={`${property.title}. ${property.location}.`}
-  path={`/inmueble/${property.ref_code}`}
+  title={`${vehicle.title} — ${demo.agency_name}`}
+  description={`${vehicle.title}. ${demo.agency_city}.`}
+  path={`/vehiculo/${vehicle.ref_code}`}
 >
   <article class="mx-auto max-w-[1200px] px-6 py-8 md:py-12">
     {/* Galería */}
@@ -55,12 +62,12 @@ const mapsQuery = property.maps_query || property.location;
         class="block aspect-[16/10] w-full cursor-zoom-in overflow-hidden rounded-[8px] border border-line"
         aria-label="Ampliar imagen"
       >
-        <img src={property.image_urls[0]} alt={property.title} class="h-full w-full object-cover" fetchpriority="high" />
+        <img src={vehicle.image_urls[0]} alt={vehicle.title} class="h-full w-full object-cover" fetchpriority="high" />
       </button>
 
-      {property.image_urls.length > 1 && (
+      {vehicle.image_urls.length > 1 && (
         <div class="flex gap-2 overflow-x-auto pb-1">
-          {property.image_urls.map((url, i) => (
+          {vehicle.image_urls.map((url, i) => (
             <button
               type="button"
               data-thumb={url}
@@ -82,7 +89,7 @@ const mapsQuery = property.maps_query || property.location;
       aria-modal="true"
       aria-label="Galería de imágenes"
     >
-      <img src={property.image_urls[0]} alt={property.title} class="max-h-[85vh] max-w-full rounded-[4px] object-contain" />
+      <img src={vehicle.image_urls[0]} alt={vehicle.title} class="max-h-[85vh] max-w-full rounded-[4px] object-contain" />
       <button data-lb-close type="button" class="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white" aria-label="Cerrar">✕</button>
       <button data-lb-prev type="button" class="absolute left-2 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white" aria-label="Anterior">‹</button>
       <button data-lb-next type="button" class="absolute right-2 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white" aria-label="Siguiente">›</button>
@@ -91,21 +98,31 @@ const mapsQuery = property.maps_query || property.location;
     <div class="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-[1fr_380px]">
       <div class="flex flex-col gap-8">
         <header>
-          <div class="num mb-2 flex items-center gap-2 text-[0.75rem] uppercase tracking-[0.12em] text-ink-soft">
-            <span class="rounded-[4px] bg-paper-alt px-2 py-1">{property.operation}</span>
-            <span>{property.ref_code}</span>
+          <div class="num mb-2 flex flex-wrap items-center gap-2 text-[0.75rem] uppercase tracking-[0.12em] text-ink-soft">
+            <span class="rounded-[4px] bg-paper-alt px-2 py-1">{vehicle.condition}</span>
+            {vehicle.is_import && (
+              <span class="rounded-[4px] bg-accent px-2 py-1 text-accent-ink">Importación</span>
+            )}
+            <span>{vehicle.ref_code}</span>
           </div>
           <h1 class="display-tight font-display text-[1.9375rem] font-bold leading-tight md:text-[2.4375rem]">
-            {property.title}
+            {vehicle.title}
           </h1>
-          <p class="mt-2 flex items-center gap-1.5 text-[1rem] text-ink-soft">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 1 1 16 0Z" />
-              <circle cx="12" cy="10" r="3" />
-            </svg>
-            {property.location}
-          </p>
         </header>
+
+        {/* Aviso de importación con tiempo de espera */}
+        {vehicle.is_import && vehicle.import_wait && (
+          <div class="flex items-start gap-3 rounded-[8px] border border-line bg-paper-alt p-4">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" aria-hidden="true" class="mt-0.5 shrink-0">
+              <circle cx="12" cy="12" r="9" />
+              <path d="M12 7v5l3 3" />
+            </svg>
+            <div>
+              <p class="text-sm font-semibold">Vehículo por importación</p>
+              <p class="num mt-0.5 text-[0.875rem] text-ink-soft">Tiempo de entrega estimado: {vehicle.import_wait}</p>
+            </div>
+          </div>
+        )}
 
         {/* Specs */}
         <div class="grid grid-cols-2 gap-px overflow-hidden rounded-[8px] border border-line bg-line sm:grid-cols-3">
@@ -117,18 +134,18 @@ const mapsQuery = property.maps_query || property.location;
           ))}
         </div>
 
-        {property.description && (
+        {vehicle.description && (
           <div>
             <h2 class="mb-3 font-display text-[1.25rem] font-semibold">Descripción</h2>
-            <p class="leading-relaxed text-ink-soft">{property.description}</p>
+            <p class="leading-relaxed text-ink-soft">{vehicle.description}</p>
           </div>
         )}
 
-        {property.features && property.features.length > 0 && (
+        {vehicle.features && vehicle.features.length > 0 && (
           <div>
-            <h2 class="mb-3 font-display text-[1.25rem] font-semibold">Características</h2>
+            <h2 class="mb-3 font-display text-[1.25rem] font-semibold">Equipamiento</h2>
             <ul class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              {property.features.map((f) => (
+              {vehicle.features.map((f) => (
                 <li class="flex items-center gap-2 text-[0.875rem]">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" aria-hidden="true" class="shrink-0">
                     <path d="m5 13 4 4L19 7" />
@@ -139,27 +156,13 @@ const mapsQuery = property.maps_query || property.location;
             </ul>
           </div>
         )}
-
-        {/* Mapa */}
-        <div>
-          <h2 class="mb-3 font-display text-[1.25rem] font-semibold">Ubicación</h2>
-          <div class="aspect-[16/9] overflow-hidden rounded-[8px] border border-line">
-            <iframe
-              src={`https://www.google.com/maps?q=${encodeURIComponent(mapsQuery)}&output=embed`}
-              loading="lazy"
-              class="h-full w-full border-0"
-              title={`Mapa de ${property.location}`}
-              referrerpolicy="no-referrer-when-downgrade"
-            ></iframe>
-          </div>
-        </div>
       </div>
 
       {/* Columna derecha: precio + acción */}
       <aside class="h-fit lg:sticky lg:top-24">
         <div class="flex flex-col gap-6 rounded-[8px] border border-line bg-paper p-6">
-          <PriceBcv priceUsd={property.price_usd} bcv={bcv} size="lg" />
-          <ActionBlock demo={demo} item={property} />
+          <PriceBcv priceUsd={vehicle.price_usd} bcv={bcv} size="lg" />
+          <ActionBlock demo={demo} item={vehicle} />
           <p class="text-center text-[0.75rem] text-ink-soft">
             Atendemos de inmediato por WhatsApp
           </p>
@@ -167,13 +170,13 @@ const mapsQuery = property.maps_query || property.location;
       </aside>
     </div>
 
-    {/* Otros inmuebles */}
+    {/* Otros vehículos */}
     {others.length > 0 && (
       <section class="mt-16 border-t border-line pt-10">
-        <h2 class="display-tight mb-8 font-display text-[1.5625rem] font-bold">Otros inmuebles</h2>
+        <h2 class="display-tight mb-8 font-display text-[1.5625rem] font-bold">Otros vehículos</h2>
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {others.map((p, i) => (
-            <PropertyCard property={p} slug={demo.slug} bcv={bcv} stagger={i * 40} />
+          {others.map((v, i) => (
+            <VehicleCard vehicle={v} slug={demo.slug} bcv={bcv} stagger={i * 40} />
           ))}
         </div>
       </section>

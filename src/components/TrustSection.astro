@@ -1,4 +1,5 @@
 ---
+import { verticalConfig } from '../lib/vertical';
 import type { Demo } from '../lib/types';
 
 interface Props {
@@ -6,10 +7,11 @@ interface Props {
 }
 
 const { demo } = Astro.props;
+const vc = verticalConfig(demo.vertical);
 
 const stats: { value: string; label: string }[] = [];
 if (demo.years_operating) stats.push({ value: String(demo.years_operating), label: 'años operando' });
-if (demo.properties_sold) stats.push({ value: String(demo.properties_sold), label: 'inmuebles vendidos' });
+if (demo.properties_sold) stats.push({ value: String(demo.properties_sold), label: vc.soldLabel });
 if (demo.agency_city) stats.push({ value: demo.agency_city.split(',')[0], label: 'atención local' });
 
 const show = stats.length > 0 || demo.testimonial_text;

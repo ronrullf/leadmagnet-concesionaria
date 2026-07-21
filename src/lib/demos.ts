@@ -1,5 +1,5 @@
 import { supabaseAnon } from './supabase';
-import type { Demo, Property } from './types';
+import type { Demo, Property, Vehicle } from './types';
 import fallbackProperties from '../data/fallback-properties.json';
 
 const hasSupabase = Boolean(
@@ -11,6 +11,7 @@ const DEV_FIXTURE: Demo = {
   id: 'dev-fixture',
   slug: 'costa-azul',
   created_at: new Date().toISOString(),
+  vertical: 'inmobiliaria',
   agency_name: 'Inmobiliaria Costa Azul',
   agency_tagline: 'Bienes raíces en Margarita desde 2011',
   agency_city: 'Porlamar, Nueva Esparta',
@@ -68,6 +69,21 @@ export async function getProperties(demoId: string): Promise<Property[]> {
   }
 }
 
-export function featuredProperty(properties: Property[]): Property | undefined {
-  return properties.find((p) => p.is_featured) ?? properties[0];
+/** Vehículos del demo (concesionarios). Única fuente: lo cargado en el admin. */
+export async function getVehicles(demoId: string): Promise<Vehicle[]> {
+  try {
+    const { data } = await supabaseAnon()
+      .from('vehicles')
+      .select('*')
+      .eq('demo_id', demoId)
+      .order('sort_order', { ascending: true });
+    return ((data as Vehicle[]) ?? []).map((v) => ({ ...v, price_usd: Number(v.price_usd) }));
+  } catch {
+    return [];
+  }
+}
+
+/** Destacado genérico: sirve para inmuebles y vehículos. */
+export function featuredProperty<T extends { is_featured: boolean }>(items: T[]): T | undefined {
+  return items.find((p) => p.is_featured) ?? items[0];
 }

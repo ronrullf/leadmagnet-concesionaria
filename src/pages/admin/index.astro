@@ -7,14 +7,16 @@ import { timeAgo } from '../../lib/format';
 let demos: any[] | null = [];
 let visits: any[] | null = [];
 let allProps: any[] | null = [];
+let allVehicles: any[] | null = [];
 let dbError: string | null = null;
 
 try {
   const db = supabaseAdmin();
-  [{ data: demos }, { data: visits }, { data: allProps }] = await Promise.all([
+  [{ data: demos }, { data: visits }, { data: allProps }, { data: allVehicles }] = await Promise.all([
     db.from('demos').select('*').order('created_at', { ascending: false }),
     db.from('demo_visits').select('demo_id, visited_at').eq('is_owner_view', false),
     db.from('properties').select('demo_id, title, is_featured'),
+    db.from('vehicles').select('demo_id, title, is_featured'),
   ]);
 } catch (e) {
   dbError = e instanceof Error ? e.message : 'Error de conexión';
@@ -31,7 +33,7 @@ for (const v of visits ?? []) {
 }
 
 const featuredTitles = new Map<string, string>();
-for (const p of allProps ?? []) {
+for (const p of [...(allProps ?? []), ...(allVehicles ?? [])]) {
   if (p.is_featured || !featuredTitles.has(p.demo_id)) featuredTitles.set(p.demo_id, p.title);
 }
 
@@ -85,7 +87,12 @@ const dateFmt = new Intl.DateTimeFormat('es-VE', { day: '2-digit', month: 'short
         <tbody>
           {rows.map((d) => (
             <tr class="border-b border-line last:border-0">
-              <td class="px-4 py-3 font-medium">{d.agency_name}</td>
+              <td class="px-4 py-3 font-medium">
+                {d.agency_name}
+                <span class="num ml-1 rounded-[4px] bg-paper-alt px-1.5 py-0.5 text-[0.65rem] uppercase tracking-wide text-ink-soft">
+                  {d.vertical === 'concesionario' ? 'Autos' : 'Inmob'}
+                </span>
+              </td>
               <td class="num px-4 py-3 text-ink-soft">{d.slug}</td>
               <td class="num px-4 py-3 text-ink-soft">{dateFmt.format(new Date(d.created_at))}</td>
               <td class="num px-4 py-3 font-semibold">{d.visitCount}</td>

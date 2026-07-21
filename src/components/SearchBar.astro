@@ -35,7 +35,7 @@ const priceRanges = [
   <div class="grid grid-cols-2 gap-3 rounded-[8px] border border-line bg-paper p-4 md:grid-cols-6">
     <label class="flex flex-col gap-1">
       <span class="text-[0.75rem] font-medium uppercase tracking-wide text-ink-soft">Operación</span>
-      <select name="operation" class="rounded-[4px] border border-line bg-paper px-2 py-2 text-sm">
+      <select name="operation" data-attr="operation" data-mode="eq" class="rounded-[4px] border border-line bg-paper px-2 py-2 text-sm">
         <option value="">Todas</option>
         <option value="venta">Venta</option>
         <option value="alquiler">Alquiler</option>
@@ -44,7 +44,7 @@ const priceRanges = [
 
     <label class="flex flex-col gap-1">
       <span class="text-[0.75rem] font-medium uppercase tracking-wide text-ink-soft">Tipo</span>
-      <select name="type" class="rounded-[4px] border border-line bg-paper px-2 py-2 text-sm">
+      <select name="type" data-attr="type" data-mode="eq" class="rounded-[4px] border border-line bg-paper px-2 py-2 text-sm">
         <option value="">Todos</option>
         {types.map((t) => <option value={t}>{typeLabels[t] ?? t}</option>)}
       </select>
@@ -52,7 +52,7 @@ const priceRanges = [
 
     <label class="flex flex-col gap-1">
       <span class="text-[0.75rem] font-medium uppercase tracking-wide text-ink-soft">Ubicación</span>
-      <select name="location" class="rounded-[4px] border border-line bg-paper px-2 py-2 text-sm">
+      <select name="location" data-attr="location" data-mode="eq" class="rounded-[4px] border border-line bg-paper px-2 py-2 text-sm">
         <option value="">Todas</option>
         {locations.map((l) => <option value={l}>{l}</option>)}
       </select>
@@ -60,7 +60,7 @@ const priceRanges = [
 
     <label class="flex flex-col gap-1">
       <span class="text-[0.75rem] font-medium uppercase tracking-wide text-ink-soft">Precio USD</span>
-      <select name="price_max" class="rounded-[4px] border border-line bg-paper px-2 py-2 text-sm">
+      <select name="price_max" data-attr="price" data-mode="max" class="rounded-[4px] border border-line bg-paper px-2 py-2 text-sm">
         <option value="">Cualquiera</option>
         {priceRanges.map((r) => <option value={r.value}>{r.label}</option>)}
       </select>
@@ -68,7 +68,7 @@ const priceRanges = [
 
     <label class="flex flex-col gap-1">
       <span class="text-[0.75rem] font-medium uppercase tracking-wide text-ink-soft">Habitaciones</span>
-      <select name="bedrooms" class="rounded-[4px] border border-line bg-paper px-2 py-2 text-sm">
+      <select name="bedrooms" data-attr="bedrooms" data-mode="min" class="rounded-[4px] border border-line bg-paper px-2 py-2 text-sm">
         <option value="">Todas</option>
         <option value="1">1+</option>
         <option value="2">2+</option>

@@ -5,6 +5,7 @@ import Footer from '../components/Footer.astro';
 import WhatsAppFloat from '../components/WhatsAppFloat.astro';
 import ClosingBar from '../components/ClosingBar.astro';
 import { accentInk } from '../lib/format';
+import { verticalConfig } from '../lib/vertical';
 import type { Demo } from '../lib/types';
 
 interface Props {
@@ -22,7 +23,8 @@ const siteUrl = import.meta.env.SITE_URL || 'https://demo.tiendapana.com';
 const ogImage = `${siteUrl}/api/og/${demo.slug}`;
 const canonical = `${siteUrl}/${demo.slug}`;
 const ink = accentInk(demo.accent_hex || '#0F5C4E');
-const desc = description || 'Vea nuestro catálogo de inmuebles disponibles con precios actualizados.';
+const vc = verticalConfig(demo.vertical);
+const desc = description || vc.ogDescription;
 ---
 
 <html lang="es" style={`--accent: ${demo.accent_hex || '#0F5C4E'}; --accent-ink: ${ink};`}>
@@ -33,7 +35,7 @@ const desc = description || 'Vea nuestro catálogo de inmuebles disponibles con 
     <meta name="description" content={desc} />
     <meta name="robots" content="noindex, nofollow" />
 
-    <meta property="og:title" content={`${demo.agency_name} — Inmuebles en ${demo.agency_city}`} />
+    <meta property="og:title" content={`${demo.agency_name} — ${vc.nounPlural} en ${demo.agency_city}`} />
     <meta property="og:description" content={desc} />
     <meta property="og:image" content={ogImage} />
     <meta property="og:url" content={canonical} />

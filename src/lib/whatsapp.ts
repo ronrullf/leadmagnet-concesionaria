@@ -21,8 +21,29 @@ export function videoCallMessage(agencyName: string, title: string, refCode: str
   );
 }
 
-export function genericContactMessage(agencyName: string): string {
-  return `Hola ${agencyName}, vi su página web y me gustaría más información sobre sus inmuebles disponibles.`;
+export function genericContactMessage(agencyName: string, vertical: string = 'inmobiliaria'): string {
+  const noun = vertical === 'concesionario' ? 'vehículos' : 'inmuebles';
+  return `Hola ${agencyName}, vi su página web y me gustaría más información sobre sus ${noun} disponibles.`;
+}
+
+/** Mensajes específicos del nicho concesionario. */
+
+export function testDriveMessage(agencyName: string, title: string, refCode: string, priceUsd: number, isImport: boolean): string {
+  const cierre = isImport
+    ? 'Me interesa. ¿Me pueden dar detalles del proceso de importación y el tiempo de entrega?'
+    : 'Me interesa verlo y agendar una prueba de manejo. ¿Tienen disponibilidad esta semana?';
+  return (
+    `Hola ${agencyName}, vi el vehículo "${title}" (Ref. ${refCode}) en su página web.\n` +
+    `Precio: $${new Intl.NumberFormat('es-VE').format(priceUsd)}\n` +
+    cierre
+  );
+}
+
+export function vehicleVideoCallMessage(agencyName: string, title: string, refCode: string): string {
+  return (
+    `Hola ${agencyName}, estoy fuera del país y vi el vehículo "${title}" (Ref. ${refCode}) ` +
+    `en su página web. ¿Podríamos hacer una videollamada para verlo y coordinar la compra?`
+  );
 }
 
 export function tiendapanaMessage(agencyName: string, slug: string): string {

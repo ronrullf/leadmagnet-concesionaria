@@ -133,22 +133,21 @@ function setupSearch() {
   const cards = Array.from(grid.querySelectorAll('[data-property]'));
   const empty = document.getElementById('search-empty');
 
+  // Genérico entre nichos: cada <select> declara data-attr (clave del dataset
+  // de la tarjeta) y data-mode: eq (igualdad), max (tope numérico), min (mínimo numérico).
   function apply() {
-    const op = form.querySelector('[name=operation]').value;
-    const type = form.querySelector('[name=type]').value;
-    const loc = form.querySelector('[name=location]').value;
-    const priceMax = parseFloat(form.querySelector('[name=price_max]').value);
-    const beds = parseInt(form.querySelector('[name=bedrooms]').value, 10);
+    const filters = Array.from(form.querySelectorAll('select[data-attr]'))
+      .map((sel) => ({ attr: sel.dataset.attr, mode: sel.dataset.mode || 'eq', value: sel.value }))
+      .filter((f) => f.value !== '');
 
     let visible = 0;
     cards.forEach((card) => {
       const d = card.dataset;
-      let ok = true;
-      if (op && d.operation !== op) ok = false;
-      if (type && d.type !== type) ok = false;
-      if (loc && d.location !== loc) ok = false;
-      if (isFinite(priceMax) && parseFloat(d.price) > priceMax) ok = false;
-      if (isFinite(beds) && (parseInt(d.bedrooms || '0', 10) || 0) < beds) ok = false;
+      const ok = filters.every((f) => {
+        if (f.mode === 'max') return parseFloat(d[f.attr] || '0') <= parseFloat(f.value);
+        if (f.mode === 'min') return parseFloat(d[f.attr] || '0') >= parseFloat(f.value);
+        return d[f.attr] === f.value;
+      });
       card.classList.toggle('hidden', !ok);
       if (ok) visible++;
     });

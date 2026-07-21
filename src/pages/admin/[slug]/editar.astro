@@ -2,7 +2,7 @@
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import AdminDemoForm from '../../../components/admin/AdminDemoForm.astro';
 import { supabaseAdmin } from '../../../lib/supabase';
-import type { Demo, Property } from '../../../lib/types';
+import type { Demo, Property, Vehicle } from '../../../lib/types';
 
 const { slug } = Astro.params;
 const db = supabaseAdmin();
@@ -12,8 +12,9 @@ if (!demo) {
   return Astro.redirect('/admin');
 }
 
-const { data: properties } = await db
-  .from('properties')
+const table = demo.vertical === 'concesionario' ? 'vehicles' : 'properties';
+const { data: items } = await db
+  .from(table)
   .select('*')
   .eq('demo_id', demo.id)
   .order('sort_order', { ascending: true });
@@ -21,5 +22,5 @@ const { data: properties } = await db
 
 <AdminLayout title={`Editar ${demo.agency_name}`}>
   <h1 class="mb-6 text-[1.5625rem] font-bold">Editar: {demo.agency_name}</h1>
-  <AdminDemoForm demo={demo as Demo} properties={(properties ?? []) as Property[]} />
+  <AdminDemoForm demo={demo as Demo} items={(items ?? []) as (Property | Vehicle)[]} />
 </AdminLayout>

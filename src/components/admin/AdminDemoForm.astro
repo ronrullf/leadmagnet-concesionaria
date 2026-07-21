@@ -1,18 +1,20 @@
 ---
-import type { Demo, Property } from '../../lib/types';
+import type { Demo, Property, Vehicle } from '../../lib/types';
 
 interface Props {
   demo?: Demo | null;
-  properties?: Property[];
+  items?: (Property | Vehicle)[];
 }
 
-const { demo = null, properties = [] } = Astro.props;
+const { demo = null, items = [] } = Astro.props;
 
 const initial = {
   id: demo?.id ?? null,
   demo: demo ?? null,
-  properties: properties ?? [],
+  items: items ?? [],
 };
+
+const isEditing = !!demo;
 
 const ACCENT_SWATCHES = [
   '#0F5C4E', '#1D4ED8', '#9F1239', '#B45309', '#374151', '#065F46', '#6D28D9', '#0E7490',
@@ -25,8 +27,16 @@ const ACCENT_SWATCHES = [
     <legend class="px-2 text-sm font-bold uppercase tracking-wide text-ink-soft">Identidad</legend>
     <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
       <label class="flex flex-col gap-1">
-        <span class="text-sm font-medium">Nombre de la agencia *</span>
-        <input name="agency_name" required class="rounded-[4px] border border-line px-3 py-2" placeholder="Inmobiliaria Costa Azul" />
+        <span class="text-sm font-medium">Tipo de negocio *</span>
+        <select name="vertical" disabled={isEditing} class="rounded-[4px] border border-line px-3 py-2 disabled:bg-paper-alt disabled:text-ink-soft">
+          <option value="inmobiliaria">Inmobiliaria</option>
+          <option value="concesionario">Concesionario</option>
+        </select>
+        {isEditing && <span class="text-[0.75rem] text-ink-soft">No se puede cambiar después de creado.</span>}
+      </label>
+      <label class="flex flex-col gap-1">
+        <span class="text-sm font-medium">Nombre del negocio *</span>
+        <input name="agency_name" required class="rounded-[4px] border border-line px-3 py-2" placeholder="Inmobiliaria Costa Azul / AutoMax Concesionario" />
       </label>
       <label class="flex flex-col gap-1">
         <span class="text-sm font-medium">Slug (link) *</span>
@@ -123,7 +133,9 @@ const ACCENT_SWATCHES = [
 
   {/* ============ Inmuebles ============ */}
   <fieldset class="rounded-[8px] border border-line bg-paper p-6">
-    <legend class="px-2 text-sm font-bold uppercase tracking-wide text-ink-soft">Inmuebles (hasta 6)</legend>
+    <legend class="px-2 text-sm font-bold uppercase tracking-wide text-ink-soft">
+      <span data-items-label>Inventario</span> (hasta 6)
+    </legend>
 
     <div class="mb-4 flex flex-wrap items-center gap-3 rounded-[4px] bg-paper-alt p-3">
       <button
@@ -190,7 +202,7 @@ const ACCENT_SWATCHES = [
 
 {/* Plantilla de un inmueble del repetidor */}
 <template id="property-template">
-  <div class="property-item rounded-[8px] border border-line bg-paper-alt p-4" data-index="">
+  <div class="property-item rounded-[8px] border border-line bg-paper-alt p-4" data-kind="property">
     <div class="mb-3 flex items-center justify-between">
       <p class="text-sm font-bold">Inmueble <span data-num></span></p>
       <div class="flex items-center gap-3">
@@ -243,6 +255,91 @@ const ACCENT_SWATCHES = [
         class="flex min-h-[80px] cursor-pointer flex-wrap items-center gap-2 rounded-[4px] border-2 border-dashed border-line bg-paper p-3 text-sm text-ink-soft"
       >
         <span data-drop-hint>Arrastre fotos aquí o haga clic (máx 6, se comprimen solas)</span>
+        <div data-previews class="flex flex-wrap gap-2"></div>
+      </div>
+      <input type="file" data-file-input accept="image/*" multiple class="hidden" />
+      <p data-upload-status class="mt-1 text-[0.75rem] text-ink-soft"></p>
+    </div>
+  </div>
+</template>
+
+{/* Plantilla de un vehículo del repetidor (concesionarios) */}
+<template id="vehicle-template">
+  <div class="property-item rounded-[8px] border border-line bg-paper-alt p-4" data-kind="vehicle">
+    <div class="mb-3 flex items-center justify-between">
+      <p class="text-sm font-bold">Vehículo <span data-num></span></p>
+      <div class="flex items-center gap-3">
+        <button type="button" data-paste class="rounded-[4px] border border-line bg-paper px-2.5 py-1.5 text-[0.75rem] font-semibold">Pegar datos</button>
+        <label class="flex items-center gap-1.5 text-[0.75rem] font-medium">
+          <input type="radio" name="featured_radio" data-field="is_featured" />
+          Destacado
+        </label>
+        <button type="button" data-remove class="text-[0.75rem] font-medium text-red-700 underline">Eliminar</button>
+      </div>
+    </div>
+
+    <div data-paste-fallback class="mb-3 hidden">
+      <textarea data-paste-area rows="6" placeholder="Pega aquí los datos con el formato copiado…" class="w-full rounded-[4px] border border-line px-3 py-2 text-sm"></textarea>
+      <button type="button" data-paste-apply class="mt-1 rounded-[4px] bg-ink px-3 py-1.5 text-[0.75rem] font-semibold text-white">Aplicar datos</button>
+    </div>
+
+    <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+      <input data-field="ref_code" placeholder="Ref (ej: C-001) *" class="num rounded-[4px] border border-line px-3 py-2 text-sm" />
+      <input data-field="title" placeholder="Título (ej: Toyota Corolla SE 2022) — se autogenera si lo dejas vacío" class="rounded-[4px] border border-line px-3 py-2 text-sm" />
+      <div class="grid grid-cols-3 gap-2 md:col-span-2">
+        <input data-field="brand" placeholder="Marca *" class="rounded-[4px] border border-line px-3 py-2 text-sm" />
+        <input data-field="model" placeholder="Modelo" class="rounded-[4px] border border-line px-3 py-2 text-sm" />
+        <input data-field="year" type="number" min="1950" max="2035" placeholder="Año" class="num rounded-[4px] border border-line px-3 py-2 text-sm" />
+      </div>
+      <select data-field="condition" class="rounded-[4px] border border-line px-3 py-2 text-sm">
+        <option value="nuevo">Nuevo</option>
+        <option value="usado">Usado</option>
+      </select>
+      <select data-field="vehicle_type" class="rounded-[4px] border border-line px-3 py-2 text-sm">
+        <option value="">Tipo de vehículo…</option>
+        <option value="sedan">Sedán</option>
+        <option value="suv">SUV</option>
+        <option value="pickup">Pick-up</option>
+        <option value="hatchback">Hatchback</option>
+        <option value="camioneta">Camioneta</option>
+        <option value="moto">Moto</option>
+        <option value="camion">Camión</option>
+      </select>
+      <input data-field="price_usd" type="number" min="0" placeholder="Precio USD *" class="num rounded-[4px] border border-line px-3 py-2 text-sm" />
+      <input data-field="mileage_km" type="number" min="0" placeholder="Kilometraje (0 si es nuevo)" class="num rounded-[4px] border border-line px-3 py-2 text-sm" />
+      <select data-field="transmission" class="rounded-[4px] border border-line px-3 py-2 text-sm">
+        <option value="">Transmisión…</option>
+        <option value="automatica">Automática</option>
+        <option value="sincronica">Sincrónica</option>
+      </select>
+      <select data-field="fuel" class="rounded-[4px] border border-line px-3 py-2 text-sm">
+        <option value="">Combustible…</option>
+        <option value="gasolina">Gasolina</option>
+        <option value="diesel">Diésel</option>
+        <option value="hibrido">Híbrido</option>
+        <option value="electrico">Eléctrico</option>
+      </select>
+      <input data-field="color" placeholder="Color" class="rounded-[4px] border border-line px-3 py-2 text-sm" />
+
+      <div class="flex items-center gap-4 rounded-[4px] border border-dashed border-line bg-paper px-3 py-2 md:col-span-1">
+        <label class="flex items-center gap-2 text-sm font-medium">
+          <input type="checkbox" data-field="is_import" class="h-4 w-4" />
+          Por importación
+        </label>
+        <input data-field="import_wait" placeholder="Tiempo de espera (ej: 45-60 días)" class="num hidden flex-1 rounded-[4px] border border-line px-3 py-2 text-sm" />
+      </div>
+
+      <textarea data-field="description" rows="2" placeholder="Descripción" class="rounded-[4px] border border-line px-3 py-2 text-sm md:col-span-2"></textarea>
+      <input data-field="features" placeholder="Equipamiento separado por coma (Cámara de reversa, Asientos de cuero)" class="rounded-[4px] border border-line px-3 py-2 text-sm md:col-span-2" />
+    </div>
+
+    {/* Uploader */}
+    <div class="mt-3">
+      <div
+        data-dropzone
+        class="flex min-h-[80px] cursor-pointer flex-wrap items-center gap-2 rounded-[4px] border-2 border-dashed border-line bg-paper p-3 text-sm text-ink-soft"
+      >
+        <span data-drop-hint>Arrastre fotos del vehículo aquí o haga clic (máx 6, se comprimen solas)</span>
         <div data-previews class="flex flex-wrap gap-2"></div>
       </div>
       <input type="file" data-file-input accept="image/*" multiple class="hidden" />

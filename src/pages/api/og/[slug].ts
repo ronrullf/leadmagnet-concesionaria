@@ -3,7 +3,7 @@ import satori from 'satori';
 import { Resvg } from '@resvg/resvg-js';
 import fs from 'node:fs';
 import path from 'node:path';
-import { getDemoBySlug, getProperties, featuredProperty } from '../../../lib/demos';
+import { getDemoBySlug, getProperties, getVehicles, featuredProperty } from '../../../lib/demos';
 
 let fontsCache: { display: Buffer; body: Buffer } | null = null;
 
@@ -21,8 +21,8 @@ export const GET: APIRoute = async ({ params }) => {
   const demo = await getDemoBySlug(params.slug!);
   if (!demo) return new Response('Not found', { status: 404 });
 
-  const properties = await getProperties(demo.id);
-  const featured = featuredProperty(properties);
+  const items = demo.vertical === 'concesionario' ? await getVehicles(demo.id) : await getProperties(demo.id);
+  const featured = featuredProperty(items);
   const featuredImage = featured?.image_urls?.[0] ?? null;
   const accent = demo.accent_hex || '#0F5C4E';
 

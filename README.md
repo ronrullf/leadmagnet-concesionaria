@@ -1,6 +1,6 @@
-# Demo Fantasma — Inmobiliarias
+# Demo Fantasma — Inmobiliarias y Concesionarios
 
-Un solo sitio en Astro (SSR) que renderiza una web inmobiliaria completa para cualquier agencia a partir de un slug en la URL. Se despliega una vez; cada agencia nueva es un registro en base de datos.
+Un solo sitio en Astro (SSR) que renderiza una web completa para cualquier inmobiliaria **o concesionario** a partir de un slug en la URL. Se despliega una vez; cada negocio nuevo es un registro en base de datos. El campo `vertical` del demo decide qué se renderiza (inmuebles o vehículos, con importación y tiempos de espera).
 
 ```
 demo.tiendapana.com/costa-azul  →  web completa de "Inmobiliaria Costa Azul"
@@ -17,7 +17,9 @@ Astro 7 (SSR) · Vercel · Tailwind CSS v4 · Supabase (Postgres + Storage) · s
 ### 1. Supabase
 
 1. Crear un proyecto en [supabase.com](https://supabase.com).
-2. En el **SQL Editor**, ejecutar [supabase/migrations/001_init.sql](supabase/migrations/001_init.sql) (tablas + RLS + bucket `demo-media`).
+2. En el **SQL Editor**, ejecutar en orden:
+   - [supabase/migrations/001_init.sql](supabase/migrations/001_init.sql) (tablas + RLS + bucket `demo-media`)
+   - [supabase/migrations/002_concesionarios.sql](supabase/migrations/002_concesionarios.sql) (columna `vertical` + tabla `vehicles`)
 3. Opcional: ejecutar [supabase/seed.sql](supabase/seed.sql) para sembrar el demo de prueba `costa-azul`.
 
 ### 2. Variables de entorno

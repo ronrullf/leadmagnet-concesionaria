@@ -1,7 +1,10 @@
+export type Vertical = 'inmobiliaria' | 'concesionario';
+
 export interface Demo {
   id: string;
   slug: string;
   created_at: string;
+  vertical: Vertical;
 
   agency_name: string;
   agency_tagline: string | null;
@@ -47,6 +50,34 @@ export interface Property {
   features: string[] | null;
   image_urls: string[];
   maps_query: string | null;
+  is_featured: boolean;
+}
+
+export interface Vehicle {
+  id: string;
+  demo_id: string;
+  sort_order: number;
+
+  ref_code: string;
+  title: string;
+  brand: string | null;
+  model: string | null;
+  year: number | null;
+  condition: 'nuevo' | 'usado';
+  vehicle_type: string | null;
+
+  price_usd: number;
+  mileage_km: number | null;
+  transmission: string | null;
+  fuel: string | null;
+  color: string | null;
+
+  is_import: boolean;
+  import_wait: string | null;
+
+  description: string | null;
+  features: string[] | null;
+  image_urls: string[];
   is_featured: boolean;
 }
 

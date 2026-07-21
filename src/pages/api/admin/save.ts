@@ -3,7 +3,7 @@ import { supabaseAdmin } from '../../../lib/supabase';
 import { outreachMessage } from '../../../lib/whatsapp';
 
 const DEMO_FIELDS = [
-  'slug', 'agency_name', 'agency_tagline', 'agency_city', 'agency_logo_url',
+  'slug', 'vertical', 'agency_name', 'agency_tagline', 'agency_city', 'agency_logo_url',
   'accent_hex', 'instagram_handle', 'whatsapp_e164', 'contact_email',
   'office_address', 'maps_query', 'years_operating', 'properties_sold',
   'testimonial_text', 'testimonial_author', 'mode', 'is_active', 'notes',
@@ -13,6 +13,12 @@ const PROPERTY_FIELDS = [
   'sort_order', 'ref_code', 'title', 'operation', 'property_type', 'price_usd',
   'location', 'bedrooms', 'bathrooms', 'parking', 'area_m2', 'description',
   'features', 'image_urls', 'maps_query', 'is_featured',
+] as const;
+
+const VEHICLE_FIELDS = [
+  'sort_order', 'ref_code', 'title', 'brand', 'model', 'year', 'condition',
+  'vehicle_type', 'price_usd', 'mileage_km', 'transmission', 'fuel', 'color',
+  'is_import', 'import_wait', 'description', 'features', 'image_urls', 'is_featured',
 ] as const;
 
 function pick(obj: Record<string, unknown>, keys: readonly string[]) {
@@ -27,8 +33,15 @@ export const POST: APIRoute = async ({ request }) => {
   try {
     const body = await request.json();
     const demoInput = pick(body.demo ?? {}, DEMO_FIELDS);
-    const propertiesInput: Record<string, unknown>[] = Array.isArray(body.properties) ? body.properties : [];
+    // Compatibilidad: el cliente actual envía "items"; versiones previas, "properties".
+    const itemsInput: Record<string, unknown>[] = Array.isArray(body.items)
+      ? body.items
+      : Array.isArray(body.properties) ? body.properties : [];
     const id: string | null = body.id ?? null;
+
+    const vertical = demoInput.vertical === 'concesionario' ? 'concesionario' : 'inmobiliaria';
+    demoInput.vertical = vertical;
+    const isVehicles = vertical === 'concesionario';
 
     // Validaciones mínimas del servidor
     const slug = String(demoInput.slug ?? '');
@@ -58,25 +71,27 @@ export const POST: APIRoute = async ({ request }) => {
       demoId = data.id;
     }
 
-    const rows = propertiesInput.map((p, i) => ({ ...pick(p, PROPERTY_FIELDS), sort_order: i, demo_id: demoId }));
+    const fields = isVehicles ? VEHICLE_FIELDS : PROPERTY_FIELDS;
+    const table = isVehicles ? 'vehicles' : 'properties';
+    const noun = isVehicles ? 'Vehículo' : 'Inmueble';
+    const rows = itemsInput.map((p, i) => ({ ...pick(p, fields), sort_order: i, demo_id: demoId }));
 
-    // Nada se descarta en silencio: un inmueble incompleto bloquea el guardado.
-    const invalidIdx = rows.findIndex(
-      (p) => !(p.ref_code && p.title && p.price_usd && p.location && Array.isArray(p.image_urls) && (p.image_urls as string[]).length > 0)
-    );
+    // Nada se descarta en silencio: un ítem incompleto bloquea el guardado.
+    const invalidIdx = rows.findIndex((p) => {
+      const base = p.ref_code && p.title && p.price_usd && Array.isArray(p.image_urls) && (p.image_urls as string[]).length > 0;
+      return isVehicles ? !base : !(base && p.location);
+    });
     if (invalidIdx !== -1) {
-      return json(
-        { error: `Inmueble ${invalidIdx + 1} incompleto: ref, título, precio, ubicación y al menos una foto son obligatorios.` },
-        400
-      );
+      const req = isVehicles ? 'ref, título, precio y al menos una foto' : 'ref, título, precio, ubicación y al menos una foto';
+      return json({ error: `${noun} ${invalidIdx + 1} incompleto: ${req} son obligatorios.` }, 400);
     }
 
-    // Reemplazo completo del inventario: simple y suficiente para 3–6 inmuebles.
-    await db.from('properties').delete().eq('demo_id', demoId);
+    // Reemplazo completo del inventario: simple y suficiente para 3–6 ítems.
+    await db.from(table).delete().eq('demo_id', demoId);
 
     if (rows.length > 0) {
-      const { error } = await db.from('properties').insert(rows);
-      if (error) return json({ error: `Inmuebles: ${error.message}` }, 400);
+      const { error } = await db.from(table).insert(rows);
+      if (error) return json({ error: `${noun}s: ${error.message}` }, 400);
     }
 
     const siteUrl = import.meta.env.SITE_URL || 'https://demo.tiendapana.com';

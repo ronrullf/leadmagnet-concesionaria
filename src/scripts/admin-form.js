@@ -5,10 +5,41 @@ if (form) initForm();
 
 function initForm() {
   const initial = JSON.parse(document.getElementById('initial-data').textContent);
+  // Compatibilidad: versiones previas serializaban "properties"
+  initial.items = initial.items ?? initial.properties ?? [];
   const list = document.getElementById('properties-list');
-  const template = document.getElementById('property-template');
+  const propertyTemplate = document.getElementById('property-template');
+  const vehicleTemplate = document.getElementById('vehicle-template');
   const MAX_PROPERTIES = 6;
   const MAX_IMAGES = 6;
+
+  /* ============ Vertical (inmobiliaria / concesionario) ============ */
+  const verticalSelect = form.querySelector('[name=vertical]');
+
+  function currentVertical() {
+    return verticalSelect.value === 'concesionario' ? 'concesionario' : 'inmobiliaria';
+  }
+  function currentTemplate() {
+    return currentVertical() === 'concesionario' ? vehicleTemplate : propertyTemplate;
+  }
+  function refreshVerticalLabels() {
+    const isV = currentVertical() === 'concesionario';
+    const label = document.querySelector('[data-items-label]');
+    if (label) label.textContent = isV ? 'Vehículos' : 'Inmuebles';
+    document.getElementById('add-property').textContent = isV ? '+ Agregar vehículo' : '+ Agregar inmueble';
+  }
+
+  verticalSelect.addEventListener('change', () => {
+    // Cambiar de nicho invalida los bloques ya cargados: se reinicia el repetidor.
+    const hasBlocks = list.querySelectorAll('.property-item').length > 0;
+    if (hasBlocks && !confirm('Cambiar el tipo de negocio vacía los ítems cargados. ¿Continuar?')) {
+      verticalSelect.value = currentVertical() === 'concesionario' ? 'inmobiliaria' : 'concesionario';
+      return;
+    }
+    list.innerHTML = '';
+    addProperty();
+    refreshVerticalLabels();
+  });
 
   /* Estado de imágenes por bloque de inmueble (los inputs viven en el DOM) */
   let logoUrl = initial.demo?.agency_logo_url ?? null;
@@ -131,9 +162,10 @@ function initForm() {
     return json.url;
   }
 
-  /* ============ Pegar datos: formato + parser ============ */
+  /* ============ Pegar datos: formatos + parser ============ */
 
-  const DATA_FORMAT = `Ref: A-102
+  const DATA_FORMATS = {
+    inmobiliaria: `Ref: A-102
 Título: Apartamento con vista al mar
 Operación: venta
 Tipo: apartamento
@@ -145,7 +177,24 @@ Puestos: 1
 Metros: 120
 Descripción: Amplio apartamento cerca de la playa, cocina remodelada y balcón con vista al mar.
 Características: Piscina, Vigilancia 24h, Amoblado
-Maps: Pampatar, Nueva Esparta, Venezuela`;
+Maps: Pampatar, Nueva Esparta, Venezuela`,
+    concesionario: `Ref: C-001
+Título: Toyota Corolla SE 2022
+Marca: Toyota
+Modelo: Corolla SE
+Año: 2022
+Condición: nuevo
+Tipo: sedán
+Precio USD: 24500
+Kilometraje: 0
+Transmisión: automática
+Combustible: gasolina
+Color: Blanco perla
+Importación: sí
+Tiempo de espera: 45-60 días
+Descripción: Full equipo, versión SE con pantalla de 9 pulgadas y asistencias de manejo.
+Características: Cámara de reversa, Asientos de cuero, Sunroof`,
+  };
 
   function normalizeKey(raw) {
     return raw
@@ -156,19 +205,32 @@ Maps: Pampatar, Nueva Esparta, Venezuela`;
   }
 
   const KEY_MAP = {
+    // Comunes
     ref: 'ref_code', referencia: 'ref_code', refcode: 'ref_code',
     titulo: 'title', title: 'title', nombre: 'title',
-    operacion: 'operation',
-    tipo: 'property_type', tipodeinmueble: 'property_type',
+    tipo: '_type', tipodeinmueble: '_type', tipodevehiculo: '_type',
     precio: 'price_usd', preciousd: 'price_usd', precious: 'price_usd', usd: 'price_usd',
+    descripcion: 'description',
+    caracteristicas: 'features', extras: 'features', amenidades: 'features', equipamiento: 'features',
+    // Inmuebles
+    operacion: 'operation',
     ubicacion: 'location', zona: 'location', ciudad: 'location',
     habitaciones: 'bedrooms', hab: 'bedrooms', cuartos: 'bedrooms', dormitorios: 'bedrooms',
     banos: 'bathrooms', bano: 'bathrooms',
     puestos: 'parking', estacionamiento: 'parking', estacionamientos: 'parking', ptos: 'parking',
     metros: 'area_m2', m2: 'area_m2', area: 'area_m2', metroscuadrados: 'area_m2', superficie: 'area_m2',
-    descripcion: 'description',
-    caracteristicas: 'features', extras: 'features', amenidades: 'features',
     maps: 'maps_query', mapa: 'maps_query', googlemaps: 'maps_query', direccion: 'maps_query',
+    // Vehículos
+    marca: 'brand',
+    modelo: 'model',
+    ano: 'year', anio: 'year', year: 'year',
+    condicion: 'condition', estado: 'condition',
+    kilometraje: 'mileage_km', km: 'mileage_km', kms: 'mileage_km', kilometros: 'mileage_km',
+    transmision: 'transmission', caja: 'transmission',
+    combustible: 'fuel',
+    color: 'color',
+    importacion: 'is_import', importado: 'is_import',
+    tiempodeespera: 'import_wait', espera: 'import_wait', entrega: 'import_wait', tiempodeentrega: 'import_wait',
   };
 
   /** Parsea el texto "Clave: valor" por líneas. Líneas sin clave se anexan al valor anterior. */
@@ -191,11 +253,24 @@ Maps: Pampatar, Nueva Esparta, Venezuela`;
   }
 
   function applyParsedData(node, data) {
+    // "Tipo:" es ambiguo entre nichos: se resuelve contra el campo que exista en el bloque.
+    if ('_type' in data) {
+      data.property_type = data._type;
+      data.vehicle_type = data._type;
+    }
+
     let applied = 0;
     node.querySelectorAll('[data-field]').forEach((input) => {
       const field = input.dataset.field;
       if (!(field in data) || field === 'is_featured') return;
       let value = data[field];
+
+      if (field === 'is_import') {
+        input.checked = /^(si|sí|s|yes|true|1)/i.test(value.trim());
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+        applied++;
+        return;
+      }
 
       if (field === 'operation') {
         value = /alq|rent/i.test(value) ? 'alquiler' : 'venta';
@@ -206,9 +281,28 @@ Maps: Pampatar, Nueva Esparta, Venezuela`;
           t.includes('terreno') || t.includes('parcela') ? 'terreno' :
           t.includes('local') || t.includes('oficina') ? 'local' :
           t.includes('quinta') || t.includes('townhouse') ? 'quinta' : 'apartamento';
-      } else if (['price_usd', 'bedrooms', 'bathrooms', 'parking', 'area_m2'].includes(field)) {
+      } else if (field === 'vehicle_type') {
+        const t = normalizeKey(value);
+        value =
+          t.includes('suv') ? 'suv' :
+          t.includes('pick') ? 'pickup' :
+          t.includes('hatch') ? 'hatchback' :
+          t.includes('camioneta') ? 'camioneta' :
+          t.includes('moto') ? 'moto' :
+          t.includes('camion') ? 'camion' : 'sedan';
+      } else if (field === 'condition') {
+        value = /nuev|new|0\s*km/i.test(value) ? 'nuevo' : 'usado';
+      } else if (field === 'transmission') {
+        value = /sincr|manual|mec/i.test(value) ? 'sincronica' : 'automatica';
+      } else if (field === 'fuel') {
+        const t = normalizeKey(value);
+        value =
+          t.includes('diesel') || t.includes('gasoil') ? 'diesel' :
+          t.includes('hibrid') ? 'hibrido' :
+          t.includes('electric') ? 'electrico' : 'gasolina';
+      } else if (['price_usd', 'bedrooms', 'bathrooms', 'parking', 'area_m2', 'year', 'mileage_km'].includes(field)) {
         value = value.replace(/[^\d]/g, '');
-        if (!value) return;
+        if (value === '') return;
       }
 
       input.value = value;
@@ -262,7 +356,7 @@ Maps: Pampatar, Nueva Esparta, Venezuela`;
 
   const copyFormatBtn = document.getElementById('copy-format');
   copyFormatBtn.addEventListener('click', async () => {
-    const ok = await copyText(DATA_FORMAT);
+    const ok = await copyText(DATA_FORMATS[currentVertical()]);
     const original = copyFormatBtn.textContent;
     copyFormatBtn.textContent = ok ? '✓ Formato copiado' : 'No se pudo copiar';
     setTimeout(() => (copyFormatBtn.textContent = original), 1500);
@@ -274,7 +368,7 @@ Maps: Pampatar, Nueva Esparta, Venezuela`;
     const items = list.querySelectorAll('.property-item');
     if (items.length >= MAX_PROPERTIES) return null;
 
-    const node = template.content.firstElementChild.cloneNode(true);
+    const node = currentTemplate().content.firstElementChild.cloneNode(true);
     node._images = data?.image_urls ? [...data.image_urls] : [];
 
     if (data) {
@@ -282,12 +376,23 @@ Maps: Pampatar, Nueva Esparta, Venezuela`;
         const field = input.dataset.field;
         if (field === 'is_featured') {
           input.checked = !!data.is_featured;
+        } else if (field === 'is_import') {
+          input.checked = !!data.is_import;
         } else if (field === 'features') {
           input.value = (data.features ?? []).join(', ');
         } else if (data[field] != null) {
           input.value = data[field];
         }
       });
+    }
+
+    // Vehículos: el campo de tiempo de espera solo aplica si es por importación.
+    const importCheck = node.querySelector('[data-field="is_import"]');
+    if (importCheck) {
+      const waitInput = node.querySelector('[data-field="import_wait"]');
+      const syncWait = () => waitInput.classList.toggle('hidden', !importCheck.checked);
+      importCheck.addEventListener('change', syncWait);
+      syncWait();
     }
 
     node.querySelector('[data-remove]').addEventListener('click', () => {
@@ -398,12 +503,13 @@ Maps: Pampatar, Nueva Esparta, Venezuela`;
     }
     markSwatch();
   }
-  if (initial.properties.length) {
-    initial.properties.forEach((p) => addProperty(p));
+  if (initial.items.length) {
+    initial.items.forEach((p) => addProperty(p));
   } else {
     addProperty();
   }
   markSwatch();
+  refreshVerticalLabels();
 
   /* ============ Guardado ============ */
   const saveBtn = document.getElementById('save-btn');
@@ -434,39 +540,48 @@ Maps: Pampatar, Nueva Esparta, Venezuela`;
     });
     demoData.is_active = form.querySelector('[name=is_active]').checked;
     demoData.agency_logo_url = logoUrl;
+    demoData.vertical = currentVertical();
 
-    const properties = [];
+    const isVehicles = currentVertical() === 'concesionario';
+    const itemNoun = isVehicles ? 'Vehículo' : 'Inmueble';
+    const items = [];
     const problems = [];
     list.querySelectorAll('.property-item').forEach((node, idx) => {
       const p = { image_urls: node._images };
       node.querySelectorAll('[data-field]').forEach((input) => {
         const field = input.dataset.field;
         if (field === 'is_featured') p.is_featured = input.checked;
+        else if (field === 'is_import') p.is_import = input.checked;
         else if (field === 'features') {
           p.features = input.value.split(',').map((s) => s.trim()).filter(Boolean);
-        } else if (['price_usd', 'bedrooms', 'bathrooms', 'parking', 'area_m2'].includes(field)) {
+        } else if (['price_usd', 'bedrooms', 'bathrooms', 'parking', 'area_m2', 'year', 'mileage_km'].includes(field)) {
           p[field] = input.value ? Number(input.value) : null;
         } else {
           p[field] = input.value.trim() || null;
         }
       });
 
+      // Vehículos: autogenerar título desde marca/modelo/año si quedó vacío.
+      if (isVehicles && !p.title && p.brand) {
+        p.title = [p.brand, p.model, p.year].filter(Boolean).join(' ');
+      }
+
       // Ignorar solo bloques COMPLETAMENTE vacíos (sin ningún dato ni foto)
-      const isEmpty = !p.ref_code && !p.title && !p.price_usd && !p.location && !p.image_urls.length;
+      const isEmpty = !p.ref_code && !p.title && !p.brand && !p.price_usd && !p.location && !p.image_urls.length;
       if (isEmpty) return;
 
       // Nada se descarta en silencio: si falta algo obligatorio, se bloquea el guardado.
       const missing = [];
       if (!p.ref_code) missing.push('Ref');
-      if (!p.title) missing.push('Título');
+      if (!p.title) missing.push(isVehicles ? 'Título o Marca' : 'Título');
       if (!p.price_usd) missing.push('Precio USD');
-      if (!p.location) missing.push('Ubicación');
+      if (!isVehicles && !p.location) missing.push('Ubicación');
       if (!p.image_urls.length) missing.push('al menos 1 foto');
       if (missing.length) {
-        problems.push(`Inmueble ${idx + 1}: falta ${missing.join(', ')}`);
+        problems.push(`${itemNoun} ${idx + 1}: falta ${missing.join(', ')}`);
         return;
       }
-      properties.push(p);
+      items.push(p);
     });
 
     if (problems.length) {
@@ -482,7 +597,7 @@ Maps: Pampatar, Nueva Esparta, Venezuela`;
       const res = await fetch('/api/admin/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: initial.id, demo: demoData, properties }),
+        body: JSON.stringify({ id: initial.id, demo: demoData, items }),
       });
       const json = await res.json();
       if (!res.ok) {

@@ -1,0 +1,88 @@
+---
+import type { Vehicle } from '../lib/types';
+
+interface Props {
+  vehicles: Vehicle[];
+}
+
+const { vehicles } = Astro.props;
+
+const brands = [...new Set(vehicles.map((v) => v.brand).filter(Boolean))].sort() as string[];
+const types = [...new Set(vehicles.map((v) => v.vehicle_type).filter(Boolean))].sort() as string[];
+const years = [...new Set(vehicles.map((v) => v.year).filter(Boolean))].sort() as number[];
+
+const typeLabels: Record<string, string> = {
+  sedan: 'Sedán',
+  suv: 'SUV',
+  pickup: 'Pick-up',
+  hatchback: 'Hatchback',
+  camioneta: 'Camioneta',
+  moto: 'Moto',
+  camion: 'Camión',
+};
+
+const priceRanges = [
+  { value: '10000', label: 'Hasta $10.000' },
+  { value: '20000', label: 'Hasta $20.000' },
+  { value: '35000', label: 'Hasta $35.000' },
+  { value: '60000', label: 'Hasta $60.000' },
+  { value: '10000000', label: 'Más de $60.000' },
+];
+---
+
+<form
+  id="search-bar"
+  class="mx-auto -mt-6 max-w-[1200px] px-6"
+  aria-label="Filtrar vehículos"
+>
+  <div class="grid grid-cols-2 gap-3 rounded-[8px] border border-line bg-paper p-4 md:grid-cols-6">
+    <label class="flex flex-col gap-1">
+      <span class="text-[0.75rem] font-medium uppercase tracking-wide text-ink-soft">Condición</span>
+      <select name="condition" data-attr="condition" data-mode="eq" class="rounded-[4px] border border-line bg-paper px-2 py-2 text-sm">
+        <option value="">Todas</option>
+        <option value="nuevo">Nuevo</option>
+        <option value="usado">Usado</option>
+      </select>
+    </label>
+
+    <label class="flex flex-col gap-1">
+      <span class="text-[0.75rem] font-medium uppercase tracking-wide text-ink-soft">Marca</span>
+      <select name="brand" data-attr="brand" data-mode="eq" class="rounded-[4px] border border-line bg-paper px-2 py-2 text-sm">
+        <option value="">Todas</option>
+        {brands.map((b) => <option value={b}>{b}</option>)}
+      </select>
+    </label>
+
+    <label class="flex flex-col gap-1">
+      <span class="text-[0.75rem] font-medium uppercase tracking-wide text-ink-soft">Tipo</span>
+      <select name="type" data-attr="type" data-mode="eq" class="rounded-[4px] border border-line bg-paper px-2 py-2 text-sm">
+        <option value="">Todos</option>
+        {types.map((t) => <option value={t}>{typeLabels[t] ?? t}</option>)}
+      </select>
+    </label>
+
+    <label class="flex flex-col gap-1">
+      <span class="text-[0.75rem] font-medium uppercase tracking-wide text-ink-soft">Precio USD</span>
+      <select name="price_max" data-attr="price" data-mode="max" class="rounded-[4px] border border-line bg-paper px-2 py-2 text-sm">
+        <option value="">Cualquiera</option>
+        {priceRanges.map((r) => <option value={r.value}>{r.label}</option>)}
+      </select>
+    </label>
+
+    <label class="flex flex-col gap-1">
+      <span class="text-[0.75rem] font-medium uppercase tracking-wide text-ink-soft">Año desde</span>
+      <select name="year_min" data-attr="year" data-mode="min" class="rounded-[4px] border border-line bg-paper px-2 py-2 text-sm">
+        <option value="">Todos</option>
+        {years.map((y) => <option value={String(y)}>{y}</option>)}
+      </select>
+    </label>
+
+    <div class="flex items-end">
+      <button
+        type="button"
+        id="search-reset"
+        class="w-full rounded-[4px] border border-line px-3 py-2 text-sm font-medium text-ink-soft hover:text-ink"
+      >Limpiar</button>
+    </div>
+  </div>
+</form>

@@ -2,10 +2,13 @@
 import DemoLayout from '../../layouts/DemoLayout.astro';
 import Hero from '../../components/Hero.astro';
 import SearchBar from '../../components/SearchBar.astro';
+import VehicleSearchBar from '../../components/VehicleSearchBar.astro';
 import PropertyCard from '../../components/PropertyCard.astro';
+import VehicleCard from '../../components/VehicleCard.astro';
 import TrustSection from '../../components/TrustSection.astro';
-import { getDemoBySlug, getProperties, featuredProperty } from '../../lib/demos';
+import { getDemoBySlug, getProperties, getVehicles, featuredProperty } from '../../lib/demos';
 import { getBcvRate } from '../../lib/bcv';
+import { verticalConfig } from '../../lib/vertical';
 import { notFoundResponse } from '../../lib/not-found';
 
 const { slug } = Astro.params;
@@ -15,43 +18,54 @@ if (!demo) {
   return notFoundResponse();
 }
 
-const [properties, bcv] = await Promise.all([
-  getProperties(demo.id),
+const isVehicles = demo.vertical === 'concesionario';
+const vc = verticalConfig(demo.vertical);
+
+const [items, bcv] = await Promise.all([
+  isVehicles ? getVehicles(demo.id) : getProperties(demo.id),
   getBcvRate(),
 ]);
 
-const featured = featuredProperty(properties);
+const featured = featuredProperty(items);
 ---
 
 <DemoLayout
   demo={demo}
-  title={`${demo.agency_name} — Inmuebles en ${demo.agency_city}`}
+  title={`${demo.agency_name} — ${vc.nounPlural} en ${demo.agency_city}`}
   path="/"
 >
   <Hero demo={demo} featured={featured} bcv={bcv} />
 
-  {properties.length > 0 ? (
+  {items.length > 0 ? (
     <>
-      <SearchBar properties={properties} />
+      {isVehicles ? (
+        <VehicleSearchBar vehicles={items as any} />
+      ) : (
+        <SearchBar properties={items as any} />
+      )}
 
-      <section id="inmuebles" class="mx-auto max-w-[1200px] px-6 py-14">
-        <h2 class="display-tight mb-8 font-display text-[1.9375rem] font-bold">Inmuebles disponibles</h2>
+      <section id="catalogo" class="mx-auto max-w-[1200px] px-6 py-14">
+        <h2 class="display-tight mb-8 font-display text-[1.9375rem] font-bold">{vc.catalogTitle}</h2>
 
         <div id="property-grid" class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {properties.map((p, i) => (
-            <PropertyCard property={p} slug={demo.slug} bcv={bcv} stagger={(i % 3) * 40} />
-          ))}
+          {isVehicles
+            ? (items as any[]).map((v, i) => (
+                <VehicleCard vehicle={v} slug={demo.slug} bcv={bcv} stagger={(i % 3) * 40} />
+              ))
+            : (items as any[]).map((p, i) => (
+                <PropertyCard property={p} slug={demo.slug} bcv={bcv} stagger={(i % 3) * 40} />
+              ))}
         </div>
 
         <p id="search-empty" class="hidden py-16 text-center text-ink-soft">
-          Ningún inmueble coincide con esos filtros.
+          {isVehicles ? 'Ningún vehículo coincide con esos filtros.' : 'Ningún inmueble coincide con esos filtros.'}
         </p>
       </section>
     </>
   ) : (
-    <section id="inmuebles" class="mx-auto max-w-[1200px] px-6 py-20 text-center">
+    <section id="catalogo" class="mx-auto max-w-[1200px] px-6 py-20 text-center">
       <p class="font-display text-[1.25rem] font-semibold">Estamos actualizando nuestro catálogo.</p>
-      <p class="mt-2 text-ink-soft">Escríbanos por WhatsApp y le enviamos los inmuebles disponibles.</p>
+      <p class="mt-2 text-ink-soft">{vc.emptyMessage}</p>
     </section>
   )}
 

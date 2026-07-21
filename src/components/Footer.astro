@@ -7,7 +7,7 @@ interface Props {
 }
 
 const { demo } = Astro.props;
-const wa = waLink(demo.whatsapp_e164, genericContactMessage(demo.agency_name));
+const wa = waLink(demo.whatsapp_e164, genericContactMessage(demo.agency_name, demo.vertical));
 ---
 
 <footer class="border-t border-line bg-paper pb-[72px]">

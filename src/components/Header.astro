@@ -1,6 +1,7 @@
 ---
 import { monogram } from '../lib/format';
 import { waLink, genericContactMessage } from '../lib/whatsapp';
+import { verticalConfig } from '../lib/vertical';
 import type { Demo } from '../lib/types';
 
 interface Props {
@@ -9,7 +10,8 @@ interface Props {
 
 const { demo } = Astro.props;
 const base = `/${demo.slug}`;
-const wa = waLink(demo.whatsapp_e164, genericContactMessage(demo.agency_name));
+const vc = verticalConfig(demo.vertical);
+const wa = waLink(demo.whatsapp_e164, genericContactMessage(demo.agency_name, demo.vertical));
 ---
 
 <header class="sticky top-0 z-40 border-b border-line bg-paper/95 backdrop-blur-sm">
@@ -27,7 +29,7 @@ const wa = waLink(demo.whatsapp_e164, genericContactMessage(demo.agency_name));
 
     <nav class="hidden items-center gap-8 text-sm font-medium md:flex" aria-label="Principal">
       <a href={base} class="hover:text-accent">Inicio</a>
-      <a href={`${base}#inmuebles`} class="hover:text-accent">Inmuebles</a>
+      <a href={`${base}#catalogo`} class="hover:text-accent">{vc.nounPlural}</a>
       <a href={`${base}/contacto`} class="hover:text-accent">Contacto</a>
     </nav>
 
@@ -62,7 +64,7 @@ const wa = waLink(demo.whatsapp_e164, genericContactMessage(demo.agency_name));
   <nav id="mobile-menu" class="hidden border-t border-line bg-paper px-6 py-4 md:hidden" aria-label="Menú móvil">
     <div class="flex flex-col gap-4 text-base font-medium">
       <a href={base}>Inicio</a>
-      <a href={`${base}#inmuebles`}>Inmuebles</a>
+      <a href={`${base}#catalogo`}>{vc.nounPlural}</a>
       <a href={`${base}/contacto`}>Contacto</a>
     </div>
   </nav>

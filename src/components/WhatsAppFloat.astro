@@ -7,7 +7,7 @@ interface Props {
 }
 
 const { demo } = Astro.props;
-const wa = waLink(demo.whatsapp_e164, genericContactMessage(demo.agency_name));
+const wa = waLink(demo.whatsapp_e164, genericContactMessage(demo.agency_name, demo.vertical));
 ---
 
 {/* 72px sobre el borde en móvil para no chocar con la barra de cierre TiendaPana */}
