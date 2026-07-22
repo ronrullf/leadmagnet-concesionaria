@@ -6,6 +6,7 @@ import WhatsAppFloat from '../components/WhatsAppFloat.astro';
 import ClosingBar from '../components/ClosingBar.astro';
 import { accentInk } from '../lib/format';
 import { verticalConfig } from '../lib/vertical';
+import { siteBase } from '../lib/site';
 import type { Demo } from '../lib/types';
 
 interface Props {
@@ -19,7 +20,7 @@ interface Props {
 
 const { demo, title, description, path, showClosingBar = true } = Astro.props;
 
-const siteUrl = import.meta.env.SITE_URL || 'https://demo.tiendapana.com';
+const siteUrl = siteBase(Astro.url.origin);
 const ogImage = `${siteUrl}/api/og/${demo.slug}`;
 const canonical = `${siteUrl}/${demo.slug}`;
 const ink = accentInk(demo.accent_hex || '#0F5C4E');

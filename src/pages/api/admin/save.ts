@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { supabaseAdmin } from '../../../lib/supabase';
 import { outreachMessage } from '../../../lib/whatsapp';
+import { siteBase } from '../../../lib/site';
 
 const DEMO_FIELDS = [
   'slug', 'vertical', 'agency_name', 'agency_tagline', 'agency_city', 'agency_logo_url',
@@ -94,7 +95,7 @@ export const POST: APIRoute = async ({ request }) => {
       if (error) return json({ error: `${noun}s: ${error.message}` }, 400);
     }
 
-    const siteUrl = import.meta.env.SITE_URL || 'https://demo.tiendapana.com';
+    const siteUrl = siteBase(new URL(request.url).origin);
     const link = `${siteUrl}/${slug}`;
     const featured = rows.find((r) => r.is_featured) ?? rows[0];
     const featuredTitle = featured ? String(featured.title) : 'inventario';

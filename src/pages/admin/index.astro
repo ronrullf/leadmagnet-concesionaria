@@ -3,6 +3,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
 import { supabaseAdmin } from '../../lib/supabase';
 import { outreachMessage } from '../../lib/whatsapp';
 import { timeAgo } from '../../lib/format';
+import { siteBase } from '../../lib/site';
 
 let demos: any[] | null = [];
 let visits: any[] | null = [];
@@ -22,7 +23,7 @@ try {
   dbError = e instanceof Error ? e.message : 'Error de conexión';
 }
 
-const siteUrl = import.meta.env.SITE_URL || 'https://demo.tiendapana.com';
+const siteUrl = siteBase(Astro.url.origin);
 
 const stats = new Map<string, { count: number; last: string | null }>();
 for (const v of visits ?? []) {
