@@ -2,9 +2,10 @@
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import { listPacks } from '../../../lib/profession-packs';
 import { MOODS } from '../../../lib/pro-types';
+import { siteBase } from '../../../lib/site';
 
 const packs = listPacks();
-const siteUrl = import.meta.env.SITE_URL || '';
+const siteUrl = siteBase(Astro.url.origin);
 ---
 
 <AdminLayout title="Generar profesional">

@@ -9,6 +9,7 @@
  */
 import { moodTokens, fontHref, MONO } from '../lib/pro-moods';
 import { inkOn, normalizeHex, tint } from '../lib/color';
+import { siteBase } from '../lib/site';
 import type { ProDemo } from '../lib/pro-types';
 
 interface Props {
@@ -23,7 +24,7 @@ const accent = normalizeHex(pro.accent_hex) ?? t.accent;
 const accentInk = inkOn(accent);
 const accentWash = tint(accent, 0.92);
 
-const siteUrl = import.meta.env.SITE_URL || 'https://demo.tiendapana.com';
+const siteUrl = siteBase(Astro.url.origin);
 const ogImage = `${siteUrl}/api/og/pro/${pro.slug}`;
 const canonical = `${siteUrl}/p/${pro.slug}`;
 

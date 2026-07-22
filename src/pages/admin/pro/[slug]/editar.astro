@@ -11,7 +11,6 @@ if (!row) return Astro.redirect('/admin/pro');
 
 const pro = { ...row, copy: coerceCopy(row.copy) };
 const c = pro.copy;
-const siteUrl = import.meta.env.SITE_URL || '';
 ---
 
 <AdminLayout title={`Editar ${pro.pro_name}`}>
