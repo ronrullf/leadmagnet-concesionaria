@@ -1,0 +1,223 @@
+---
+/**
+ * Pop-up de demo. Aparece una vez por sesión en cualquier sitio de demostración
+ * (concesionario, agencia o profesional). Mantiene el branding TiendaPana: el
+ * PANA, el naranja y la tarjeta blanca redondeada de la referencia.
+ *
+ * No aparece dentro de un iframe (el preview del editor) para no molestar a
+ * Fernando mientras arma la landing.
+ */
+import { waLink, demoPopupMessage } from '../lib/whatsapp';
+
+interface Props {
+  /** Referencia para saber desde qué demo escribieron (slug). Opcional. */
+  ref?: string;
+}
+
+const { ref } = Astro.props;
+const tpPhone = import.meta.env.TIENDAPANA_WHATSAPP || '';
+const wa = waLink(tpPhone, demoPopupMessage(ref));
+---
+
+<div id="demo-popup" class="dp" hidden aria-hidden="true">
+  <div class="dp__backdrop" data-close></div>
+
+  <div class="dp__card" role="dialog" aria-modal="true" aria-labelledby="dp-title">
+    <button type="button" class="dp__x" data-close aria-label="Cerrar">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+        <path d="M6 6l12 12M18 6L6 18" />
+      </svg>
+    </button>
+
+    <div class="dp__logo">
+      <img src="/pana-logo.png" alt="TiendaPana" width="72" height="72" />
+    </div>
+
+    <h2 id="dp-title" class="dp__title">Esta es una <span>Demo</span></h2>
+    <p class="dp__text">
+      Si quieres una completamente funcional y personalizada con tu marca, tus
+      colores y tus productos:
+    </p>
+
+    <button type="button" class="dp__cta" data-close>Ver la demo</button>
+    <a class="dp__wa" href={wa} target="_blank" rel="noopener" data-close>
+      Quiero mi propio sitio web
+    </a>
+  </div>
+</div>
+
+<style>
+  .dp {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .dp[hidden] { display: none; }
+
+  .dp__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(17, 17, 17, 0.55);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+  .dp.show .dp__backdrop { opacity: 1; }
+
+  .dp__card {
+    position: relative;
+    width: 100%;
+    max-width: 340px;
+    background: #fff;
+    border-radius: 22px;
+    padding: 30px 24px 22px;
+    text-align: center;
+    box-shadow: 0 24px 60px -12px rgba(17, 17, 17, 0.35);
+    font-family: 'Inter Tight', ui-sans-serif, system-ui, sans-serif;
+    transform: translateY(14px) scale(0.97);
+    opacity: 0;
+    transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1), opacity 0.3s ease;
+  }
+  .dp.show .dp__card { transform: none; opacity: 1; }
+
+  .dp__x {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 999px;
+    background: #f1f1f1;
+    color: #6b6b6b;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  .dp__x:hover { background: #e5e5e5; color: #333; }
+
+  .dp__logo {
+    width: 76px;
+    height: 76px;
+    margin: 4px auto 16px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 24px -6px rgba(242, 106, 26, 0.5);
+  }
+  .dp__logo img { width: 76px; height: 76px; border-radius: 999px; display: block; }
+
+  .dp__title {
+    margin: 0 0 10px;
+    font-size: 25px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #16181d;
+    line-height: 1.1;
+  }
+  .dp__title span { color: #f26a1b; }
+
+  .dp__text {
+    margin: 0 0 20px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #5b636b;
+  }
+
+  /* Acción principal: entrar a ver la demo. */
+  .dp__cta {
+    display: block;
+    width: 100%;
+    padding: 14px 18px;
+    border: 0;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #fb8b3c 0%, #f26a1b 100%);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: inherit;
+    text-decoration: none;
+    cursor: pointer;
+    box-shadow: 0 8px 20px -6px rgba(242, 106, 26, 0.6);
+    transition: filter 0.15s ease, transform 0.1s ease;
+  }
+  .dp__cta:hover { filter: brightness(1.05); }
+  .dp__cta:active { transform: translateY(1px); }
+
+  /* Acción secundaria: escribir a TiendaPana por WhatsApp. */
+  .dp__wa {
+    display: block;
+    width: 100%;
+    margin-top: 12px;
+    padding: 6px;
+    color: #2fa24c;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  .dp__wa:hover { color: #268040; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dp__card, .dp__backdrop { transition: none; }
+    .dp__card { transform: none; }
+  }
+</style>
+
+<script>
+  (() => {
+    // No molestar dentro del preview del editor (iframe).
+    if (window.self !== window.top) return;
+
+    const KEY = 'tp_demo_popup_seen';
+    const popup = document.getElementById('demo-popup');
+    if (!popup) return;
+
+    try {
+      if (sessionStorage.getItem(KEY) === '1') return;
+    } catch {}
+
+    let open = false;
+
+    function show() {
+      popup.hidden = false;
+      popup.setAttribute('aria-hidden', 'false');
+      // dos rAF para que la transición de entrada corra
+      requestAnimationFrame(() => requestAnimationFrame(() => popup.classList.add('show')));
+      document.body.style.overflow = 'hidden';
+      open = true;
+      const x = popup.querySelector('.dp__x');
+      if (x) x.focus();
+    }
+
+    function close() {
+      if (!open) return;
+      popup.classList.remove('show');
+      document.body.style.overflow = '';
+      open = false;
+      try { sessionStorage.setItem(KEY, '1'); } catch {}
+      setTimeout(() => {
+        popup.hidden = true;
+        popup.setAttribute('aria-hidden', 'true');
+      }, 300);
+    }
+
+    popup.querySelectorAll('[data-close]').forEach((el) => {
+      el.addEventListener('click', () => close());
+    });
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') close();
+    });
+
+    // Pequeño retraso: deja ver el sitio un instante antes de abrir.
+    setTimeout(show, 700);
+  })();
+</script>

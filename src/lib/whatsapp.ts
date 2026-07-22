@@ -73,6 +73,15 @@ export function tiendapanaMessage(agencyName: string, slug: string): string {
   return `Hola, vi el demo de ${agencyName} (ref: ${slug}) y quiero información.`;
 }
 
+/**
+ * Mensaje del pop-up de demo. Va al número de TiendaPana. El ref (slug) permite
+ * saber desde qué demo escribió el interesado, sin ensuciar el texto visible.
+ */
+export function demoPopupMessage(ref?: string): string {
+  const base = 'Hola, me gustó la demo, quiero más información.';
+  return ref ? `${base} (ref: ${ref})` : base;
+}
+
 export function outreachMessage(agencyName: string, featuredTitle: string, link: string): string {
   return (
     `Buenas ${agencyName}, vi el ${featuredTitle} que publicaron.\n\n` +

@@ -10,6 +10,7 @@
 import { moodTokens, fontHref, MONO } from '../lib/pro-moods';
 import { inkOn, normalizeHex, tint } from '../lib/color';
 import { siteBase } from '../lib/site';
+import DemoPopup from '../components/DemoPopup.astro';
 import type { ProDemo } from '../lib/pro-types';
 
 interface Props {
@@ -180,6 +181,7 @@ const rootStyle = [
   </head>
   <body>
     <slot />
+    <DemoPopup ref={pro.slug} />
 
     <script
       is:inline
