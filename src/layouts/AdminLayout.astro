@@ -24,15 +24,31 @@ const { title } = Astro.props;
   <body class="min-h-screen bg-paper-alt text-ink">
     <header class="border-b border-line bg-paper">
       <div class="mx-auto flex h-14 max-w-[1100px] items-center justify-between px-6">
-        <a href="/admin" class="font-semibold">Demos · TiendaPana</a>
-        <a
-          href="/admin/nuevo"
-          class="rounded-[4px] bg-ink px-4 py-2 text-sm font-semibold text-white"
-        >+ Nuevo demo</a>
+        <a href="/admin" class="flex items-center gap-2 font-semibold">
+          <span class="flex h-7 w-7 items-center justify-center rounded-[8px] bg-[#F97316] text-sm font-bold text-white">T</span>
+          Demos · TiendaPana
+        </a>
+        <div class="flex items-center gap-3">
+          <a
+            href="/admin/nuevo"
+            class="rounded-[4px] bg-[#F97316] px-4 py-2 text-sm font-semibold text-white hover:bg-[#EA580C]"
+          >+ Nuevo demo</a>
+          <button
+            id="logout-btn"
+            type="button"
+            class="rounded-[4px] border border-line px-3 py-2 text-sm font-medium text-ink-soft hover:text-ink"
+          >Salir</button>
+        </div>
       </div>
     </header>
     <main class="mx-auto max-w-[1100px] px-6 py-8">
       <slot />
     </main>
+    <script>
+      document.getElementById('logout-btn')?.addEventListener('click', async () => {
+        await fetch('/api/logout', { method: 'POST' });
+        location.href = '/';
+      });
+    </script>
   </body>
 </html>

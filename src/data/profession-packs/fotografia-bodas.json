@@ -1,0 +1,19 @@
+{
+  "key": "fotografia-bodas",
+  "label": "Fotografía de bodas",
+  "default_mood": "editorial",
+  "failing_behaviors": [
+    "escoger fotógrafo por precio comparando cotizaciones en un grupo de WhatsApp",
+    "pedirle a un familiar con buena cámara que cubra el evento",
+    "contratar sin haber visto una boda completa, solo el feed"
+  ],
+  "typical_objections": [
+    "vi a otro que cobra la mitad",
+    "¿y si no me gustan las fotos?",
+    "todos los fotógrafos publican lo mismo"
+  ],
+  "urgency_lever": "las fechas buenas se cierran con seis a diez meses de anticipación y no se repiten",
+  "main_pain": "que el único registro de un día irrepetible quede en manos de alguien que no conoce",
+  "dream_outcome": "abrir el álbum a los veinte años y volver a sentir el día completo",
+  "vocabulary": ["cobertura", "sesión", "entrega", "álbum", "preboda", "fecha", "galería"]
+}

@@ -46,6 +46,29 @@ export function vehicleVideoCallMessage(agencyName: string, title: string, refCo
   );
 }
 
+/**
+ * Mensajes del nicho de profesionales.
+ *
+ * Apuntan al número real del profesional, nunca al de TiendaPana. El momento
+ * que vende es que él abra su propia landing, toque el CTA, y le llegue el
+ * mensaje a su propio teléfono. No mockear, no redirigir.
+ */
+
+export function proCtaMessage(proName: string, ctaLabel: string): string {
+  return (
+    `Hola ${proName}, vi su página y quiero agendar ${ctaLabel.toLowerCase()}.\n` +
+    `¿Cuál es el siguiente paso?`
+  );
+}
+
+/** Llega con día y hora ya escritos: eso es lo que hoy cuesta catorce mensajes. */
+export function proSlotMessage(proName: string, day: string, time: string): string {
+  return (
+    `Hola ${proName}, vi su página y quiero agendar el ${day} a las ${time}.\n` +
+    `¿Sigue disponible?`
+  );
+}
+
 export function tiendapanaMessage(agencyName: string, slug: string): string {
   return `Hola, vi el demo de ${agencyName} (ref: ${slug}) y quiero información.`;
 }

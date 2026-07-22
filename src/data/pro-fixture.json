@@ -1,0 +1,170 @@
+{
+  "id": "dev-fixture-pro",
+  "slug": "dra-mariana-rojas",
+  "created_at": "2026-07-21T00:00:00.000Z",
+
+  "pro_name": "Dra. Mariana Rojas",
+  "pro_title": "Dermatóloga · Caracas",
+  "profession_key": "dermatologia",
+  "city": "Caracas",
+  "instagram_handle": "dramarianarojas",
+  "followers": 9400,
+  "photo_hero_url": null,
+  "photo_story_url": null,
+  "logo_url": null,
+
+  "mood": "clinico",
+  "accent_hex": null,
+
+  "whatsapp_e164": "584141234567",
+  "booking_url": null,
+
+  "copy": {
+    "hero": {
+      "callout": "Llevas 3 años cambiando de crema cada vez que sale un TikTok.",
+      "headline": "No es la crema. Es que nadie te ha dicho qué tienes.",
+      "subheadline": "En una consulta de 40 minutos sales con el nombre de lo que tienes por escrito y una rutina de tres pasos que sí puedes cumplir.",
+      "cta_label": "Ver cupos de esta semana"
+    },
+    "qualify": {
+      "yes": [
+        "Ya gastaste más de 200 dólares en productos que abandonaste a la mitad",
+        "Te maquillas distinto desde hace meses para tapar una zona específica",
+        "Cada vez que te preguntan qué te pasa en la cara, cambias el tema"
+      ],
+      "no": [
+        "Buscas que te recete algo por WhatsApp sin verte la piel",
+        "Quieres resultados de foto para el sábado que viene"
+      ]
+    },
+    "story": {
+      "backstory": "Pasé seis años en consulta pública viendo 40 pacientes al día, doce minutos cada uno.",
+      "wall": "Los mismos rostros volvían a los ocho meses, peor. La receta funcionaba; el diagnóstico estaba incompleto.",
+      "epiphany": "El problema no era el tratamiento. Era que nadie tenía tiempo de preguntar qué había cambiado en su vida ese año.",
+      "plan": "Armé una consulta de 40 minutos con historia completa, foto de control y un plan escrito de tres pasos.",
+      "result": "De 340 pacientes en dos años, 8 de cada 10 siguen en control al año."
+    },
+    "opportunity": {
+      "name": "Consulta de Diagnóstico Primero",
+      "old_way": "Probar productos hasta que uno pegue. Falla porque una mancha por sol, una por hormonas y una por medicamento se ven casi iguales y ninguna crema sirve para las tres.",
+      "new_way": "Empezar por saber cuál de las tres tienes. El tratamiento es la consecuencia del diagnóstico, no un experimento.",
+      "why_different": "No es una crema mejor ni una marca más cara. Es dejar de comprar a ciegas. La pregunta deja de ser qué me pongo y pasa a ser qué tengo."
+    },
+    "secrets": [
+      {
+        "type": "vehicle",
+        "title": "Ya fui a un dermatólogo y me mandó algo que no sirvió",
+        "body": "En doce minutos de consulta no se levanta una historia. Sin saber qué medicamentos tomas, cuánto sol te da manejando y qué cambió en tu ciclo este año, cualquier receta es una apuesta razonable. Con 40 minutos deja de ser una apuesta.",
+        "proof": "El 60% de las manchas que veo llegan con un diagnóstico previo distinto al correcto."
+      },
+      {
+        "type": "internal",
+        "title": "Yo no soy constante, siempre abandono las rutinas",
+        "body": "Las rutinas de doce pasos las abandona todo el mundo, no eres tú. Por eso salgo con tres pasos y un solo activo nuevo por mes. Si a la segunda semana no lo estás haciendo, cambiamos el plan, no te regaño.",
+        "proof": "8 de cada 10 pacientes siguen en control al año."
+      },
+      {
+        "type": "external",
+        "title": "No tengo tiempo ni presupuesto para andar en consultas",
+        "body": "Es una consulta, no un abono. Sales con el plan escrito y el control es a los tres meses. Entre medio respondo dudas por WhatsApp sin cobrar consulta nueva, porque la mitad de las dudas se responden en dos líneas.",
+        "proof": "Respuesta a dudas de control en menos de 24 horas."
+      }
+    ],
+    "offer": {
+      "program_name": "Protocolo Piel Clara 360",
+      "items": [
+        {
+          "title": "Consulta de diagnóstico de 40 minutos",
+          "description": "Historia completa, revisión con luz de Wood y el nombre de lo que tienes, por escrito, antes de que salgas del consultorio.",
+          "value_label": "El paso que falta"
+        },
+        {
+          "title": "Plan de tres pasos en una hoja",
+          "description": "Qué te pones, a qué hora y por cuánto tiempo. Con nombres de productos que se consiguen en Caracas y su precio aproximado.",
+          "value_label": "Le ahorra 6 meses"
+        },
+        {
+          "title": "Foto de control estandarizada",
+          "description": "Misma luz, misma distancia, cada tres meses. Es la única forma de saber si algo funcionó, porque el espejo diario miente.",
+          "value_label": "Evidencia, no impresión"
+        },
+        {
+          "title": "Dudas por WhatsApp entre controles",
+          "description": "Si algo te irrita o no consigues un producto, escribes. No necesitas pagar una consulta nueva para preguntar si es normal.",
+          "value_label": "Respuesta en 24 h"
+        }
+      ],
+      "total_label": "Un diagnóstico correcto vale más que diez cremas",
+      "price_display": null
+    },
+    "proof": {
+      "credentials": [],
+      "testimonials": [
+        {
+          "quote": "Salí sabiendo exactamente qué tenía. Nadie me lo había explicado con esa calma, y llevaba cuatro años preguntando.",
+          "author": "Andreína Belisario",
+          "context": "Paciente desde 2023 · Caracas"
+        },
+        {
+          "quote": "Me dio tres pasos en una hoja. Por primera vez entendí para qué servía cada cosa que me estaba poniendo en la cara.",
+          "author": "Génesis Marcano",
+          "context": "Paciente desde 2024 · Los Palos Grandes"
+        }
+      ],
+      "metrics": [
+        { "number": "340", "label": "pacientes atendidos" },
+        { "number": "9", "label": "años en consulta" },
+        { "number": "24 h", "label": "respuesta a dudas de control" }
+      ]
+    },
+    "inaction": {
+      "headline": "Lo caro no es la consulta. Es el año que viene igual.",
+      "items": [
+        "Entre 15 y 40 dólares al mes en productos que abandonas a la mitad: 360 dólares al año comprando a ciegas.",
+        "Una mancha post-inflamatoria tratada tarde tarda de 12 a 18 meses en aclarar, contra 3 o 4 si se agarra a tiempo.",
+        "El tejido cicatricial se fija de forma permanente en pocos meses. Después ya no se trata, se disimula."
+      ],
+      "close": "La piel no espera a que tengas tiempo. Cada mes que pasa el mismo problema cuesta un tratamiento más largo y más caro."
+    },
+    "guarantee": {
+      "title": "Lo que sí le prometo",
+      "body": "No le prometo la piel de un filtro de Instagram. Le prometo que va a salir sabiendo qué tiene, cuánto tarda y cuánto cuesta, y que si algo no aplica en su caso se lo voy a decir aunque signifique que no vuelva."
+    },
+    "faqs": [
+      {
+        "q": "Ya probé de todo y nada me sirvió. ¿Por qué esto sería distinto?",
+        "a": "Porque probablemente nunca partió de un diagnóstico. Una mancha solar, una hormonal y una por medicamento se ven casi iguales y responden a cosas distintas. Si acertó de casualidad, funcionó. Si no, gastó."
+      },
+      {
+        "q": "¿Me va a dejar marcas o la piel más delgada?",
+        "a": "Los activos fuertes se indican por tiempo definido y con control por foto. Si su piel reacciona mal, cambiamos antes de que deje marca. Ese es justamente el punto de que haya control y no solo receta."
+      },
+      {
+        "q": "No tengo tiempo para una rutina de doce pasos.",
+        "a": "Yo tampoco. Salgo con tres pasos y un solo activo nuevo por mes. Si a la segunda semana no lo está haciendo, el plan estaba mal hecho y lo ajustamos."
+      },
+      {
+        "q": "¿Se puede resolver por WhatsApp sin ir a consulta?",
+        "a": "Las dudas de control sí. El diagnóstico no. Recetar sin ver la piel es exactamente lo que la tiene donde está hoy."
+      }
+    ],
+    "closing": {
+      "headline": "Empiece por saber qué tiene. Lo demás viene solo.",
+      "cta_label": "Ver cupos de esta semana"
+    }
+  },
+
+  "slots": [
+    { "day": "JUE 24", "time": "9:00 AM", "status": "taken" },
+    { "day": "JUE 24", "time": "11:00 AM", "status": "open", "remaining": 2 },
+    { "day": "VIE 25", "time": "8:00 AM", "status": "open", "remaining": 1 },
+    { "day": "VIE 25", "time": "2:00 PM", "status": "taken" },
+    { "day": "LUN 28", "time": "10:00 AM", "status": "open", "remaining": 1 }
+  ],
+  "monthly_capacity": 15,
+  "slots_remaining": 4,
+
+  "is_active": true,
+  "copy_source": "manual",
+  "notes": "Fixture de desarrollo. No es una persona real."
+}

@@ -1,0 +1,121 @@
+---
+import AdminLayout from '../../../../layouts/AdminLayout.astro';
+import { supabaseAdmin } from '../../../../lib/supabase';
+import { coerceCopy, SLOT_LIMITS } from '../../../../lib/copy-schema';
+import { MOODS } from '../../../../lib/pro-types';
+
+const { slug } = Astro.params;
+const db = supabaseAdmin();
+const { data: row } = await db.from('pro_demos').select('*').eq('slug', slug).maybeSingle();
+if (!row) return Astro.redirect('/admin/pro');
+
+const pro = { ...row, copy: coerceCopy(row.copy) };
+const c = pro.copy;
+const siteUrl = import.meta.env.SITE_URL || '';
+---
+
+<AdminLayout title={`Editar ${pro.pro_name}`}>
+  <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <a href="/admin/pro" class="text-sm underline">← Profesionales</a>
+      <h1 class="mt-1 text-[1.5625rem] font-bold">{pro.pro_name}</h1>
+    </div>
+    <div class="flex items-center gap-3">
+      <span id="save-status" class="text-sm text-ink-soft"></span>
+      <a href={`/p/${pro.slug}?v=0`} target="_blank" rel="noopener" class="text-sm underline">Abrir ↗</a>
+      <button id="save-btn" class="rounded-[4px] bg-ink px-5 py-2 text-sm font-semibold text-white">Guardar</button>
+    </div>
+  </div>
+
+  <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,440px)]">
+    {/* Columna izquierda: ranuras */}
+    <div class="grid gap-3">
+      {/* Meta */}
+      <details open class="sec">
+        <summary class="sec__h">Identidad y contacto</summary>
+        <div class="sec__b grid gap-3 sm:grid-cols-2">
+          <label class="f"><span>Nombre</span><input data-meta="pro_name" value={pro.pro_name} /></label>
+          <label class="f"><span>Título</span><input data-meta="pro_title" value={pro.pro_title} /></label>
+          <label class="f"><span>Ciudad</span><input data-meta="city" value={pro.city ?? ''} /></label>
+          <label class="f"><span>Instagram</span><input data-meta="instagram_handle" value={pro.instagram_handle ?? ''} /></label>
+          <label class="f"><span>WhatsApp E.164</span><input class="num" data-meta="whatsapp_e164" value={pro.whatsapp_e164} /></label>
+          <label class="f"><span>Seguidores</span><input type="number" data-meta="followers" value={pro.followers ?? ''} /></label>
+          <label class="f"><span>Mood</span>
+            <select data-meta="mood">{MOODS.map((m) => <option value={m} selected={m === pro.mood}>{m}</option>)}</select>
+          </label>
+          <label class="f"><span>Acento (hex, opcional)</span><input class="num" data-meta="accent_hex" value={pro.accent_hex ?? ''} placeholder="#0E6B7A" /></label>
+          <label class="f"><span>Foto hero (URL)</span><input data-meta="photo_hero_url" value={pro.photo_hero_url ?? ''} /></label>
+          <label class="f"><span>Foto historia (URL)</span><input data-meta="photo_story_url" value={pro.photo_story_url ?? ''} /></label>
+        </div>
+      </details>
+
+      {/* Agenda */}
+      <details class="sec">
+        <summary class="sec__h">Franja de agenda</summary>
+        <div class="sec__b grid gap-3">
+          <div class="grid gap-3 sm:grid-cols-2">
+            <label class="f"><span>Capacidad mensual</span><input type="number" data-meta="monthly_capacity" value={pro.monthly_capacity ?? ''} /></label>
+            <label class="f"><span>Cupos restantes</span><input type="number" data-meta="slots_remaining" value={pro.slots_remaining ?? ''} /></label>
+          </div>
+          <label class="f"><span>Cupos (JSON) — sin cupos abiertos, la sección se oculta</span>
+            <textarea data-meta-json="slots" rows="6" class="num">{JSON.stringify(pro.slots ?? [], null, 2)}</textarea>
+          </label>
+          <p class="text-[0.75rem] text-ink-soft">Formato: <code class="num">{'{ "day": "JUE 24", "time": "9:00 AM", "status": "open", "remaining": 2 }'}</code>. status: open | taken.</p>
+        </div>
+      </details>
+
+      {/* Copy por sección: se generan con el mapa de abajo */}
+      <div id="copy-fields"></div>
+
+      {/* Credenciales: solo a mano */}
+      <details class="sec">
+        <summary class="sec__h">Credenciales reales (a mano)</summary>
+        <div class="sec__b grid gap-2">
+          <p class="text-[0.75rem] text-ink-soft">Una por línea. La IA nunca las genera. Vacío = la fila no aparece.</p>
+          <textarea data-creds rows="3">{c.proof.credentials.join('\n')}</textarea>
+        </div>
+      </details>
+    </div>
+
+    {/* Columna derecha: preview en vivo */}
+    <div class="lg:sticky lg:top-4 lg:self-start">
+      <div class="overflow-hidden rounded-[8px] border border-line bg-paper">
+        <div class="flex items-center justify-between border-b border-line px-3 py-2 text-[0.75rem] text-ink-soft">
+          <span>Preview en vivo</span>
+          <button id="reload-preview" type="button" class="underline">Recargar</button>
+        </div>
+        <iframe id="preview" src={`/p/${pro.slug}?v=0`} class="block h-[720px] w-full" title="Preview"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <script type="application/json" id="copy-data" set:html={JSON.stringify(c)}></script>
+  <script type="application/json" id="slot-limits" set:html={JSON.stringify(SLOT_LIMITS)}></script>
+  <script define:vars={{ slug: pro.slug }}>window.__PRO_SLUG__ = slug;</script>
+
+  <style>
+    .sec { border: 1px solid var(--color-line, #E2E2E2); border-radius: 8px; background: #fff; }
+    .sec__h { cursor: pointer; padding: 12px 16px; font-weight: 600; font-size: 14px; }
+    .sec__b { padding: 0 16px 16px; }
+    .f { display: grid; gap: 4px; font-size: 13px; }
+    .f > span { font-weight: 500; }
+    .f input, .f select, .f textarea, .sec__b textarea, [data-creds] {
+      border: 1px solid #DDD; border-radius: 4px; padding: 7px 9px; font: inherit; width: 100%; background: #fff;
+    }
+    .f input:focus-visible, .f textarea:focus-visible, .sec__b textarea:focus-visible {
+      outline: 2px solid #F97316; outline-offset: 1px;
+    }
+    .slot-field { display: grid; gap: 4px; }
+    .slot-field__top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+    .slot-field__label { font-size: 12px; font-weight: 500; color: #444; }
+    .slot-field__count { font-size: 11px; font-family: ui-monospace, monospace; color: #999; }
+    .slot-field__count.over { color: #DC2626; font-weight: 600; }
+    .slot-field textarea, .slot-field input {
+      border: 1px solid #DDD; border-radius: 4px; padding: 7px 9px; font: inherit; width: 100%; resize: vertical;
+    }
+  </style>
+
+  <script>
+    import '../../../../scripts/pro-editor.js';
+  </script>
+</AdminLayout>

@@ -1,0 +1,19 @@
+{
+  "key": "dermatologia",
+  "label": "Dermatología",
+  "default_mood": "clinico",
+  "failing_behaviors": [
+    "cambiar de crema cada vez que sale una rutina nueva en TikTok",
+    "automedicarse con lo que le funcionó a una amiga",
+    "esperar a que la mancha se vaya sola"
+  ],
+  "typical_objections": [
+    "ya probé de todo y nada me sirvió",
+    "¿me va a dejar marcas?",
+    "no tengo tiempo para una rutina de doce pasos"
+  ],
+  "urgency_lever": "el tejido cicatricial se fija de forma permanente en pocos meses; mientras más tarde se interviene, más invasivo es el tratamiento",
+  "main_pain": "gastar dinero mes tras mes sin saber siquiera qué es lo que tiene",
+  "dream_outcome": "piel tranquila sin cicatrices permanentes y una rutina mínima que sí pueda cumplir",
+  "vocabulary": ["consulta", "diagnóstico", "protocolo", "control", "lesión", "rutina", "activo"]
+}

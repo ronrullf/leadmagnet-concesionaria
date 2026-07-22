@@ -1,0 +1,217 @@
+---
+/**
+ * Layout de una landing de profesional. Independiente de DemoLayout: otro
+ * esqueleto, otros moods, otra tipografía. Comparte solo el patrón de tracking.
+ *
+ * Los tokens del mood entran como variables CSS en <html>. El acento del
+ * profesional, si existe, pisa el del mood, y el color de tinta encima se
+ * calcula por luminancia para que el CTA nunca quede ilegible.
+ */
+import { moodTokens, fontHref, MONO } from '../lib/pro-moods';
+import { inkOn, normalizeHex, tint } from '../lib/color';
+import type { ProDemo } from '../lib/pro-types';
+
+interface Props {
+  pro: ProDemo;
+  path: string;
+}
+
+const { pro, path } = Astro.props;
+
+const t = moodTokens(pro.mood);
+const accent = normalizeHex(pro.accent_hex) ?? t.accent;
+const accentInk = inkOn(accent);
+const accentWash = tint(accent, 0.92);
+
+const siteUrl = import.meta.env.SITE_URL || 'https://demo.tiendapana.com';
+const ogImage = `${siteUrl}/api/og/pro/${pro.slug}`;
+const canonical = `${siteUrl}/p/${pro.slug}`;
+
+// Todas las variables del mood en una sola declaración inline.
+const rootStyle = [
+  `--display:${t.display}`,
+  `--display-weight:${t.displayWeight}`,
+  `--display-tracking:${t.displayTracking}`,
+  `--body:${t.body}`,
+  `--mono:${MONO}`,
+  `--paper:${t.paper}`,
+  `--paper-alt:${t.paperAlt}`,
+  `--ink:${t.ink}`,
+  `--ink-soft:${t.inkSoft}`,
+  `--line:${t.line}`,
+  `--accent:${accent}`,
+  `--accent-ink:${accentInk}`,
+  `--accent-wash:${accentWash}`,
+].join(';');
+---
+
+<html lang="es" style={rootStyle}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {/* Marca JS activo ANTES de pintar. El estado oculto de los reveals solo
+        aplica con esta clase: si el script de animación falla o tarda, el
+        contenido se ve igual en vez de quedar invisible para siempre. */}
+    <script is:inline>document.documentElement.classList.add('js');</script>
+    <title>{pro.pro_name} — {pro.pro_title}</title>
+    <meta name="description" content={pro.copy.hero.subheadline || pro.pro_title} />
+    <meta name="robots" content="noindex, nofollow" />
+
+    <meta property="og:title" content={`${pro.pro_name} — ${pro.pro_title}`} />
+    <meta property="og:description" content={pro.copy.hero.subheadline || pro.pro_title} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:type" content="profile" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href={fontHref(pro.mood)} />
+    <link
+      rel="icon"
+      href={`data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='16' fill='${encodeURIComponent(accent)}'/><text x='50' y='70' font-size='56' text-anchor='middle' fill='${encodeURIComponent(accentInk)}' font-family='sans-serif' font-weight='bold'>${pro.pro_name.charAt(0)}</text></svg>`}
+    />
+
+    <style is:global>
+      *, *::before, *::after { box-sizing: border-box; }
+      html { -webkit-text-size-adjust: 100%; }
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: var(--body);
+        font-size: 16px;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+      }
+      h1, h2, h3 {
+        font-family: var(--display);
+        font-weight: var(--display-weight);
+        letter-spacing: var(--display-tracking);
+        line-height: 1.12;
+        margin: 0;
+        text-wrap: balance;
+      }
+      p { margin: 0; }
+      a { color: inherit; }
+      img { max-width: 100%; display: block; }
+      .mono {
+        font-family: var(--mono);
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0;
+      }
+
+      /* Escala tipográfica (ratio 1.25, base 16). */
+      .t-12 { font-size: 12px; } .t-14 { font-size: 14px; } .t-16 { font-size: 16px; }
+      .t-20 { font-size: 20px; } .t-25 { font-size: 25px; } .t-31 { font-size: 31px; }
+      .t-39 { font-size: 39px; } .t-49 { font-size: 49px; } .t-61 { font-size: 61px; }
+
+      /* Layout de lectura vertical: una sola columna. */
+      .wrap { width: 100%; max-width: 720px; margin-inline: auto; padding-inline: 22px; }
+      .wrap-wide { width: 100%; max-width: 960px; margin-inline: auto; padding-inline: 22px; }
+      section { padding-block: clamp(48px, 9vw, 88px); }
+      .hair { border: 0; border-top: 1px solid var(--line); margin: 0; }
+
+      .btn {
+        display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+        background: var(--accent); color: var(--accent-ink);
+        font-family: var(--body); font-weight: 600; font-size: 16px;
+        padding: 15px 26px; border-radius: 4px; text-decoration: none;
+        border: 0; cursor: pointer; line-height: 1.2;
+        transition: transform .12s ease, filter .12s ease;
+      }
+      .btn:hover { filter: brightness(1.06); }
+      .btn:active { transform: translateY(1px); }
+      .btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+
+      .eyebrow {
+        font-family: var(--mono); font-size: 12px; letter-spacing: .08em;
+        text-transform: uppercase; color: var(--ink-soft);
+      }
+      .card { border: 1px solid var(--line); border-radius: 8px; background: var(--paper); }
+      .sample-label {
+        font-size: 10px; color: var(--ink-soft); text-align: right;
+        margin-top: 12px; font-family: var(--mono); letter-spacing: .02em;
+      }
+
+      /* Movimiento: reveal al scroll. El estado oculto se limita a .js para que
+         sin JavaScript (o si el script falla) el contenido sea visible. */
+      .js .reveal { opacity: 0; transform: translateY(24px); }
+      .reveal.in { opacity: 1; transform: none; transition: opacity .4s cubic-bezier(.2,0,0,1), transform .4s cubic-bezier(.2,0,0,1); }
+
+      @media (prefers-reduced-motion: reduce) {
+        .js .reveal, .reveal.in { opacity: 1; transform: none; transition: none; }
+        * { scroll-behavior: auto !important; }
+      }
+
+      /* CTA persistente: barra fija abajo desde el 25% de scroll. */
+      .sticky-cta {
+        position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+        padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+        background: color-mix(in srgb, var(--paper) 88%, transparent);
+        backdrop-filter: blur(10px);
+        border-top: 1px solid var(--line);
+        transform: translateY(120%); transition: transform .28s cubic-bezier(.2,0,0,1);
+      }
+      .sticky-cta.show { transform: none; }
+      .sticky-cta .btn { width: 100%; max-width: 520px; margin-inline: auto; }
+      /* Cuando la barra TiendaPana también está visible, el CTA sube justo por
+         encima de ella. La altura exacta la fija el JS (varía con safe-area). */
+      .sticky-cta.above-tp { bottom: var(--tp-height, 60px); }
+
+      /* Barra de cierre TiendaPana: único elemento de marca. */
+      .tp-bar {
+        position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+        min-height: 56px; display: flex; align-items: center; gap: 12px;
+        padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+        background: var(--ink); color: var(--paper);
+        transform: translateY(120%); transition: transform .3s cubic-bezier(.2,0,0,1);
+      }
+      .tp-bar.show { transform: none; }
+      .tp-bar__txt { font-size: 13px; line-height: 1.35; flex: 1; }
+      .tp-bar__btn {
+        white-space: nowrap; font-size: 13px; font-weight: 600;
+        padding: 9px 14px; border-radius: 4px;
+        background: var(--paper); color: var(--ink); text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <slot />
+
+    <script
+      is:inline
+      define:vars={{ slug: pro.slug, path, waTp: `https://wa.me/${import.meta.env.TIENDAPANA_WHATSAPP ?? ''}` }}
+    >
+      // Tracking fire-and-forget hacia el endpoint de profesionales.
+      try {
+        const params = new URLSearchParams(location.search);
+        const payload = JSON.stringify({
+          slug,
+          path,
+          referrer: document.referrer || null,
+          owner: params.get('v') === '1',
+        });
+        if (navigator.sendBeacon) {
+          navigator.sendBeacon('/api/track-pro', new Blob([payload], { type: 'application/json' }));
+        } else {
+          fetch('/api/track-pro', { method: 'POST', body: payload, keepalive: true });
+        }
+      } catch {}
+    </script>
+    <script>
+      import '../scripts/pro-client.js';
+    </script>
+
+    {/* Failsafe inline, independiente del bundle: si pro-client.js no carga o
+        falla, ningún .reveal puede quedar invisible para siempre. */}
+    <script is:inline>
+      setTimeout(function () {
+        document.querySelectorAll('.reveal:not(.in)').forEach(function (el) {
+          el.classList.add('in');
+        });
+      }, 2000);
+    </script>
+  </body>
+</html>

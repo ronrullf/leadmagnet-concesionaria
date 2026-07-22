@@ -1,0 +1,548 @@
+---
+/**
+ * Landing de conversión de un profesional. Única página pública del módulo.
+ *
+ * Las 11 secciones del esqueleto persuasivo, en orden fijo. Toda sección con su
+ * ranura vacía se omite: nunca un hueco, un placeholder ni un margen fantasma.
+ * La estructura no depende del rubro; solo cambia el copy y el mood.
+ */
+import ProLayout from '../../layouts/ProLayout.astro';
+import { getProBySlug, openSlots } from '../../lib/pro';
+import { notFoundResponse } from '../../lib/not-found';
+import { isAuthed } from '../../lib/auth';
+import { waLink, proCtaMessage, proSlotMessage } from '../../lib/whatsapp';
+
+const { slug } = Astro.params;
+
+// Un admin autenticado puede previsualizar borradores (is_active=false); el
+// público no. Así el editor y el botón "Abrir" funcionan antes de activar.
+const admin = isAuthed(Astro);
+const pro = slug ? await getProBySlug(slug, admin) : null;
+if (!pro) return notFoundResponse();
+
+// Si un admin abre un borrador, se muestra pero con un aviso de que aún no es
+// público. Un visitante normal nunca llega hasta aquí con un demo inactivo.
+const isDraft = admin && !pro.is_active;
+
+const c = pro.copy;
+const cta = c.hero.cta_label || 'Escribir por WhatsApp';
+const ctaHref = waLink(pro.whatsapp_e164, proCtaMessage(pro.pro_name, cta));
+const slotHref = (day: string, time: string) =>
+  waLink(pro.whatsapp_e164, proSlotMessage(pro.pro_name, day, time));
+
+const slots = pro.slots ?? [];
+const open = openSlots(slots);
+const showAgenda = open.length > 0;
+
+const showHero = Boolean(c.hero.headline);
+const showQualify = c.qualify.yes.length > 0 || c.qualify.no.length > 0;
+const showStory = Boolean(c.story.wall && c.story.epiphany);
+const showOpportunity = Boolean(c.opportunity.old_way && c.opportunity.new_way);
+const showSecrets = c.secrets.length > 0;
+const showOffer = Boolean(c.offer.program_name) && c.offer.items.length > 0;
+const showMetrics = c.proof.metrics.length > 0;
+const showTestimonials = c.proof.testimonials.length > 0;
+const showCredentials = c.proof.credentials.length > 0;
+const showProof = showMetrics || showTestimonials || showCredentials;
+const showInaction = Boolean(c.inaction.headline) && c.inaction.items.length > 0;
+const showGuarantee = Boolean(c.guarantee.body);
+const showFaqs = c.faqs.length > 0;
+const showClosing = Boolean(c.closing.headline);
+
+const SAMPLE = 'Contenido de muestra · sus datos reales van aquí';
+const tpMsg = `Hola, vi el demo de ${pro.pro_name} (ref: ${pro.slug}) y quiero información.`;
+const tpHref = waLink(import.meta.env.TIENDAPANA_WHATSAPP ?? '', tpMsg);
+---
+
+<ProLayout pro={pro} path="/">
+  {isDraft && (
+    <div class="draft-banner">
+      Borrador · solo visible para ti. Actívalo en el panel para hacerlo público.
+    </div>
+  )}
+
+  {/* S1 · Hero */}
+  {showHero && (
+    <section data-section="hero" class="hero">
+      {/* El hero NO usa reveal: es lo primero que se lee y el CTA debe verse
+          sin scroll (criterio de aceptación). Se anima con una entrada CSS
+          autónoma que no depende de que ningún observer dispare. */}
+      <div class="wrap hero__grid">
+        <div class="hero__copy hero-enter">
+          {c.hero.callout && <p class="hero__callout">{c.hero.callout}</p>}
+          <h1 class="t-39 hero__headline">{c.hero.headline}</h1>
+          {c.hero.subheadline && <p class="t-20 hero__sub">{c.hero.subheadline}</p>}
+          <div class="hero__cta">
+            <a class="btn" href={ctaHref}>{cta}</a>
+            {pro.instagram_handle && (
+              <span class="mono t-12 hero__handle">@{pro.instagram_handle}</span>
+            )}
+          </div>
+        </div>
+        {pro.photo_hero_url && (
+          <div class="hero__photo hero-enter">
+            <img src={pro.photo_hero_url} alt={pro.pro_name} width="440" height="550" loading="eager" />
+          </div>
+        )}
+      </div>
+    </section>
+  )}
+
+  {/* S2 · Franja de agenda */}
+  {showAgenda && (
+    <>
+      <hr class="hair" />
+      <section data-section="agenda" class="agenda">
+        <div class="wrap">
+          {pro.monthly_capacity && pro.slots_remaining != null && (
+            <p class="agenda__scarcity reveal">
+              Atiendo <strong class="mono">{pro.monthly_capacity}</strong> consultas nuevas al mes.
+              Quedan <strong class="mono">{pro.slots_remaining}</strong>.
+            </p>
+          )}
+          <ul class="agenda__list reveal" role="list">
+            {slots.map((s) =>
+              s.status === 'taken' ? (
+                <li class="slot slot--taken">
+                  <span class="mono slot__when">{s.day} · {s.time}</span>
+                  <span class="slot__tag">ocupado</span>
+                </li>
+              ) : (
+                <li class="slot slot--open" data-pulse>
+                  <a class="slot__link" href={slotHref(s.day, s.time)}>
+                    <span class="mono slot__when">{s.day} · {s.time}</span>
+                    <span class="slot__tag slot__tag--open">
+                      {s.remaining === 1 ? '1 cupo' : `${s.remaining ?? 1} cupos`}
+                    </span>
+                  </a>
+                </li>
+              )
+            )}
+          </ul>
+        </div>
+      </section>
+    </>
+  )}
+
+  {/* S3 · Calificación */}
+  {showQualify && (
+    <>
+      <hr class="hair" />
+      <section data-section="qualify" class="qualify">
+        <div class="wrap qualify__grid">
+          {c.qualify.yes.length > 0 && (
+            <div class="reveal">
+              <p class="eyebrow">Esto es para usted si…</p>
+              <ul class="qualify__col qualify__col--yes" role="list">
+                {c.qualify.yes.map((item) => <li>{item}</li>)}
+              </ul>
+            </div>
+          )}
+          {c.qualify.no.length > 0 && (
+            <div class="reveal">
+              <p class="eyebrow">Esto no es para usted si…</p>
+              <ul class="qualify__col qualify__col--no" role="list">
+                {c.qualify.no.map((item) => <li>{item}</li>)}
+              </ul>
+            </div>
+          )}
+        </div>
+      </section>
+    </>
+  )}
+
+  {/* S4 · Puente de la Epifanía */}
+  {showStory && (
+    <>
+      <hr class="hair" />
+      <section data-section="story" class="story">
+        <div class="wrap story__grid">
+          {pro.photo_story_url && (
+            <div class="story__photo reveal">
+              <img src={pro.photo_story_url} alt={pro.pro_name} width="300" height="360" loading="lazy" />
+            </div>
+          )}
+          <div class="story__text reveal">
+            {c.story.backstory && <p>{c.story.backstory}</p>}
+            <p><strong>{c.story.wall}</strong></p>
+            <p>{c.story.epiphany}</p>
+            {c.story.plan && <p>{c.story.plan}</p>}
+            {c.story.result && <p class="story__result">{c.story.result}</p>}
+          </div>
+        </div>
+      </section>
+    </>
+  )}
+
+  {/* S5 · La Nueva Oportunidad */}
+  {showOpportunity && (
+    <>
+      <hr class="hair" />
+      <section data-section="opportunity" class="opp">
+        <div class="wrap-wide">
+          {c.opportunity.name && <h2 class="t-31 opp__name reveal">{c.opportunity.name}</h2>}
+          <div class="opp__cols reveal">
+            <div class="opp__col opp__col--old">
+              <p class="eyebrow">Lo que todos hacen</p>
+              <p>{c.opportunity.old_way}</p>
+            </div>
+            <div class="opp__col opp__col--new">
+              <p class="eyebrow">Lo que hacemos aquí</p>
+              <p>{c.opportunity.new_way}</p>
+            </div>
+          </div>
+          {c.opportunity.why_different && (
+            <p class="opp__why reveal">{c.opportunity.why_different}</p>
+          )}
+        </div>
+      </section>
+    </>
+  )}
+
+  {/* S6 · Los Tres Secretos */}
+  {showSecrets && (
+    <>
+      <hr class="hair" />
+      <section data-section="secrets" class="secrets">
+        <div class="wrap secrets__list">
+          {c.secrets.map((s, i) => (
+            <article class="secret reveal">
+              <span class="mono secret__num">0{i + 1}</span>
+              <div>
+                <h3 class="t-20 secret__title">{s.title}</h3>
+                <p class="secret__body">{s.body}</p>
+                {s.proof && <p class="secret__proof">{s.proof}</p>}
+              </div>
+            </article>
+          ))}
+        </div>
+        <div class="wrap cta-inline reveal"><a class="btn" href={ctaHref}>{cta}</a></div>
+      </section>
+    </>
+  )}
+
+  {/* S7 · El Stack */}
+  {showOffer && (
+    <>
+      <hr class="hair" />
+      <section data-section="offer" class="offer">
+        <div class="wrap">
+          <h2 class="t-31 offer__name reveal">{c.offer.program_name}</h2>
+          <ul class="offer__items reveal" role="list">
+            {c.offer.items.map((item) => (
+              <li class="offer__item">
+                <div class="offer__item-head">
+                  <strong class="offer__item-title">{item.title}</strong>
+                  {item.value_label && <span class="mono offer__value">{item.value_label}</span>}
+                </div>
+                {item.description && <p class="offer__desc">{item.description}</p>}
+              </li>
+            ))}
+          </ul>
+          {c.offer.total_label && <p class="offer__total reveal">{c.offer.total_label}</p>}
+          {c.offer.price_display && <p class="mono offer__price reveal">{c.offer.price_display}</p>}
+          <div class="offer__cta reveal"><a class="btn" href={ctaHref}>{cta}</a></div>
+        </div>
+      </section>
+    </>
+  )}
+
+  {/* S8 · Prueba */}
+  {showProof && (
+    <>
+      <hr class="hair" />
+      <section data-section="proof" class="proof">
+        <div class="wrap">
+          {showCredentials && (
+            <ul class="proof__creds reveal" role="list">
+              {c.proof.credentials.map((cr) => <li>{cr}</li>)}
+            </ul>
+          )}
+
+          {showMetrics && (
+            <div class="proof__block reveal" data-sample="true">
+              <ul class="proof__metrics" role="list">
+                {c.proof.metrics.map((m) => (
+                  <li class="metric">
+                    <span class="mono metric__num">{m.number}</span>
+                    <span class="metric__label">{m.label}</span>
+                  </li>
+                ))}
+              </ul>
+              <p class="sample-label">{SAMPLE}</p>
+            </div>
+          )}
+
+          {showTestimonials && (
+            <div class="proof__block reveal" data-sample="true">
+              <div class="proof__quotes">
+                {c.proof.testimonials.map((t) => (
+                  <blockquote class="quote card">
+                    <p class="quote__text">{t.quote}</p>
+                    <footer class="quote__author">
+                      <strong>{t.author}</strong>
+                      {t.context && <span class="mono t-12 quote__ctx">{t.context}</span>}
+                    </footer>
+                  </blockquote>
+                ))}
+              </div>
+              <p class="sample-label">{SAMPLE}</p>
+            </div>
+          )}
+        </div>
+      </section>
+    </>
+  )}
+
+  {/* S9 · El Costo de No Actuar */}
+  {showInaction && (
+    <>
+      <hr class="hair" />
+      <section data-section="inaction" class="inaction">
+        <div class="wrap">
+          <h2 class="t-31 inaction__head reveal">{c.inaction.headline}</h2>
+          <ul class="inaction__items reveal" role="list">
+            {c.inaction.items.map((item) => <li>{item}</li>)}
+          </ul>
+          {c.inaction.close && <p class="inaction__close reveal">{c.inaction.close}</p>}
+          <div class="cta-inline reveal"><a class="btn" href={ctaHref}>{cta}</a></div>
+        </div>
+      </section>
+    </>
+  )}
+
+  {/* S10 · Garantía + FAQ */}
+  {showGuarantee && (
+    <>
+      <hr class="hair" />
+      <section data-section="guarantee" class="guarantee">
+        <div class="wrap">
+          <div class="guarantee__card card reveal">
+            {c.guarantee.title && <h2 class="t-20 guarantee__title">{c.guarantee.title}</h2>}
+            <p>{c.guarantee.body}</p>
+          </div>
+        </div>
+      </section>
+    </>
+  )}
+
+  {showFaqs && (
+    <section data-section="faqs" class="faqs">
+      <div class="wrap">
+        {c.faqs.map((f) => (
+          <details class="faq reveal">
+            <summary class="faq__q">{f.q}</summary>
+            <p class="faq__a">{f.a}</p>
+          </details>
+        ))}
+      </div>
+    </section>
+  )}
+
+  {/* S11 · Cierre */}
+  {showClosing && (
+    <>
+      <hr class="hair" />
+      <section data-section="closing" class="closing">
+        <div class="wrap closing__inner">
+          <h2 class="t-31 reveal">{c.closing.headline}</h2>
+          {showAgenda && (
+            <ul class="closing__slots reveal" role="list">
+              {open.map((s) => (
+                <li>
+                  <a class="mono closing__slot" href={slotHref(s.day, s.time)}>
+                    {s.day} · {s.time}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+          <div class="reveal"><a class="btn" href={ctaHref}>{c.closing.cta_label || cta}</a></div>
+        </div>
+      </section>
+    </>
+  )}
+
+  {/* CTA persistente */}
+  <div class="sticky-cta"><a class="btn" href={ctaHref}>{cta}</a></div>
+
+  {/* Barra de cierre TiendaPana */}
+  <aside class="tp-bar">
+    <p class="tp-bar__txt">
+      <strong>Esta página es real y está en línea.</strong>
+      Le pertenece a {pro.pro_name} si la quiere.
+    </p>
+    <a class="tp-bar__btn" href={tpHref}>Hablar con TiendaPana</a>
+  </aside>
+</ProLayout>
+
+<style>
+  .draft-banner {
+    position: sticky; top: 0; z-index: 60; text-align: center;
+    background: #FEF3C7; color: #92400E; font-size: 13px; font-weight: 600;
+    padding: 8px 16px; border-bottom: 1px solid #FCD34D;
+  }
+  .cta-inline { margin-top: 32px; display: flex; justify-content: center; }
+  .cta-inline .btn { min-width: min(320px, 100%); }
+
+  /* ---------- Hero ---------- */
+  .hero { padding-top: clamp(40px, 8vw, 72px); }
+  /* Entrada autónoma, sin JS y sin fill-mode: el estado base del elemento es
+     visible (opacity 1). Si el navegador no anima, se ve igual — el hero nunca
+     puede quedar oculto, que es justo lo que no puede pasar con lo primero que
+     se lee. La animación solo añade el fundido cuando el navegador la corre. */
+  .hero-enter { animation: heroIn .5s cubic-bezier(.2,0,0,1); }
+  .hero__photo.hero-enter { animation-delay: .08s; }
+  @keyframes heroIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-enter { animation: none; }
+  }
+  .hero__grid { display: grid; gap: 32px; align-items: center; }
+  .hero__callout {
+    font-family: var(--mono); font-size: 13px; line-height: 1.5;
+    color: var(--accent); margin-bottom: 18px;
+    padding-left: 14px; border-left: 2px solid var(--accent);
+  }
+  .hero__headline { margin-bottom: 18px; }
+  .hero__sub { color: var(--ink-soft); max-width: 34ch; }
+  .hero__cta { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-top: 28px; }
+  .hero__handle { color: var(--ink-soft); }
+  .hero__photo img {
+    width: 100%; height: auto; border-radius: 8px; object-fit: cover;
+    aspect-ratio: 4 / 5; background: var(--paper-alt);
+  }
+
+  /* ---------- Agenda ---------- */
+  .agenda__scarcity { color: var(--ink-soft); margin-bottom: 20px; }
+  .agenda__scarcity strong { color: var(--ink); }
+  .agenda__list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; max-width: 480px; }
+  .slot { border: 1px solid var(--line); border-radius: 4px; }
+  .slot__link, .slot:not(.slot--open) {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; padding: 13px 16px; text-decoration: none;
+  }
+  .slot__when { font-size: 14px; }
+  .slot--taken { color: var(--ink-soft); background: var(--paper-alt); }
+  .slot--taken .slot__when { text-decoration: line-through; }
+  .slot__tag { font-size: 12px; }
+  .slot--open { background: var(--accent-wash); border-color: color-mix(in srgb, var(--accent) 30%, var(--line)); }
+  .slot--open .slot__link { color: var(--ink); }
+  .slot__tag--open { font-family: var(--mono); font-weight: 600; color: var(--accent); }
+  .slot--open.pulse { animation: slotpulse 1.6s ease 1; }
+  @keyframes slotpulse {
+    0%, 100% { box-shadow: 0 0 0 0 transparent; }
+    30% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 22%, transparent); }
+  }
+
+  /* ---------- Calificación ---------- */
+  .qualify__grid { display: grid; gap: 28px; }
+  .qualify__col { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 12px; }
+  .qualify__col li { position: relative; padding-left: 28px; line-height: 1.45; }
+  .qualify__col li::before {
+    position: absolute; left: 0; top: 0; font-family: var(--mono); font-weight: 600;
+  }
+  .qualify__col--yes li::before { content: '✓'; color: var(--accent); }
+  .qualify__col--no li { color: var(--ink-soft); }
+  .qualify__col--no li::before { content: '✕'; color: var(--ink-soft); }
+
+  /* ---------- Historia ---------- */
+  .story__grid { display: grid; gap: 28px; align-items: start; }
+  .story__photo img {
+    width: 100%; height: auto; border-radius: 8px; object-fit: cover;
+    aspect-ratio: 5 / 6; background: var(--paper-alt);
+  }
+  .story__text { display: grid; gap: 14px; max-width: 60ch; }
+  .story__text strong { font-size: 20px; line-height: 1.35; }
+  .story__result {
+    font-family: var(--mono); color: var(--accent); font-weight: 600;
+    padding-top: 6px;
+  }
+
+  /* ---------- Oportunidad ---------- */
+  .opp__name { margin-bottom: 28px; }
+  .opp__cols { display: grid; gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .opp__col { background: var(--paper); padding: 22px; }
+  .opp__col p:last-child { margin-top: 10px; line-height: 1.5; }
+  .opp__col--old { color: var(--ink-soft); background: var(--paper-alt); }
+  .opp__col--old .eyebrow::after { content: ''; }
+  .opp__col--new { border-top: 3px solid var(--accent); }
+  .opp__why { margin-top: 22px; font-weight: 600; max-width: 60ch; }
+
+  /* ---------- Secretos ---------- */
+  .secrets__list { display: grid; gap: 4px; }
+  .secret { display: grid; grid-template-columns: auto 1fr; gap: 16px; padding: 22px 0; border-top: 1px solid var(--line); }
+  .secret:first-child { border-top: 0; }
+  .secret__num { color: var(--accent); font-weight: 600; font-size: 14px; padding-top: 4px; }
+  .secret__title { margin-bottom: 10px; }
+  .secret__body { color: var(--ink-soft); line-height: 1.55; }
+  .secret__proof {
+    margin-top: 12px; font-family: var(--mono); font-size: 13px; line-height: 1.45;
+    padding-left: 14px; border-left: 2px solid var(--accent); color: var(--ink);
+  }
+
+  /* ---------- Oferta ---------- */
+  .offer__name { margin-bottom: 24px; }
+  .offer__items { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .offer__item { background: var(--paper); padding: 18px 20px; }
+  .offer__item-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .offer__item-title { font-size: 16px; }
+  .offer__value { font-size: 12px; color: var(--accent); font-weight: 600; white-space: nowrap; }
+  .offer__desc { margin-top: 6px; color: var(--ink-soft); font-size: 15px; line-height: 1.5; }
+  .offer__total { margin-top: 22px; font-weight: 600; }
+  .offer__price { margin-top: 6px; font-size: 20px; color: var(--accent); }
+  .offer__cta { margin-top: 26px; }
+
+  /* ---------- Prueba ---------- */
+  .proof__creds { list-style: none; margin: 0 0 28px; padding: 0; display: flex; flex-wrap: wrap; gap: 10px; }
+  .proof__creds li { font-family: var(--mono); font-size: 12px; padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px; color: var(--ink-soft); }
+  .proof__block + .proof__block { margin-top: 32px; }
+  .proof__metrics { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .metric { text-align: center; padding: 18px 8px; border: 1px solid var(--line); border-radius: 8px; }
+  .metric__num { display: block; font-size: 31px; font-weight: 600; color: var(--accent); line-height: 1; }
+  .metric__label { display: block; margin-top: 8px; font-size: 13px; color: var(--ink-soft); }
+  .proof__quotes { display: grid; gap: 14px; }
+  .quote { padding: 22px; }
+  .quote__text { line-height: 1.55; }
+  .quote__author { margin-top: 14px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; }
+  .quote__ctx { color: var(--ink-soft); }
+
+  /* ---------- Inacción ---------- */
+  .inaction__head { margin-bottom: 22px; max-width: 24ch; }
+  .inaction__items { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+  .inaction__items li { position: relative; padding-left: 26px; line-height: 1.5; }
+  .inaction__items li::before { content: '→'; position: absolute; left: 0; color: var(--accent); font-family: var(--mono); }
+  .inaction__close { margin-top: 22px; font-weight: 600; max-width: 56ch; }
+
+  /* ---------- Garantía + FAQ ---------- */
+  .guarantee__card { padding: 26px; border-left: 3px solid var(--accent); }
+  .guarantee__title { margin-bottom: 12px; }
+  .guarantee__card p { color: var(--ink-soft); line-height: 1.6; }
+  .faqs .wrap { display: grid; gap: 4px; }
+  .faq { border-top: 1px solid var(--line); padding: 4px 0; }
+  .faq__q { cursor: pointer; padding: 16px 0; font-weight: 600; list-style: none; display: flex; justify-content: space-between; gap: 16px; }
+  .faq__q::after { content: '+'; font-family: var(--mono); color: var(--accent); }
+  .faq[open] .faq__q::after { content: '−'; }
+  .faq__q::-webkit-details-marker { display: none; }
+  .faq__a { padding: 0 0 18px; color: var(--ink-soft); line-height: 1.6; max-width: 62ch; }
+
+  /* ---------- Cierre ---------- */
+  .closing__inner { text-align: center; display: grid; gap: 24px; justify-items: center; }
+  .closing__inner h2 { max-width: 20ch; }
+  .closing__slots { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+  .closing__slot { display: inline-block; font-size: 13px; padding: 8px 14px; border: 1px solid var(--line); border-radius: 4px; text-decoration: none; color: var(--ink); }
+  .closing { padding-bottom: clamp(96px, 16vw, 140px); }
+
+  /* ---------- Escritorio ---------- */
+  @media (min-width: 720px) {
+    .hero__grid { grid-template-columns: 1.15fr 0.85fr; gap: 44px; }
+    .hero__headline { font-size: 49px; }
+    .qualify__grid { grid-template-columns: 1fr 1fr; gap: 40px; }
+    .story__grid { grid-template-columns: 300px 1fr; gap: 40px; }
+    .opp__cols { grid-template-columns: 1fr 1fr; }
+    .proof__quotes { grid-template-columns: 1fr 1fr; }
+    .hero__photo { order: 2; }
+  }
+</style>

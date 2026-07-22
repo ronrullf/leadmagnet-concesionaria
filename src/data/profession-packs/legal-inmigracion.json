@@ -1,0 +1,19 @@
+{
+  "key": "legal-inmigracion",
+  "label": "Abogado / Inmigración",
+  "default_mood": "autoridad",
+  "failing_behaviors": [
+    "armar el caso con videos de YouTube y grupos de Facebook",
+    "pedirle consejo a un primo que ya pasó por el proceso",
+    "mandar la solicitud sin revisar y esperar a ver qué pasa"
+  ],
+  "typical_objections": [
+    "no sé si mi caso califica",
+    "los honorarios de un abogado son impagables",
+    "conozco a alguien que lo hizo solo y le salió"
+  ],
+  "urgency_lever": "los plazos procesales no se reabren; un documento mal presentado puede cerrar la vía por años",
+  "main_pain": "tomar la decisión más importante de su vida sin saber si la está tomando bien",
+  "dream_outcome": "saber con certeza en qué situación está y cuál es el camino real",
+  "vocabulary": ["caso", "expediente", "consulta", "plazo", "documentación", "trámite", "audiencia"]
+}
