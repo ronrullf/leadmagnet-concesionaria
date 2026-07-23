@@ -41,8 +41,20 @@ const dateFmt = new Intl.DateTimeFormat('es-VE', { day: '2-digit', month: 'short
 ---
 
 <AdminLayout title="Profesionales">
-  <div class="mb-6 flex items-center justify-between">
-    <h1 class="text-[1.5625rem] font-bold">Profesionales</h1>
+  <div class="mb-6 flex items-center justify-between gap-3">
+    <div class="flex items-center gap-3">
+      <a
+        href="/admin"
+        aria-label="Volver a demos de concesionarios y agencias"
+        title="Volver a demos de concesionarios y agencias"
+        class="flex h-9 w-9 items-center justify-center rounded-[8px] border border-line text-ink-soft hover:bg-paper-alt hover:text-ink"
+      >
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 18l-6-6 6-6" />
+        </svg>
+      </a>
+      <h1 class="text-[1.5625rem] font-bold">Profesionales</h1>
+    </div>
     <a href="/admin/pro/generar" class="rounded-[4px] bg-ink px-4 py-2 text-sm font-semibold text-white">+ Generar con IA</a>
   </div>
 
