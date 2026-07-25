@@ -1,6 +1,6 @@
 import { supabaseAnon, supabaseAdmin } from './supabase';
 import { coerceCopy, emptyCopy } from './copy-schema';
-import type { ProDemo, Slot } from './pro-types';
+import type { ProDemo, Slot, BeforeAfter } from './pro-types';
 import proFixture from '../data/pro-fixture.json';
 
 const hasSupabase = Boolean(
@@ -16,7 +16,22 @@ function hydrate(row: Record<string, unknown>): ProDemo {
     ...(row as unknown as ProDemo),
     copy: coerceCopy(row.copy),
     slots: normalizeSlots(row.slots),
+    before_after: normalizeBeforeAfter(row.before_after),
   };
+}
+
+/** Solo pares con ambas imágenes cargadas. Sin par completo, no hay sección. */
+function normalizeBeforeAfter(raw: unknown): BeforeAfter[] | null {
+  if (!Array.isArray(raw)) return null;
+  const pairs = raw
+    .filter((p): p is BeforeAfter => Boolean(p) && typeof p === 'object')
+    .map((p) => ({
+      before: typeof p.before === 'string' ? p.before : '',
+      after: typeof p.after === 'string' ? p.after : '',
+      label: typeof p.label === 'string' ? p.label : undefined,
+    }))
+    .filter((p) => p.before && p.after);
+  return pairs.length ? pairs : null;
 }
 
 function normalizeSlots(raw: unknown): Slot[] | null {

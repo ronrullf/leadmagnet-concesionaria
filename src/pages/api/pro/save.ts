@@ -49,6 +49,7 @@ export const POST: APIRoute = async ({ request }) => {
     booking_url: str(body.booking_url) || null,
     copy: coerceCopy(body.copy),
     slots: normalizeSlots(body.slots),
+    before_after: normalizeBeforeAfter(body.before_after),
     monthly_capacity: int(body.monthly_capacity),
     slots_remaining: int(body.slots_remaining),
     is_active: body.is_active !== false,
@@ -60,11 +61,24 @@ export const POST: APIRoute = async ({ request }) => {
 
   try {
     const db = supabaseAdmin();
-    const { data, error } = await db
+    let { data, error } = await db
       .from('pro_demos')
       .upsert(record, { onConflict: 'slug' })
       .select('slug')
       .single();
+
+    // Si la migración 004 (columna before_after) todavía no se corrió, no romper
+    // el guardado entero: reintentar sin ese campo. Las imágenes de hero, perfil
+    // y logo usan columnas que sí existen, así que siguen guardándose.
+    if (error && /before_after/.test(error.message)) {
+      const { before_after, ...rest } = record;
+      ({ data, error } = await db
+        .from('pro_demos')
+        .upsert(rest, { onConflict: 'slug' })
+        .select('slug')
+        .single());
+    }
+
     if (error) return json({ error: error.message }, 500);
     return json({ ok: true, slug: data.slug }, 200);
   } catch (e) {
@@ -90,6 +104,22 @@ function slugify(v: string): string {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 60);
+}
+
+/** Solo pares con ambas imágenes. Un antes sin después no es prueba de nada. */
+function normalizeBeforeAfter(raw: unknown): unknown[] | null {
+  if (!Array.isArray(raw)) return null;
+  const pairs = raw
+    .filter((p) => p && typeof p === 'object')
+    .map((p) => {
+      const o = p as Record<string, unknown>;
+      const pair: Record<string, unknown> = { before: str(o.before), after: str(o.after) };
+      const label = str(o.label);
+      if (label) pair.label = label;
+      return pair;
+    })
+    .filter((p) => p.before && p.after);
+  return pairs.length ? pairs : null;
 }
 
 /** Solo cupos bien formados. Los abiertos exigen 'remaining' numérico. */

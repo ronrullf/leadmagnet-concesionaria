@@ -43,8 +43,60 @@ const c = pro.copy;
             <select data-meta="mood">{MOODS.map((m) => <option value={m} selected={m === pro.mood}>{m}</option>)}</select>
           </label>
           <label class="f"><span>Acento (hex, opcional)</span><input class="num" data-meta="accent_hex" value={pro.accent_hex ?? ''} placeholder="#0E6B7A" /></label>
-          <label class="f"><span>Foto hero (URL)</span><input data-meta="photo_hero_url" value={pro.photo_hero_url ?? ''} /></label>
-          <label class="f"><span>Foto historia (URL)</span><input data-meta="photo_story_url" value={pro.photo_story_url ?? ''} /></label>
+        </div>
+      </details>
+
+      {/* Imágenes: subida real con compresión */}
+      <details open class="sec">
+        <summary class="sec__h">Imágenes</summary>
+        <div class="sec__b grid gap-4 sm:grid-cols-3">
+          <div class="imgfield" data-imgfield>
+            <span class="imgfield__label">Foto del hero (4:5, mirando a cámara)</span>
+            <input type="hidden" data-meta="photo_hero_url" value={pro.photo_hero_url ?? ''} />
+            <div class="imgfield__preview" data-preview></div>
+            <div class="imgfield__row">
+              <label class="imgfield__btn">Subir<input type="file" accept="image/*" hidden data-file /></label>
+              <button type="button" class="imgfield__clear" data-clear>Quitar</button>
+            </div>
+            <span class="imgfield__status" data-status></span>
+          </div>
+
+          <div class="imgfield" data-imgfield>
+            <span class="imgfield__label">Foto de perfil / historia</span>
+            <input type="hidden" data-meta="photo_story_url" value={pro.photo_story_url ?? ''} />
+            <div class="imgfield__preview" data-preview></div>
+            <div class="imgfield__row">
+              <label class="imgfield__btn">Subir<input type="file" accept="image/*" hidden data-file /></label>
+              <button type="button" class="imgfield__clear" data-clear>Quitar</button>
+            </div>
+            <span class="imgfield__status" data-status></span>
+          </div>
+
+          <div class="imgfield" data-imgfield>
+            <span class="imgfield__label">Logo (empresa / profesional)</span>
+            <input type="hidden" data-meta="logo_url" value={pro.logo_url ?? ''} />
+            <div class="imgfield__preview" data-preview></div>
+            <div class="imgfield__row">
+              <label class="imgfield__btn">Subir<input type="file" accept="image/*" hidden data-file /></label>
+              <button type="button" class="imgfield__clear" data-clear>Quitar</button>
+            </div>
+            <span class="imgfield__status" data-status></span>
+          </div>
+        </div>
+      </details>
+
+      {/* Antes / Después: prueba visual real del profesional */}
+      <details class="sec">
+        <summary class="sec__h">Antes / Después</summary>
+        <div class="sec__b grid gap-3">
+          <p class="text-[0.75rem] text-ink-soft">
+            Imágenes reales del trabajo del profesional. Sin ambas (antes y después), el par no aparece.
+            Si no cargas ninguno, la sección se oculta.
+          </p>
+          <div id="ba-list" class="grid gap-3"></div>
+          <button type="button" id="ba-add" class="justify-self-start rounded-[4px] border border-dashed border-line px-4 py-2 text-sm font-medium text-ink-soft hover:text-ink">
+            + Agregar antes/después
+          </button>
         </div>
       </details>
 
@@ -90,6 +142,7 @@ const c = pro.copy;
 
   <script type="application/json" id="copy-data" set:html={JSON.stringify(c)}></script>
   <script type="application/json" id="slot-limits" set:html={JSON.stringify(SLOT_LIMITS)}></script>
+  <script type="application/json" id="ba-data" set:html={JSON.stringify(pro.before_after ?? [])}></script>
   <script define:vars={{ slug: pro.slug }}>window.__PRO_SLUG__ = slug;</script>
 
   <style>
@@ -111,6 +164,37 @@ const c = pro.copy;
     .slot-field__count.over { color: #DC2626; font-weight: 600; }
     .slot-field textarea, .slot-field input {
       border: 1px solid #DDD; border-radius: 4px; padding: 7px 9px; font: inherit; width: 100%; resize: vertical;
+    }
+
+    /* Campos de imagen con subida */
+    .imgfield { display: grid; gap: 6px; }
+    .imgfield__label { font-size: 12px; font-weight: 500; color: #444; }
+    .imgfield__preview {
+      aspect-ratio: 4 / 3; border: 1px dashed #CCC; border-radius: 6px; background: #FAFAFA;
+      display: flex; align-items: center; justify-content: center; overflow: hidden;
+    }
+    .imgfield__preview img { width: 100%; height: 100%; object-fit: cover; }
+    .imgfield__preview.empty::after { content: 'Sin imagen'; font-size: 12px; color: #AAA; }
+    .imgfield__row { display: flex; gap: 6px; align-items: center; }
+    .imgfield__btn {
+      cursor: pointer; font-size: 12px; font-weight: 600; padding: 6px 12px;
+      border-radius: 4px; background: #F97316; color: #fff;
+    }
+    .imgfield__clear {
+      font-size: 12px; padding: 6px 10px; border: 1px solid #DDD; border-radius: 4px;
+      background: #fff; cursor: pointer; color: #666;
+    }
+    .imgfield__clear[hidden] { display: none; }
+    .imgfield__status { font-size: 11px; color: #888; min-height: 14px; }
+
+    /* Antes / Después */
+    .ba-row { border: 1px solid #EEE; border-radius: 8px; padding: 12px; display: grid; gap: 10px; }
+    .ba-row__imgs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .ba-row__foot { display: flex; gap: 8px; align-items: center; }
+    .ba-row__foot input { flex: 1; border: 1px solid #DDD; border-radius: 4px; padding: 7px 9px; font: inherit; }
+    .ba-row__del {
+      font-size: 12px; padding: 7px 12px; border: 1px solid #F0C0C0; color: #B02020;
+      border-radius: 4px; background: #fff; cursor: pointer; white-space: nowrap;
     }
   </style>
 

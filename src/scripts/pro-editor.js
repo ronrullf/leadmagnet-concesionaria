@@ -208,6 +208,7 @@ function collectMeta() {
   if (slotsEl) {
     try { meta.slots = JSON.parse(slotsEl.value || '[]'); } catch { meta.slots = null; }
   }
+  meta.before_after = collectBeforeAfter();
   return meta;
 }
 
@@ -244,3 +245,177 @@ document.getElementById('reload-preview').addEventListener('click', () => {
 window.addEventListener('keydown', (e) => {
   if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); save(); }
 });
+
+// ============================================================
+// Subida de imágenes: comprime en el cliente a WebP y sube al bucket.
+// ============================================================
+
+/** Redimensiona a maxWidth y comprime a WebP q82. */
+function compressImage(file, maxWidth = 1400) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const scale = Math.min(1, maxWidth / img.naturalWidth);
+      const w = Math.round(img.naturalWidth * scale);
+      const h = Math.round(img.naturalHeight * scale);
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      canvas.toBlob(
+        (blob) => (blob ? resolve(blob) : reject(new Error('No se pudo comprimir'))),
+        'image/webp',
+        0.82
+      );
+    };
+    img.onerror = () => reject(new Error('Imagen inválida'));
+    img.src = url;
+  });
+}
+
+async function uploadFile(file, statusEl) {
+  if (statusEl) statusEl.textContent = 'Comprimiendo…';
+  const blob = await compressImage(file);
+  if (statusEl) statusEl.textContent = 'Subiendo…';
+  const fd = new FormData();
+  fd.append('file', new File([blob], 'imagen.webp', { type: 'image/webp' }));
+  fd.append('folder', `pro-${SLUG}`);
+  const res = await fetch('/api/admin/upload', { method: 'POST', body: fd });
+  const json = await res.json();
+  if (!res.ok || !json.url) throw new Error(json.error || 'Error subiendo');
+  return json.url;
+}
+
+/** Pinta la miniatura de un contenedor [data-preview] a partir de una URL. */
+function paintPreview(previewEl, clearBtn, url) {
+  if (url) {
+    previewEl.classList.remove('empty');
+    previewEl.innerHTML = `<img src="${url}" alt="" />`;
+    if (clearBtn) clearBtn.hidden = false;
+  } else {
+    previewEl.classList.add('empty');
+    previewEl.innerHTML = '';
+    if (clearBtn) clearBtn.hidden = true;
+  }
+}
+
+/**
+ * Conecta un campo de imagen: input file → comprime → sube → guarda la URL en el
+ * input oculto y pinta la miniatura. `hidden` es el input que lleva la URL
+ * (con data-meta para los principales, o sin él para antes/después).
+ */
+function wireImageField(root, hidden) {
+  const file = root.querySelector('[data-file]');
+  const preview = root.querySelector('[data-preview]');
+  const clear = root.querySelector('[data-clear]');
+  const status = root.querySelector('[data-status]');
+
+  paintPreview(preview, clear, hidden.value);
+
+  file.addEventListener('change', async () => {
+    const f = file.files && file.files[0];
+    if (!f) return;
+    try {
+      const url = await uploadFile(f, status);
+      hidden.value = url;
+      paintPreview(preview, clear, url);
+      if (status) status.textContent = 'Listo ✓';
+      scheduleAutosave();
+      setTimeout(() => { if (status) status.textContent = ''; }, 2000);
+    } catch (e) {
+      if (status) status.textContent = `Error: ${e.message}`;
+    } finally {
+      file.value = '';
+    }
+  });
+
+  if (clear) {
+    clear.addEventListener('click', () => {
+      hidden.value = '';
+      paintPreview(preview, clear, '');
+      scheduleAutosave();
+    });
+  }
+}
+
+// Campos principales (hero, historia, logo): el input oculto lleva data-meta.
+document.querySelectorAll('[data-imgfield]').forEach((root) => {
+  const hidden = root.querySelector('input[type="hidden"][data-meta]');
+  if (hidden) wireImageField(root, hidden);
+});
+
+// ============================================================
+// Antes / Después
+// ============================================================
+const baList = document.getElementById('ba-list');
+const initialBA = JSON.parse(document.getElementById('ba-data').textContent || '[]');
+
+function makeBAImg(labelText, url) {
+  const wrap = document.createElement('div');
+  wrap.className = 'imgfield';
+  wrap.setAttribute('data-imgfield', '');
+  wrap.innerHTML =
+    `<span class="imgfield__label">${labelText}</span>` +
+    `<input type="hidden" data-ba-url value="${url ? url.replace(/"/g, '&quot;') : ''}" />` +
+    `<div class="imgfield__preview" data-preview></div>` +
+    `<div class="imgfield__row">` +
+      `<label class="imgfield__btn">Subir<input type="file" accept="image/*" hidden data-file /></label>` +
+      `<button type="button" class="imgfield__clear" data-clear>Quitar</button>` +
+    `</div>` +
+    `<span class="imgfield__status" data-status></span>`;
+  const hidden = wrap.querySelector('[data-ba-url]');
+  wireImageField(wrap, hidden);
+  return { wrap, hidden };
+}
+
+function addBARow(pair = { before: '', after: '', label: '' }) {
+  const row = document.createElement('div');
+  row.className = 'ba-row';
+  row.setAttribute('data-ba-row', '');
+
+  const imgs = document.createElement('div');
+  imgs.className = 'ba-row__imgs';
+  const before = makeBAImg('Antes', pair.before);
+  const after = makeBAImg('Después', pair.after);
+  before.hidden.setAttribute('data-ba-before', '');
+  after.hidden.setAttribute('data-ba-after', '');
+  imgs.append(before.wrap, after.wrap);
+
+  const foot = document.createElement('div');
+  foot.className = 'ba-row__foot';
+  const label = document.createElement('input');
+  label.setAttribute('data-ba-label', '');
+  label.placeholder = 'Descripción opcional (ej: Blanqueamiento, 2 sesiones)';
+  label.value = pair.label || '';
+  label.addEventListener('input', scheduleAutosave);
+  const del = document.createElement('button');
+  del.type = 'button';
+  del.className = 'ba-row__del';
+  del.textContent = 'Eliminar par';
+  del.addEventListener('click', () => { row.remove(); scheduleAutosave(); });
+  foot.append(label, del);
+
+  row.append(imgs, foot);
+  baList.appendChild(row);
+}
+
+initialBA.forEach((p) => addBARow(p));
+document.getElementById('ba-add').addEventListener('click', () => addBARow());
+
+/** Solo pares con ambas imágenes cargadas. */
+function collectBeforeAfter() {
+  const pairs = [];
+  document.querySelectorAll('[data-ba-row]').forEach((row) => {
+    const before = row.querySelector('[data-ba-before]')?.value.trim() || '';
+    const after = row.querySelector('[data-ba-after]')?.value.trim() || '';
+    const label = row.querySelector('[data-ba-label]')?.value.trim() || '';
+    if (before && after) {
+      const pair = { before, after };
+      if (label) pair.label = label;
+      pairs.push(pair);
+    }
+  });
+  return pairs;
+}

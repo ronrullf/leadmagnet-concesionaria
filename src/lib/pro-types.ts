@@ -16,6 +16,13 @@ export interface Slot {
   remaining?: number;        // solo cuando status === 'open'
 }
 
+/** Un par de imágenes antes/después. Prueba visual real que aporta el profesional. */
+export interface BeforeAfter {
+  before: string;
+  after: string;
+  label?: string;
+}
+
 export interface ProDemo {
   id: string;
   slug: string;
@@ -30,6 +37,7 @@ export interface ProDemo {
   photo_hero_url: string | null;
   photo_story_url: string | null;
   logo_url: string | null;
+  before_after: BeforeAfter[] | null;
 
   mood: Mood;
   accent_hex: string | null;

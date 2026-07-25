@@ -43,7 +43,9 @@ const showOffer = Boolean(c.offer.program_name) && c.offer.items.length > 0;
 const showMetrics = c.proof.metrics.length > 0;
 const showTestimonials = c.proof.testimonials.length > 0;
 const showCredentials = c.proof.credentials.length > 0;
-const showProof = showMetrics || showTestimonials || showCredentials;
+const beforeAfter = pro.before_after ?? [];
+const showBeforeAfter = beforeAfter.length > 0;
+const showProof = showMetrics || showTestimonials || showCredentials || showBeforeAfter;
 const showInaction = Boolean(c.inaction.headline) && c.inaction.items.length > 0;
 const showGuarantee = Boolean(c.guarantee.body);
 const showFaqs = c.faqs.length > 0;
@@ -69,6 +71,9 @@ const tpHref = waLink(import.meta.env.TIENDAPANA_WHATSAPP ?? '', tpMsg);
           autónoma que no depende de que ningún observer dispare. */}
       <div class="wrap hero__grid">
         <div class="hero__copy hero-enter">
+          {pro.logo_url && (
+            <img class="hero__logo" src={pro.logo_url} alt={pro.pro_name} width="120" height="48" loading="eager" />
+          )}
           {c.hero.callout && <p class="hero__callout">{c.hero.callout}</p>}
           <h1 class="t-39 hero__headline">{c.hero.headline}</h1>
           {c.hero.subheadline && <p class="t-20 hero__sub">{c.hero.subheadline}</p>}
@@ -259,6 +264,26 @@ const tpHref = waLink(import.meta.env.TIENDAPANA_WHATSAPP ?? '', tpMsg);
             </ul>
           )}
 
+          {showBeforeAfter && (
+            <div class="ba reveal">
+              {beforeAfter.map((pair) => (
+                <figure class="ba__pair">
+                  <div class="ba__imgs">
+                    <div class="ba__col">
+                      <img src={pair.before} alt="Antes" loading="lazy" />
+                      <span class="ba__tag">Antes</span>
+                    </div>
+                    <div class="ba__col">
+                      <img src={pair.after} alt="Después" loading="lazy" />
+                      <span class="ba__tag ba__tag--after">Después</span>
+                    </div>
+                  </div>
+                  {pair.label && <figcaption class="ba__label">{pair.label}</figcaption>}
+                </figure>
+              ))}
+            </div>
+          )}
+
           {showMetrics && (
             <div class="proof__block reveal" data-sample="true">
               <ul class="proof__metrics" role="list">
@@ -384,6 +409,24 @@ const tpHref = waLink(import.meta.env.TIENDAPANA_WHATSAPP ?? '', tpMsg);
   }
   .cta-inline { margin-top: 32px; display: flex; justify-content: center; }
   .cta-inline .btn { min-width: min(320px, 100%); }
+
+  /* Logo del profesional en el hero */
+  .hero__logo { max-height: 52px; width: auto; margin-bottom: 20px; object-fit: contain; }
+
+  /* Antes / Después */
+  .ba { display: grid; gap: 24px; margin-bottom: 32px; }
+  .ba__pair { margin: 0; }
+  .ba__imgs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .ba__col { position: relative; border-radius: 8px; overflow: hidden; border: 1px solid var(--line); background: var(--paper-alt); }
+  .ba__col img { width: 100%; height: 100%; object-fit: cover; aspect-ratio: 4 / 3; display: block; }
+  .ba__tag {
+    position: absolute; top: 8px; left: 8px;
+    font-family: var(--mono); font-size: 11px; font-weight: 600;
+    padding: 3px 8px; border-radius: 4px;
+    background: rgba(17,17,17,.72); color: #fff;
+  }
+  .ba__tag--after { background: var(--accent); color: var(--accent-ink); }
+  .ba__label { margin-top: 10px; font-size: 14px; color: var(--ink-soft); text-align: center; }
 
   /* ---------- Hero ---------- */
   .hero { padding-top: clamp(40px, 8vw, 72px); }
