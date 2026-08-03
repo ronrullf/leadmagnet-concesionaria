@@ -1,6 +1,6 @@
 import { supabaseAnon, supabaseAdmin } from './supabase';
 import { coerceCopy, emptyCopy } from './copy-schema';
-import type { ProDemo, Slot, BeforeAfter } from './pro-types';
+import type { ProDemo, Slot, BeforeAfter, Service } from './pro-types';
 import proFixture from '../data/pro-fixture.json';
 
 const hasSupabase = Boolean(
@@ -17,7 +17,34 @@ function hydrate(row: Record<string, unknown>): ProDemo {
     copy: coerceCopy(row.copy),
     slots: normalizeSlots(row.slots),
     before_after: normalizeBeforeAfter(row.before_after),
+    // Columnas de la migración 005: si aún no se corrió, la landing sigue
+    // funcionando con el CTA directo de siempre y sin sección de ubicación.
+    cta_mode: row.cta_mode === 'formulario' ? 'formulario' : 'directo',
+    cta_form_title: str(row.cta_form_title),
+    cta_question_label: str(row.cta_question_label),
+    address: str(row.address),
+    maps_query: str(row.maps_query),
+    trust_line: str(row.trust_line),
+    services: normalizeServices(row.services),
   };
+}
+
+/** Máximo 4: más iconos dejan de escanearse y pasan a leerse. */
+function normalizeServices(raw: unknown): Service[] | null {
+  if (!Array.isArray(raw)) return null;
+  const items = raw
+    .filter((s): s is Service => Boolean(s) && typeof s === 'object')
+    .map((s) => ({
+      label: typeof s.label === 'string' ? s.label.trim() : '',
+      icon: typeof s.icon === 'string' && s.icon ? s.icon : 'estrella',
+    }))
+    .filter((s) => s.label)
+    .slice(0, 4);
+  return items.length ? items : null;
+}
+
+function str(v: unknown): string | null {
+  return typeof v === 'string' && v.trim() ? v.trim() : null;
 }
 
 /** Solo pares con ambas imágenes cargadas. Sin par completo, no hay sección. */
@@ -30,7 +57,9 @@ function normalizeBeforeAfter(raw: unknown): BeforeAfter[] | null {
       after: typeof p.after === 'string' ? p.after : '',
       label: typeof p.label === 'string' ? p.label : undefined,
     }))
-    .filter((p) => p.before && p.after);
+    .filter((p) => p.before && p.after)
+    // Dos casos bastan: el tercero ya no suma prueba, solo alarga la página.
+    .slice(0, 2);
   return pairs.length ? pairs : null;
 }
 

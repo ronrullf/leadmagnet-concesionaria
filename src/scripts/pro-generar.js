@@ -99,15 +99,41 @@ const BLOCKS = [
   { key: 'D', name: 'Prueba (testimonios, FAQ, cierre)' },
 ];
 
-function setProgress(done, current) {
+/**
+ * Mientras genera: overlay visible, scroll bloqueado y guardia de salida. Se
+ * cierra la pestaña por error y se pierden los cuatro bloques generados.
+ */
+function warnBeforeUnload(e) {
+  e.preventDefault();
+  e.returnValue = '';
+  return '';
+}
+
+function showProgress() {
   progress.classList.remove('hidden');
+  progress.style.display = 'grid';
+  document.body.style.overflow = 'hidden';
+  window.addEventListener('beforeunload', warnBeforeUnload);
+}
+
+function hideProgress() {
+  progress.classList.add('hidden');
+  progress.style.display = '';
+  document.body.style.overflow = '';
+  window.removeEventListener('beforeunload', warnBeforeUnload);
+}
+
+function setProgress(done, current) {
+  showProgress();
   const p = Math.round((done / BLOCKS.length) * 100);
   bar.style.width = `${p}%`;
   pct.textContent = `${p}%`;
   label.textContent = current ? `Generando ${current}…` : 'Listo';
   steps.innerHTML = BLOCKS.map((b, i) => {
-    const state = i < done ? '✓' : i === done && current ? '⏳' : '·';
-    const cls = i < done ? 'text-green-700' : '';
+    const done_ = i < done;
+    const active = i === done && current;
+    const state = done_ ? '✓' : active ? '⏳' : '·';
+    const cls = done_ ? 'text-green-700 font-medium' : active ? 'text-ink font-semibold' : '';
     return `<li class="${cls}">${state} ${b.name}</li>`;
   }).join('');
 }
@@ -167,6 +193,9 @@ form.addEventListener('submit', async (e) => {
     }
   }
   setProgress(BLOCKS.length, null);
+  // Un instante en 100% antes de cerrar: el salto seco parece que falló.
+  await new Promise((r) => setTimeout(r, 450));
+  hideProgress();
 
   // Cierres que el modo completo hace en el servidor y aquí toca a mano:
   copy.proof = copy.proof || { credentials: [], testimonials: [], metrics: [] };

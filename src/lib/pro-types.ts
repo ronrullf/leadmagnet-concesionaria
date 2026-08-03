@@ -4,6 +4,22 @@ export type Mood = 'clinico' | 'autoridad' | 'calido' | 'editorial';
 
 export const MOODS: Mood[] = ['clinico', 'autoridad', 'calido', 'editorial'];
 
+export type CtaMode = 'directo' | 'formulario';
+
+export const CTA_MODES: CtaMode[] = ['directo', 'formulario'];
+
+/** Un servicio. Una palabra y un icono; el visitante escanea, no lee. */
+export interface Service {
+  label: string;
+  icon: string;
+}
+
+/** Iconos disponibles. Genéricos a propósito: sirven para estética en general. */
+export const SERVICE_ICONS = [
+  'diente', 'brillo', 'sonrisa', 'alineador', 'jeringa', 'laser',
+  'gota', 'corazon', 'estrella', 'escudo',
+] as const;
+
 /**
  * Un cupo de la franja de agenda. Los cupos son reales o la sección no existe:
  * la escasez falsa es la forma más rápida de que un profesional serio descarte
@@ -44,6 +60,24 @@ export interface ProDemo {
 
   whatsapp_e164: string;
   booking_url: string | null;
+
+  /**
+   * 'directo' abre WhatsApp de una vez. 'formulario' pide nombre y consulta
+   * antes, y entrega el mensaje ya redactado: el profesional recibe un lead
+   * calificado en vez de un "hola".
+   */
+  cta_mode: CtaMode;
+  cta_form_title: string | null;
+  cta_question_label: string | null;
+
+  /** Ubicación opcional. Sin dirección ni maps_query, la sección no se renderiza. */
+  address: string | null;
+  maps_query: string | null;
+
+  /** Una línea, nunca un párrafo. */
+  trust_line: string | null;
+  /** Hasta 4 servicios. */
+  services: Service[] | null;
 
   copy: ProCopy;
 

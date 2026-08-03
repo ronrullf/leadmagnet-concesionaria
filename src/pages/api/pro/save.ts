@@ -47,6 +47,13 @@ export const POST: APIRoute = async ({ request }) => {
     accent_hex: normalizeHex(str(body.accent_hex)) || null,
     whatsapp_e164: whatsapp,
     booking_url: str(body.booking_url) || null,
+    cta_mode: body.cta_mode === 'formulario' ? 'formulario' : 'directo',
+    cta_form_title: str(body.cta_form_title) || null,
+    cta_question_label: str(body.cta_question_label) || null,
+    address: str(body.address) || null,
+    maps_query: str(body.maps_query) || null,
+    trust_line: str(body.trust_line) || null,
+    services: normalizeServices(body.services),
     copy: coerceCopy(body.copy),
     slots: normalizeSlots(body.slots),
     before_after: normalizeBeforeAfter(body.before_after),
@@ -67,20 +74,31 @@ export const POST: APIRoute = async ({ request }) => {
       .select('slug')
       .single();
 
-    // Si la migración 004 (columna before_after) todavía no se corrió, no romper
-    // el guardado entero: reintentar sin ese campo. Las imágenes de hero, perfil
-    // y logo usan columnas que sí existen, así que siguen guardándose.
-    if (error && /before_after/.test(error.message)) {
-      const { before_after, ...rest } = record;
+    // Si una migración posterior (004: before_after · 005: cta_mode, address…)
+    // todavía no se corrió, no romper el guardado entero: se descarta la columna
+    // que falta y se reintenta. Todo lo demás se guarda igual.
+    const OPTIONAL_COLUMNS = [
+      'before_after', 'cta_mode', 'cta_form_title',
+      'cta_question_label', 'address', 'maps_query',
+      'trust_line', 'services',
+    ] as const;
+
+    let attempt: Record<string, unknown> = { ...record };
+    for (let i = 0; error && i < OPTIONAL_COLUMNS.length; i++) {
+      const missing = OPTIONAL_COLUMNS.find(
+        (col) => col in attempt && error!.message.includes(col)
+      );
+      if (!missing) break;
+      delete attempt[missing];
       ({ data, error } = await db
         .from('pro_demos')
-        .upsert(rest, { onConflict: 'slug' })
+        .upsert(attempt, { onConflict: 'slug' })
         .select('slug')
         .single());
     }
 
     if (error) return json({ error: error.message }, 500);
-    return json({ ok: true, slug: data.slug }, 200);
+    return json({ ok: true, slug: data?.slug ?? slug }, 200);
   } catch (e) {
     return json({ error: (e as Error).message }, 500);
   }
@@ -106,7 +124,24 @@ function slugify(v: string): string {
     .slice(0, 60);
 }
 
-/** Solo pares con ambas imágenes. Un antes sin después no es prueba de nada. */
+/** Cuatro servicios como techo: más iconos se leen en vez de escanearse. */
+function normalizeServices(raw: unknown): unknown[] | null {
+  if (!Array.isArray(raw)) return null;
+  const items = raw
+    .filter((s) => s && typeof s === 'object')
+    .map((s) => {
+      const o = s as Record<string, unknown>;
+      return { label: str(o.label), icon: str(o.icon) || 'estrella' };
+    })
+    .filter((s) => s.label)
+    .slice(0, 4);
+  return items.length ? items : null;
+}
+
+/**
+ * Solo pares con ambas imágenes. Un antes sin después no es prueba de nada.
+ * Dos pares como techo: el tercero ya no suma, solo alarga la página.
+ */
 function normalizeBeforeAfter(raw: unknown): unknown[] | null {
   if (!Array.isArray(raw)) return null;
   const pairs = raw
@@ -118,7 +153,8 @@ function normalizeBeforeAfter(raw: unknown): unknown[] | null {
       if (label) pair.label = label;
       return pair;
     })
-    .filter((p) => p.before && p.after);
+    .filter((p) => p.before && p.after)
+    .slice(0, 2);
   return pairs.length ? pairs : null;
 }
 

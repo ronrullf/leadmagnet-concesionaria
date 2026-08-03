@@ -1,0 +1,324 @@
+---
+/**
+ * Layout visual. Seis bloques, en este orden, y ni uno más.
+ *
+ * Proporción 60/25/15: la prueba visual ocupa la página, el CTA se repite y
+ * nunca se pierde de vista, y el texto solo orienta. Cada párrafo de más resta.
+ *
+ * Lo que deliberadamente NO existe aquí: menú de navegación (una landing tiene
+ * una sola salida), formularios (el CTA es WhatsApp, siempre), precios (se
+ * cotiza en el chat), "sobre nosotros" y cualquier texto de relleno.
+ */
+import ServiceIcon from './ServiceIcon.astro';
+import { waLink, proCtaMessage } from '../../lib/whatsapp';
+import type { ProDemo } from '../../lib/pro-types';
+
+interface Props {
+  pro: ProDemo;
+}
+
+const { pro } = Astro.props;
+const c = pro.copy;
+
+// Una sola acción en toda la página. El layout visual ignora cta_mode a
+// propósito: un formulario en frío mata la conversión en este nicho.
+const ctaLabel = c.hero.cta_label || 'Agendar cita';
+const closingLabel = c.closing.cta_label || 'Agenda tu evaluación por WhatsApp';
+const ctaHref = waLink(pro.whatsapp_e164, proCtaMessage(pro.pro_name, ctaLabel));
+
+const cases = (pro.before_after ?? []).slice(0, 4);
+const services = (pro.services ?? []).slice(0, 4);
+const testimonial = c.proof.testimonials[0];
+
+const showCases = cases.length > 0;
+const showTrust = Boolean(pro.trust_line);
+const showServices = services.length > 0;
+const showTestimonial = Boolean(testimonial?.quote);
+const showLocation = Boolean(pro.address || pro.maps_query);
+const mapsQuery = pro.maps_query || pro.address || '';
+---
+
+{/* 1 · Hero — una foto, una frase, el botón */}
+<section class="vhero" data-section="hero">
+  {pro.photo_hero_url ? (
+    <img class="vhero__bg" src={pro.photo_hero_url} alt="" fetchpriority="high" />
+  ) : (
+    <div class="vhero__bg vhero__bg--empty"></div>
+  )}
+  <div class="vhero__veil"></div>
+
+  <div class="vhero__inner">
+    {pro.logo_url && (
+      <img class="vhero__logo" src={pro.logo_url} alt={pro.pro_name} height="44" loading="eager" />
+    )}
+    <h1 class="vhero__name">{pro.pro_name}</h1>
+    <p class="vhero__line">{pro.pro_title}</p>
+    <a class="btn vhero__cta" href={ctaHref}>{ctaLabel}</a>
+  </div>
+</section>
+
+{/* 2 · Galería antes/después — el corazón. Sin texto encima. */}
+{showCases && (
+  <section class="vcases" data-section="cases">
+    {cases.map((cs, i) => (
+      <article class="vcase reveal" data-case>
+        <div class="vcase__pair">
+          <figure class="vcase__side">
+            <img src={cs.before} alt="Antes" loading={i === 0 ? 'eager' : 'lazy'} />
+            <figcaption class="vcase__tag">Antes</figcaption>
+          </figure>
+          <figure class="vcase__side">
+            <img src={cs.after} alt="Después" loading={i === 0 ? 'eager' : 'lazy'} />
+            <figcaption class="vcase__tag vcase__tag--after">Después</figcaption>
+          </figure>
+        </div>
+        {cs.label && <p class="vcase__label">{cs.label}</p>}
+      </article>
+    ))}
+  </section>
+)}
+
+{/* 3 · Una línea de confianza. Un renglón, no un párrafo. */}
+{showTrust && (
+  <section class="vtrust" data-section="trust">
+    <p class="vtrust__line reveal">{pro.trust_line}</p>
+  </section>
+)}
+
+{/* 4 · Servicios como iconos. El paciente escanea, no lee. */}
+{showServices && (
+  <section class="vservices" data-section="services">
+    <ul class="vservices__grid reveal" role="list">
+      {services.map((s) => (
+        <li class="vservice">
+          <ServiceIcon name={s.icon} />
+          <span class="vservice__label">{s.label}</span>
+        </li>
+      ))}
+    </ul>
+  </section>
+)}
+
+{/* 5 · Un testimonio corto. El empujón humano antes del cierre. */}
+{showTestimonial && (
+  <section class="vquote" data-section="testimonial">
+    <blockquote class="vquote__inner reveal">
+      <p class="vquote__text">“{testimonial.quote}”</p>
+      {testimonial.author && (
+        <footer class="vquote__author">
+          {testimonial.author}{testimonial.context && <span> · {testimonial.context}</span>}
+        </footer>
+      )}
+    </blockquote>
+  </section>
+)}
+
+{/* Ubicación · solo si el profesional la cargó */}
+{showLocation && (
+  <section class="vloc" data-section="location">
+    <div class="vloc__inner reveal">
+      {pro.address && <p class="vloc__address">{pro.address}</p>}
+      {mapsQuery && (
+        <a
+          class="vloc__link"
+          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapsQuery)}`}
+          target="_blank"
+          rel="noopener"
+        >Cómo llegar →</a>
+      )}
+    </div>
+  </section>
+)}
+
+{/* 6 · Cierre — el botón otra vez, a ancho completo */}
+<section class="vclose" data-section="closing">
+  <div class="vclose__inner reveal">
+    {c.closing.headline && <p class="vclose__head">{c.closing.headline}</p>}
+    <a class="btn vclose__cta" href={ctaHref}>{closingLabel}</a>
+  </div>
+</section>
+
+{/* El CTA nunca desaparece */}
+<a class="vfloat" href={ctaHref} aria-label={ctaLabel}>
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="28" height="28">
+    <path d="M17.5 14.4c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.14-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.37-.27.3-1.04 1.02-1.04 2.5 0 1.47 1.07 2.9 1.22 3.1.15.2 2.11 3.22 5.1 4.51.71.31 1.27.49 1.7.63.72.23 1.37.2 1.88.12.58-.09 1.76-.72 2.01-1.41.25-.7.25-1.29.17-1.41-.07-.13-.27-.2-.57-.35Z" />
+    <path d="M12 2a10 10 0 0 0-8.65 15.02L2.05 21.6a.5.5 0 0 0 .62.61l4.68-1.27A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.18-1.14l-.3-.18-2.77.75.74-2.7-.2-.31A8.2 8.2 0 1 1 12 20.2Z" />
+  </svg>
+</a>
+
+<style>
+  /* ---------- 1 · Hero a pantalla completa ---------- */
+  .vhero {
+    position: relative;
+    min-height: 100svh;
+    display: grid;
+    align-items: end;
+    overflow: hidden;
+  }
+  .vhero__bg {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    /* Un empujón hacia arriba: en un retrato la cara vive en el tercio alto. */
+    object-position: center 30%;
+  }
+  .vhero__bg--empty { background: var(--paper-alt); }
+  .vhero__veil {
+    position: absolute; inset: 0;
+    background: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.78) 0%,
+      rgba(0, 0, 0, 0.45) 38%,
+      rgba(0, 0, 0, 0.08) 68%,
+      rgba(0, 0, 0, 0.15) 100%
+    );
+  }
+  .vhero__inner {
+    position: relative;
+    padding: 0 24px clamp(48px, 9vh, 88px);
+    max-width: 720px;
+    margin: 0 auto;
+    width: 100%;
+    text-align: center;
+    animation: vhero-in 0.7s cubic-bezier(0.2, 0, 0, 1) both;
+  }
+  @keyframes vhero-in {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: none; }
+  }
+  .vhero__logo {
+    max-height: 44px; width: auto; margin: 0 auto 22px;
+    display: block; object-fit: contain;
+    /* El logo del profesional casi siempre es oscuro sobre fondo claro. */
+    background: rgba(255, 255, 255, 0.92);
+    border-radius: 6px; padding: 6px 10px;
+  }
+  .vhero__name {
+    font-family: var(--display); font-weight: var(--display-weight);
+    font-size: clamp(34px, 7vw, 56px); line-height: 1.06;
+    letter-spacing: -0.02em; color: #fff;
+    text-wrap: balance;
+  }
+  .vhero__line {
+    margin-top: 14px; font-size: clamp(16px, 2.4vw, 20px);
+    color: rgba(255, 255, 255, 0.9); text-wrap: balance;
+  }
+  .vhero__cta { margin-top: 30px; min-width: min(340px, 100%); }
+
+  /* ---------- 2 · Galería antes/después ---------- */
+  .vcases {
+    display: grid; gap: clamp(28px, 5vw, 56px);
+    padding: clamp(48px, 9vw, 96px) 20px;
+    max-width: 1100px; margin: 0 auto;
+  }
+  .vcase__pair {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 3px;
+    border-radius: 10px; overflow: hidden;
+    background: var(--line);
+  }
+  .vcase__side { position: relative; margin: 0; }
+  .vcase__side img {
+    display: block; width: 100%; aspect-ratio: 4 / 5;
+    object-fit: cover; background: var(--paper-alt);
+  }
+  .vcase__tag {
+    position: absolute; left: 10px; bottom: 10px;
+    font-family: var(--mono); font-size: 11px; font-weight: 600;
+    letter-spacing: .08em; text-transform: uppercase;
+    padding: 5px 9px; border-radius: 4px;
+    background: rgba(0, 0, 0, 0.62); color: #fff;
+  }
+  .vcase__tag--after { background: var(--accent); color: var(--accent-ink); }
+  .vcase__label {
+    margin-top: 12px; text-align: center;
+    font-size: 14px; color: var(--ink-soft);
+  }
+
+  /* ---------- 3 · Línea de confianza ---------- */
+  .vtrust {
+    border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+    background: var(--paper-alt);
+  }
+  .vtrust__line {
+    max-width: 900px; margin: 0 auto;
+    padding: clamp(22px, 4vw, 34px) 20px;
+    text-align: center; text-wrap: balance;
+    font-size: clamp(15px, 2vw, 18px); font-weight: 500;
+    color: var(--ink);
+  }
+
+  /* ---------- 4 · Servicios ---------- */
+  .vservices { padding: clamp(44px, 7vw, 76px) 20px; }
+  .vservices__grid {
+    max-width: 900px; margin: 0 auto;
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: clamp(26px, 5vw, 44px) 16px;
+  }
+  @media (min-width: 720px) {
+    .vservices__grid { grid-template-columns: repeat(4, 1fr); }
+  }
+  .vservice {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 12px; text-align: center;
+  }
+  .vservice__label {
+    font-size: 15px; font-weight: 600; text-wrap: balance;
+  }
+
+  /* ---------- 5 · Testimonio ---------- */
+  .vquote {
+    border-top: 1px solid var(--line);
+    padding: clamp(48px, 8vw, 88px) 20px;
+  }
+  .vquote__inner { max-width: 680px; margin: 0 auto; text-align: center; }
+  .vquote__text {
+    font-family: var(--display); font-weight: var(--display-weight);
+    font-size: clamp(21px, 3.4vw, 31px); line-height: 1.35;
+    letter-spacing: -0.01em; text-wrap: balance;
+  }
+  .vquote__author {
+    margin-top: 18px; font-family: var(--mono);
+    font-size: 12px; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  /* ---------- Ubicación ---------- */
+  .vloc { border-top: 1px solid var(--line); padding: clamp(32px, 5vw, 52px) 20px; }
+  .vloc__inner { max-width: 680px; margin: 0 auto; text-align: center; }
+  .vloc__address { font-size: 16px; color: var(--ink-soft); text-wrap: balance; }
+  .vloc__link {
+    display: inline-block; margin-top: 10px;
+    font-weight: 600; color: var(--accent);
+    border-bottom: 1px solid currentColor;
+  }
+
+  /* ---------- 6 · Cierre ---------- */
+  .vclose {
+    border-top: 1px solid var(--line);
+    background: var(--paper-alt);
+    padding: clamp(52px, 9vw, 96px) 20px calc(clamp(52px, 9vw, 96px) + 40px);
+  }
+  .vclose__inner { max-width: 620px; margin: 0 auto; text-align: center; }
+  .vclose__head {
+    font-family: var(--display); font-weight: var(--display-weight);
+    font-size: clamp(24px, 4vw, 34px); line-height: 1.2;
+    letter-spacing: -0.02em; margin-bottom: 26px; text-wrap: balance;
+  }
+  .vclose__cta { width: 100%; font-size: 17px; padding-block: 18px; }
+
+  /* ---------- Botón flotante ---------- */
+  .vfloat {
+    position: fixed; right: 18px; bottom: 84px; z-index: 70;
+    width: 56px; height: 56px; border-radius: 50%;
+    display: grid; place-items: center;
+    background: #25D366; color: #fff;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.22);
+    transition: transform 0.18s cubic-bezier(0.2, 0, 0, 1);
+  }
+  .vfloat:hover { transform: scale(1.06); }
+  @media (min-width: 720px) { .vfloat { right: 24px; bottom: 92px; } }
+  @media (prefers-reduced-motion: reduce) {
+    .vhero__inner { animation: none; }
+    .vfloat { transition: none; }
+  }
+</style>

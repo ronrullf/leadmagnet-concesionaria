@@ -77,7 +77,45 @@ const dateFmt = new Intl.DateTimeFormat('es-VE', { day: '2-digit', month: 'short
       <a href="/admin/nuevo" class="mt-3 inline-block rounded-[4px] bg-ink px-4 py-2 text-sm font-semibold text-white">Crear el primero</a>
     </div>
   ) : (
-    <div class="overflow-x-auto rounded-[8px] border border-line bg-paper">
+    <>
+    {/* Móvil: tarjetas. Una tabla de 760px obliga a hacer scroll lateral para
+        leer la columna que más importa (la última visita). */}
+    <div class="grid gap-3 md:hidden">
+      {rows.map((d) => (
+        <article class="rounded-[8px] border border-line bg-paper p-4">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <p class="truncate font-semibold">{d.agency_name}</p>
+              <p class="num truncate text-[0.75rem] text-ink-soft">/{d.slug}</p>
+            </div>
+            <button
+              type="button"
+              data-toggle
+              data-id={d.id}
+              data-active={String(d.is_active)}
+              class={`shrink-0 rounded-[6px] px-2.5 py-1.5 text-[0.75rem] font-semibold ${d.is_active ? 'bg-green-100 text-green-800' : 'bg-paper-alt text-ink-soft'}`}
+            >{d.is_active ? 'Activo' : 'Inactivo'}</button>
+          </div>
+
+          <div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-line pt-3 text-[0.8rem]">
+            <span class="num"><strong>{d.visitCount}</strong> visitas</span>
+            <span class={d.lastVisit && Date.now() - new Date(d.lastVisit).getTime() < 24 * 3600 * 1000 ? 'num font-semibold text-green-700' : 'num text-ink-soft'}>
+              {d.lastVisit ? timeAgo(d.lastVisit) : 'sin visitas'}
+            </span>
+            <span class="num text-ink-soft">{d.vertical === 'concesionario' ? 'Autos' : 'Inmob'}</span>
+          </div>
+
+          <div class="mt-3 grid grid-cols-2 gap-2">
+            <a href={`${d.link}?v=0`} target="_blank" rel="noopener" class="rounded-[6px] border border-line px-3 py-2.5 text-center text-[0.8rem] font-medium">Ver</a>
+            <a href={`/admin/${d.slug}/editar`} class="rounded-[6px] border border-line px-3 py-2.5 text-center text-[0.8rem] font-medium">Editar</a>
+            <button type="button" data-copy={d.link} class="rounded-[6px] border border-line px-3 py-2.5 text-[0.8rem] font-medium">Copiar link</button>
+            <button type="button" data-copy={d.outreach} class="rounded-[6px] bg-green-700 px-3 py-2.5 text-[0.8rem] font-semibold text-white">Copiar mensaje</button>
+          </div>
+        </article>
+      ))}
+    </div>
+
+    <div class="hidden overflow-x-auto rounded-[8px] border border-line bg-paper md:block">
       <table class="w-full min-w-[760px] text-sm">
         <thead>
           <tr class="border-b border-line text-left text-[0.75rem] uppercase tracking-wide text-ink-soft">
@@ -133,6 +171,7 @@ const dateFmt = new Intl.DateTimeFormat('es-VE', { day: '2-digit', month: 'short
         </tbody>
       </table>
     </div>
+    </>
   )}
 
   <script>

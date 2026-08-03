@@ -2,7 +2,7 @@
 import AdminLayout from '../../../../layouts/AdminLayout.astro';
 import { supabaseAdmin } from '../../../../lib/supabase';
 import { coerceCopy, SLOT_LIMITS } from '../../../../lib/copy-schema';
-import { MOODS } from '../../../../lib/pro-types';
+import { MOODS, SERVICE_ICONS } from '../../../../lib/pro-types';
 
 const { slug } = Astro.params;
 const db = supabaseAdmin();
@@ -15,16 +15,32 @@ const c = pro.copy;
 
 <AdminLayout title={`Editar ${pro.pro_name}`}>
   <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-    <div>
+    <div class="min-w-0">
       <a href="/admin/pro" class="text-sm underline">← Profesionales</a>
-      <h1 class="mt-1 text-[1.5625rem] font-bold">{pro.pro_name}</h1>
+      <h1 class="mt-1 truncate text-[1.375rem] font-bold sm:text-[1.5625rem]">{pro.pro_name}</h1>
     </div>
-    <div class="flex items-center gap-3">
+    {/* En escritorio los controles viven aquí; en móvil, en la barra fija. */}
+    <div class="hidden items-center gap-3 sm:flex">
       <span id="save-status" class="text-sm text-ink-soft"></span>
       <a href={`/p/${pro.slug}?v=0`} target="_blank" rel="noopener" class="text-sm underline">Abrir ↗</a>
-      <button id="save-btn" class="rounded-[4px] bg-ink px-5 py-2 text-sm font-semibold text-white">Guardar</button>
+      <button id="save-btn" class="rounded-[6px] bg-ink px-5 py-2 text-sm font-semibold text-white">Guardar</button>
     </div>
   </div>
+
+  {/* Barra fija de móvil: el editor es largo y hay que poder guardar desde
+      cualquier punto sin volver arriba. */}
+  <div class="fixed inset-x-0 bottom-0 z-40 flex items-center gap-2 border-t border-line bg-paper/95 px-4 py-3 backdrop-blur sm:hidden">
+    <a
+      href={`/p/${pro.slug}?v=0`}
+      target="_blank"
+      rel="noopener"
+      class="rounded-[6px] border border-line px-4 py-3 text-sm font-medium"
+    >Ver ↗</a>
+    <button id="save-btn-mobile" class="flex-1 rounded-[6px] bg-ink px-5 py-3 text-base font-bold text-white">Guardar</button>
+    <span id="save-status-mobile" class="text-[0.7rem] text-ink-soft"></span>
+  </div>
+  {/* Espacio para que la barra fija no tape el último campo */}
+  <div class="h-20 sm:hidden" aria-hidden="true"></div>
 
   <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,440px)]">
     {/* Columna izquierda: ranuras */}
@@ -46,16 +62,78 @@ const c = pro.copy;
         </div>
       </details>
 
+      {/* Confianza y servicios */}
+      <details open class="sec">
+        <summary class="sec__h">Confianza y servicios</summary>
+        <div class="sec__b grid gap-3">
+          <label class="f"><span>Línea de confianza (un renglón, no un párrafo)</span>
+            <input data-meta="trust_line" value={pro.trust_line ?? ''} placeholder="+8 años transformando sonrisas · Materiales importados · Caracas" />
+          </label>
+
+          <div class="grid gap-2">
+            <span class="text-[0.8rem] font-semibold">Servicios (hasta 4, una palabra cada uno)</span>
+            <div id="services-list" class="grid gap-2"></div>
+            <button type="button" id="add-service" class="w-fit rounded-[4px] border border-line px-3 py-1.5 text-[0.75rem] font-medium">+ Agregar servicio</button>
+          </div>
+        </div>
+      </details>
+
+      {/* CTA y ubicación */}
+      <details open class="sec">
+        <summary class="sec__h">CTA y ubicación</summary>
+        <div class="sec__b grid gap-3">
+          <label class="f"><span>Modo del CTA</span>
+            <select data-meta="cta_mode" id="cta-mode">
+              <option value="directo" selected={pro.cta_mode !== 'formulario'}>
+                Directo — abre WhatsApp de una vez
+              </option>
+              <option value="formulario" selected={pro.cta_mode === 'formulario'}>
+                Formulario — pide nombre y consulta, y arma el mensaje
+              </option>
+            </select>
+          </label>
+
+          <div id="cta-form-fields" class="grid gap-3 sm:grid-cols-2" hidden={pro.cta_mode !== 'formulario'}>
+            <label class="f"><span>Título del formulario</span>
+              <input data-meta="cta_form_title" value={pro.cta_form_title ?? ''} placeholder="Cuénteme brevemente" />
+            </label>
+            <label class="f"><span>Pregunta que se le hace al visitante</span>
+              <input data-meta="cta_question_label" value={pro.cta_question_label ?? ''} placeholder="¿Qué desea saber?" />
+            </label>
+          </div>
+
+          <div class="grid gap-3 sm:grid-cols-2">
+            <label class="f"><span>Dirección (opcional)</span>
+              <input data-meta="address" value={pro.address ?? ''} placeholder="Av. Principal, Torre X, Piso 3, Consultorio 3-B" />
+            </label>
+            <label class="f"><span>Búsqueda de Google Maps (opcional)</span>
+              <input data-meta="maps_query" value={pro.maps_query ?? ''} placeholder="Clínica Santa Sofía, Caracas" />
+            </label>
+          </div>
+          <p class="text-[0.75rem] text-ink-soft">
+            Sin dirección ni búsqueda de Maps, la sección de ubicación no aparece en la landing.
+          </p>
+        </div>
+      </details>
+
       {/* Imágenes: subida real con compresión */}
       <details open class="sec">
         <summary class="sec__h">Imágenes</summary>
-        <div class="sec__b grid gap-4 sm:grid-cols-3">
+        <div class="sec__b grid gap-4">
+          <p class="text-[0.75rem] text-ink-soft">
+            Fotos a pedirle al profesional: <strong>1 para el hero</strong> (su mejor caso o un
+            retrato suyo — ocupa toda la primera pantalla), <strong>1 de perfil</strong> para
+            acompañar la historia, <strong>el logo</strong> si lo tiene, y
+            <strong>2 casos antes/después</strong>. Nunca fotos de banco de imágenes: una foto
+            genérica destruye la credibilidad de golpe.
+          </p>
+        <div class="grid gap-4 sm:grid-cols-3">
           <div class="imgfield" data-imgfield>
-            <span class="imgfield__label">Foto del hero (4:5, mirando a cámara)</span>
+            <span class="imgfield__label">Hero — a pantalla completa (su mejor caso o retrato)</span>
             <input type="hidden" data-meta="photo_hero_url" value={pro.photo_hero_url ?? ''} />
             <div class="imgfield__preview" data-preview></div>
             <div class="imgfield__row">
-              <label class="imgfield__btn">Subir<input type="file" accept="image/*" hidden data-file /></label>
+              <label class="imgfield__btn">Subir<input type="file" accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.avif" hidden data-file /></label>
               <button type="button" class="imgfield__clear" data-clear>Quitar</button>
             </div>
             <span class="imgfield__status" data-status></span>
@@ -66,7 +144,7 @@ const c = pro.copy;
             <input type="hidden" data-meta="photo_story_url" value={pro.photo_story_url ?? ''} />
             <div class="imgfield__preview" data-preview></div>
             <div class="imgfield__row">
-              <label class="imgfield__btn">Subir<input type="file" accept="image/*" hidden data-file /></label>
+              <label class="imgfield__btn">Subir<input type="file" accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.avif" hidden data-file /></label>
               <button type="button" class="imgfield__clear" data-clear>Quitar</button>
             </div>
             <span class="imgfield__status" data-status></span>
@@ -77,11 +155,12 @@ const c = pro.copy;
             <input type="hidden" data-meta="logo_url" value={pro.logo_url ?? ''} />
             <div class="imgfield__preview" data-preview></div>
             <div class="imgfield__row">
-              <label class="imgfield__btn">Subir<input type="file" accept="image/*" hidden data-file /></label>
+              <label class="imgfield__btn">Subir<input type="file" accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.avif" hidden data-file /></label>
               <button type="button" class="imgfield__clear" data-clear>Quitar</button>
             </div>
             <span class="imgfield__status" data-status></span>
           </div>
+        </div>
         </div>
       </details>
 
@@ -90,8 +169,9 @@ const c = pro.copy;
         <summary class="sec__h">Antes / Después</summary>
         <div class="sec__b grid gap-3">
           <p class="text-[0.75rem] text-ink-soft">
-            Imágenes reales del trabajo del profesional. Sin ambas (antes y después), el par no aparece.
-            Si no cargas ninguno, la sección se oculta.
+            Máximo 2 casos: el tercero ya no suma prueba, solo alarga la página. Imágenes reales
+            del trabajo del profesional — sin ambas (antes y después), el par no aparece. Si no
+            cargas ninguno, la sección se oculta.
           </p>
           <div id="ba-list" class="grid gap-3"></div>
           <button type="button" id="ba-add" class="justify-self-start rounded-[4px] border border-dashed border-line px-4 py-2 text-sm font-medium text-ink-soft hover:text-ink">
@@ -144,15 +224,72 @@ const c = pro.copy;
   <script type="application/json" id="slot-limits" set:html={JSON.stringify(SLOT_LIMITS)}></script>
   <script type="application/json" id="ba-data" set:html={JSON.stringify(pro.before_after ?? [])}></script>
   <script define:vars={{ slug: pro.slug }}>window.__PRO_SLUG__ = slug;</script>
+  <script type="application/json" id="services-data" set:html={JSON.stringify(pro.services ?? [])}></script>
+  <script type="application/json" id="service-icons" set:html={JSON.stringify(SERVICE_ICONS)}></script>
+
+  <script is:inline>
+    // Los textos del formulario solo tienen sentido en modo formulario.
+    (() => {
+      const mode = document.getElementById('cta-mode');
+      const fields = document.getElementById('cta-form-fields');
+      if (mode && fields) {
+        mode.addEventListener('change', () => {
+          fields.hidden = mode.value !== 'formulario';
+        });
+      }
+
+      // ---- Servicios ----
+      const list = document.getElementById('services-list');
+      const addBtn = document.getElementById('add-service');
+      if (!list || !addBtn) return;
+
+      const icons = JSON.parse(document.getElementById('service-icons').textContent);
+      const initial = JSON.parse(document.getElementById('services-data').textContent);
+      const MAX = 4;
+
+      function row(data) {
+        const el = document.createElement('div');
+        el.className = 'flex items-center gap-2';
+        el.dataset.service = '';
+        el.innerHTML =
+          '<input data-svc-label placeholder="Carillas" class="flex-1 rounded-[4px] border border-line px-3 py-2 text-sm" />' +
+          '<select data-svc-icon class="rounded-[4px] border border-line px-2 py-2 text-sm">' +
+          icons.map((i) => `<option value="${i}">${i}</option>`).join('') +
+          '</select>' +
+          '<button type="button" data-svc-del class="text-[0.75rem] text-red-700 underline">Quitar</button>';
+        el.querySelector('[data-svc-label]').value = data?.label ?? '';
+        el.querySelector('[data-svc-icon]').value = data?.icon ?? icons[0];
+        el.querySelector('[data-svc-del]').addEventListener('click', () => {
+          el.remove();
+          sync();
+        });
+        list.appendChild(el);
+      }
+
+      function sync() {
+        addBtn.style.display =
+          list.querySelectorAll('[data-service]').length >= MAX ? 'none' : '';
+      }
+
+      addBtn.addEventListener('click', () => {
+        if (list.querySelectorAll('[data-service]').length >= MAX) return;
+        row(null);
+        sync();
+      });
+
+      initial.forEach(row);
+      sync();
+    })();
+  </script>
 
   <style>
     .sec { border: 1px solid var(--color-line, #E2E2E2); border-radius: 8px; background: #fff; }
-    .sec__h { cursor: pointer; padding: 12px 16px; font-weight: 600; font-size: 14px; }
+    .sec__h { cursor: pointer; padding: 16px; font-weight: 600; font-size: 15px; min-height: 52px; display: flex; align-items: center; }
     .sec__b { padding: 0 16px 16px; }
     .f { display: grid; gap: 4px; font-size: 13px; }
     .f > span { font-weight: 500; }
     .f input, .f select, .f textarea, .sec__b textarea, [data-creds] {
-      border: 1px solid #DDD; border-radius: 4px; padding: 7px 9px; font: inherit; width: 100%; background: #fff;
+      border: 1px solid #DDD; border-radius: 6px; padding: 11px 12px; font: inherit; width: 100%; background: #fff;
     }
     .f input:focus-visible, .f textarea:focus-visible, .sec__b textarea:focus-visible {
       outline: 2px solid #F97316; outline-offset: 1px;
@@ -163,7 +300,7 @@ const c = pro.copy;
     .slot-field__count { font-size: 11px; font-family: ui-monospace, monospace; color: #999; }
     .slot-field__count.over { color: #DC2626; font-weight: 600; }
     .slot-field textarea, .slot-field input {
-      border: 1px solid #DDD; border-radius: 4px; padding: 7px 9px; font: inherit; width: 100%; resize: vertical;
+      border: 1px solid #DDD; border-radius: 6px; padding: 11px 12px; font: inherit; width: 100%; resize: vertical;
     }
 
     /* Campos de imagen con subida */
@@ -177,12 +314,16 @@ const c = pro.copy;
     .imgfield__preview.empty::after { content: 'Sin imagen'; font-size: 12px; color: #AAA; }
     .imgfield__row { display: flex; gap: 6px; align-items: center; }
     .imgfield__btn {
-      cursor: pointer; font-size: 12px; font-weight: 600; padding: 6px 12px;
-      border-radius: 4px; background: #F97316; color: #fff;
+      cursor: pointer; font-size: 14px; font-weight: 600; padding: 11px 16px;
+      border-radius: 6px; background: #F97316; color: #fff; text-align: center; flex: 1;
     }
     .imgfield__clear {
-      font-size: 12px; padding: 6px 10px; border: 1px solid #DDD; border-radius: 4px;
+      font-size: 14px; padding: 11px 14px; border: 1px solid #DDD; border-radius: 6px;
       background: #fff; cursor: pointer; color: #666;
+    }
+    @media (min-width: 640px) {
+      .imgfield__btn { font-size: 12px; padding: 7px 12px; flex: 0 0 auto; }
+      .imgfield__clear { font-size: 12px; padding: 7px 10px; }
     }
     .imgfield__clear[hidden] { display: none; }
     .imgfield__status { font-size: 11px; color: #888; min-height: 14px; }
@@ -191,7 +332,7 @@ const c = pro.copy;
     .ba-row { border: 1px solid #EEE; border-radius: 8px; padding: 12px; display: grid; gap: 10px; }
     .ba-row__imgs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .ba-row__foot { display: flex; gap: 8px; align-items: center; }
-    .ba-row__foot input { flex: 1; border: 1px solid #DDD; border-radius: 4px; padding: 7px 9px; font: inherit; }
+    .ba-row__foot input { flex: 1; min-width: 0; border: 1px solid #DDD; border-radius: 6px; padding: 11px 12px; font: inherit; }
     .ba-row__del {
       font-size: 12px; padding: 7px 12px; border: 1px solid #F0C0C0; color: #B02020;
       border-radius: 4px; background: #fff; cursor: pointer; white-space: nowrap;

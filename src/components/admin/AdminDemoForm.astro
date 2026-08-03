@@ -23,12 +23,12 @@ const ACCENT_SWATCHES = [
 
 <form id="demo-form" class="flex flex-col gap-8" novalidate>
   {/* ============ Identidad ============ */}
-  <fieldset class="rounded-[8px] border border-line bg-paper p-6">
+  <fieldset class="rounded-[8px] border border-line bg-paper p-4 sm:p-6">
     <legend class="px-2 text-sm font-bold uppercase tracking-wide text-ink-soft">Identidad</legend>
-    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <label class="flex flex-col gap-1">
         <span class="text-sm font-medium">Tipo de negocio *</span>
-        <select name="vertical" disabled={isEditing} class="rounded-[4px] border border-line px-3 py-2 disabled:bg-paper-alt disabled:text-ink-soft">
+        <select name="vertical" disabled={isEditing} class="rounded-[6px] border border-line px-3 py-2.5 disabled:bg-paper-alt disabled:text-ink-soft sm:py-2">
           <option value="inmobiliaria">Inmobiliaria</option>
           <option value="concesionario">Concesionario</option>
         </select>
@@ -36,26 +36,26 @@ const ACCENT_SWATCHES = [
       </label>
       <label class="flex flex-col gap-1">
         <span class="text-sm font-medium">Nombre del negocio *</span>
-        <input name="agency_name" required class="rounded-[4px] border border-line px-3 py-2" placeholder="Inmobiliaria Costa Azul / AutoMax Concesionario" />
+        <input name="agency_name" required class="rounded-[6px] border border-line px-3 py-2.5 sm:py-2" placeholder="Inmobiliaria Costa Azul / AutoMax Concesionario" />
       </label>
       <label class="flex flex-col gap-1">
         <span class="text-sm font-medium">Slug (link) *</span>
         <div class="flex items-center gap-1">
-          <span class="num text-[0.75rem] text-ink-soft">demo.tiendapana.com/</span>
-          <input name="slug" required class="num flex-1 rounded-[4px] border border-line px-3 py-2" placeholder="costa-azul" />
+          <span class="num hidden shrink-0 text-[0.75rem] text-ink-soft sm:inline">demo.tiendapana.com/</span>
+          <input name="slug" required class="num w-full min-w-0 flex-1 rounded-[6px] border border-line px-3 py-2.5 sm:py-2" placeholder="costa-azul" />
         </div>
       </label>
       <label class="flex flex-col gap-1">
         <span class="text-sm font-medium">Tagline</span>
-        <input name="agency_tagline" class="rounded-[4px] border border-line px-3 py-2" placeholder="Bienes raíces en Margarita desde 2011" />
+        <input name="agency_tagline" class="rounded-[6px] border border-line px-3 py-2.5 sm:py-2" placeholder="Bienes raíces en Margarita desde 2011" />
       </label>
       <label class="flex flex-col gap-1">
         <span class="text-sm font-medium">Ciudad *</span>
-        <input name="agency_city" required class="rounded-[4px] border border-line px-3 py-2" placeholder="Porlamar, Nueva Esparta" />
+        <input name="agency_city" required class="rounded-[6px] border border-line px-3 py-2.5 sm:py-2" placeholder="Porlamar, Nueva Esparta" />
       </label>
       <label class="flex flex-col gap-1">
         <span class="text-sm font-medium">Instagram (sin @)</span>
-        <input name="instagram_handle" class="rounded-[4px] border border-line px-3 py-2" placeholder="costaazulve" />
+        <input name="instagram_handle" class="rounded-[6px] border border-line px-3 py-2.5 sm:py-2" placeholder="costaazulve" />
       </label>
       <div class="flex flex-col gap-1">
         <span class="text-sm font-medium">Color de acento</span>
@@ -64,19 +64,19 @@ const ACCENT_SWATCHES = [
             <button
               type="button"
               data-swatch={c}
-              class="h-8 w-8 rounded-[4px] border-2 border-transparent"
+              class="h-10 w-10 rounded-[6px] border-2 border-transparent sm:h-8 sm:w-8"
               style={`background:${c}`}
               aria-label={`Color ${c}`}
             ></button>
           ))}
-          <input name="accent_hex" type="color" value="#0F5C4E" class="h-8 w-12 cursor-pointer rounded-[4px] border border-line" />
+          <input name="accent_hex" type="color" value="#0F5C4E" class="h-10 w-14 cursor-pointer rounded-[6px] border border-line sm:h-8 sm:w-12" />
           <span id="accent-value" class="num text-[0.75rem] text-ink-soft">#0F5C4E</span>
         </div>
       </div>
-      <div class="flex flex-col gap-1 md:col-span-2">
+      <div class="flex flex-col gap-1 sm:col-span-2">
         <span class="text-sm font-medium">Logo (opcional — si no hay, se usa monograma)</span>
         <div class="flex items-center gap-3">
-          <input type="file" id="logo-input" accept="image/*" class="text-sm" />
+          <input type="file" id="logo-input" accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.avif" class="text-sm" />
           <img id="logo-preview" class="hidden h-10 w-auto rounded-[4px] border border-line" alt="Logo" />
           <button type="button" id="logo-remove" class="hidden text-[0.75rem] text-red-700 underline">Quitar</button>
         </div>
@@ -85,54 +85,54 @@ const ACCENT_SWATCHES = [
   </fieldset>
 
   {/* ============ Contacto ============ */}
-  <fieldset class="rounded-[8px] border border-line bg-paper p-6">
+  <fieldset class="rounded-[8px] border border-line bg-paper p-4 sm:p-6">
     <legend class="px-2 text-sm font-bold uppercase tracking-wide text-ink-soft">Contacto</legend>
-    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <label class="flex flex-col gap-1">
         <span class="text-sm font-medium">WhatsApp (58 + 10 dígitos) *</span>
-        <input name="whatsapp_e164" required inputmode="numeric" class="num rounded-[4px] border border-line px-3 py-2" placeholder="584141234567" maxlength="12" />
+        <input name="whatsapp_e164" required inputmode="numeric" class="num rounded-[6px] border border-line px-3 py-2.5 sm:py-2" placeholder="584141234567" maxlength="12" />
         <span id="wa-error" class="hidden text-[0.75rem] text-red-700">Debe ser 12 dígitos empezando por 58.</span>
       </label>
       <label class="flex flex-col gap-1">
         <span class="text-sm font-medium">Email</span>
-        <input name="contact_email" type="email" class="rounded-[4px] border border-line px-3 py-2" placeholder="info@agencia.com" />
+        <input name="contact_email" type="email" class="rounded-[6px] border border-line px-3 py-2.5 sm:py-2" placeholder="info@agencia.com" />
       </label>
       <label class="flex flex-col gap-1">
         <span class="text-sm font-medium">Dirección de oficina</span>
-        <input name="office_address" class="rounded-[4px] border border-line px-3 py-2" />
+        <input name="office_address" class="rounded-[6px] border border-line px-3 py-2.5 sm:py-2" />
       </label>
       <label class="flex flex-col gap-1">
         <span class="text-sm font-medium">Búsqueda para Google Maps</span>
-        <input name="maps_query" class="rounded-[4px] border border-line px-3 py-2" placeholder="C.C. Costa Azul, Porlamar, Venezuela" />
+        <input name="maps_query" class="rounded-[6px] border border-line px-3 py-2.5 sm:py-2" placeholder="C.C. Costa Azul, Porlamar, Venezuela" />
       </label>
     </div>
   </fieldset>
 
   {/* ============ Prueba social ============ */}
-  <fieldset class="rounded-[8px] border border-line bg-paper p-6">
+  <fieldset class="rounded-[8px] border border-line bg-paper p-4 sm:p-6">
     <legend class="px-2 text-sm font-bold uppercase tracking-wide text-ink-soft">Prueba social (opcional)</legend>
-    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <label class="flex flex-col gap-1">
         <span class="text-sm font-medium">Años operando</span>
-        <input name="years_operating" type="number" min="0" class="num rounded-[4px] border border-line px-3 py-2" />
+        <input name="years_operating" type="number" min="0" class="num rounded-[6px] border border-line px-3 py-2.5 sm:py-2" />
       </label>
       <label class="flex flex-col gap-1">
         <span class="text-sm font-medium">Inmuebles vendidos</span>
-        <input name="properties_sold" type="number" min="0" class="num rounded-[4px] border border-line px-3 py-2" />
+        <input name="properties_sold" type="number" min="0" class="num rounded-[6px] border border-line px-3 py-2.5 sm:py-2" />
       </label>
-      <label class="flex flex-col gap-1 md:col-span-2">
+      <label class="flex flex-col gap-1 sm:col-span-2">
         <span class="text-sm font-medium">Testimonio</span>
-        <textarea name="testimonial_text" rows="2" class="rounded-[4px] border border-line px-3 py-2"></textarea>
+        <textarea name="testimonial_text" rows="2" class="rounded-[6px] border border-line px-3 py-2.5 sm:py-2"></textarea>
       </label>
       <label class="flex flex-col gap-1">
         <span class="text-sm font-medium">Autor del testimonio</span>
-        <input name="testimonial_author" class="rounded-[4px] border border-line px-3 py-2" placeholder="María G., Pampatar" />
+        <input name="testimonial_author" class="rounded-[6px] border border-line px-3 py-2.5 sm:py-2" placeholder="María G., Pampatar" />
       </label>
     </div>
   </fieldset>
 
   {/* ============ Inmuebles ============ */}
-  <fieldset class="rounded-[8px] border border-line bg-paper p-6">
+  <fieldset class="rounded-[8px] border border-line bg-paper p-4 sm:p-6">
     <legend class="px-2 text-sm font-bold uppercase tracking-wide text-ink-soft">
       <span data-items-label>Inventario</span> (hasta 6)
     </legend>
@@ -158,12 +158,12 @@ const ACCENT_SWATCHES = [
   </fieldset>
 
   {/* ============ Control ============ */}
-  <fieldset class="rounded-[8px] border border-line bg-paper p-6">
+  <fieldset class="rounded-[8px] border border-line bg-paper p-4 sm:p-6">
     <legend class="px-2 text-sm font-bold uppercase tracking-wide text-ink-soft">Control</legend>
-    <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
       <label class="flex flex-col gap-1">
         <span class="text-sm font-medium">Modo</span>
-        <select name="mode" class="rounded-[4px] border border-line px-3 py-2">
+        <select name="mode" class="rounded-[6px] border border-line px-3 py-2.5 sm:py-2">
           <option value="rapido">Rápido</option>
           <option value="completo">Completo</option>
         </select>
@@ -174,28 +174,31 @@ const ACCENT_SWATCHES = [
       </label>
       <label class="flex flex-col gap-1 md:col-span-3">
         <span class="text-sm font-medium">Notas internas</span>
-        <textarea name="notes" rows="2" class="rounded-[4px] border border-line px-3 py-2"></textarea>
+        <textarea name="notes" rows="2" class="rounded-[6px] border border-line px-3 py-2.5 sm:py-2"></textarea>
       </label>
     </div>
   </fieldset>
 
-  <div class="flex items-center gap-4">
+  {/* En móvil la barra de guardado queda fija abajo: el formulario es largo y
+      obligar a volver al final para guardar es la forma más rápida de perder
+      el trabajo. En escritorio se comporta como un bloque normal. */}
+  <div class="sticky bottom-0 z-30 -mx-4 flex flex-col gap-2 border-t border-line bg-paper/95 px-4 py-3 backdrop-blur sm:static sm:mx-0 sm:flex-row sm:items-center sm:gap-4 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:backdrop-blur-none">
     <button
       type="submit"
       id="save-btn"
-      class="rounded-[4px] bg-ink px-6 py-3 text-sm font-bold text-white disabled:opacity-50"
+      class="w-full rounded-[6px] bg-ink px-6 py-3.5 text-base font-bold text-white disabled:opacity-50 sm:w-auto sm:py-3 sm:text-sm"
     >Guardar demo</button>
-    <span id="save-status" class="text-sm text-ink-soft"></span>
+    <span id="save-status" class="text-center text-sm text-ink-soft sm:text-left"></span>
   </div>
 
   {/* ============ Resultado ============ */}
-  <div id="result-panel" class="hidden rounded-[8px] border-2 border-green-600 bg-green-50 p-6">
+  <div id="result-panel" class="hidden rounded-[8px] border-2 border-green-600 bg-green-50 p-4 sm:p-6">
     <p class="mb-1 font-bold text-green-900">Demo guardado ✓</p>
     <p class="num mb-4 break-all text-sm" id="result-link"></p>
-    <div class="flex flex-wrap gap-3">
-      <button type="button" id="copy-link" class="rounded-[4px] bg-ink px-4 py-2.5 text-sm font-semibold text-white">Copiar link</button>
-      <button type="button" id="copy-outreach" class="rounded-[4px] bg-green-700 px-4 py-2.5 text-sm font-semibold text-white">Copiar mensaje de WhatsApp</button>
-      <a id="result-open" href="#" target="_blank" rel="noopener" class="rounded-[4px] border border-line bg-paper px-4 py-2.5 text-sm font-semibold">Abrir demo</a>
+    <div class="grid gap-2 sm:flex sm:flex-wrap sm:gap-3">
+      <button type="button" id="copy-link" class="rounded-[6px] bg-ink px-4 py-3 text-sm font-semibold text-white sm:py-2.5">Copiar link</button>
+      <button type="button" id="copy-outreach" class="rounded-[6px] bg-green-700 px-4 py-3 text-sm font-semibold text-white sm:py-2.5">Copiar mensaje de WhatsApp</button>
+      <a id="result-open" href="#" target="_blank" rel="noopener" class="rounded-[6px] border border-line bg-paper px-4 py-3 text-center text-sm font-semibold sm:py-2.5">Abrir demo</a>
     </div>
   </div>
 </form>
@@ -203,10 +206,10 @@ const ACCENT_SWATCHES = [
 {/* Plantilla de un inmueble del repetidor */}
 <template id="property-template">
   <div class="property-item rounded-[8px] border border-line bg-paper-alt p-4" data-kind="property">
-    <div class="mb-3 flex items-center justify-between">
+    <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
       <p class="text-sm font-bold">Inmueble <span data-num></span></p>
       <div class="flex items-center gap-3">
-        <button type="button" data-paste class="rounded-[4px] border border-line bg-paper px-2.5 py-1.5 text-[0.75rem] font-semibold">Pegar datos</button>
+        <button type="button" data-paste class="rounded-[6px] border border-line bg-paper px-3 py-2 text-[0.75rem] font-semibold">Pegar datos</button>
         <label class="flex items-center gap-1.5 text-[0.75rem] font-medium">
           <input type="radio" name="featured_radio" data-field="is_featured" />
           Destacado
@@ -217,47 +220,47 @@ const ACCENT_SWATCHES = [
 
     {/* Fallback si el navegador no da acceso directo al portapapeles */}
     <div data-paste-fallback class="mb-3 hidden">
-      <textarea data-paste-area rows="6" placeholder="Pega aquí los datos con el formato copiado…" class="w-full rounded-[4px] border border-line px-3 py-2 text-sm"></textarea>
-      <button type="button" data-paste-apply class="mt-1 rounded-[4px] bg-ink px-3 py-1.5 text-[0.75rem] font-semibold text-white">Aplicar datos</button>
+      <textarea data-paste-area rows="6" placeholder="Pega aquí los datos con el formato copiado…" class="w-full rounded-[6px] border border-line px-3 py-2.5 text-sm sm:py-2"></textarea>
+      <button type="button" data-paste-apply class="mt-1 rounded-[6px] bg-ink px-3 py-2 text-[0.75rem] font-semibold text-white">Aplicar datos</button>
     </div>
 
-    <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-      <input data-field="ref_code" placeholder="Ref (ej: A-102) *" class="num rounded-[4px] border border-line px-3 py-2 text-sm" />
-      <input data-field="title" placeholder="Título *" class="rounded-[4px] border border-line px-3 py-2 text-sm" />
-      <select data-field="operation" class="rounded-[4px] border border-line px-3 py-2 text-sm">
+    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <input data-field="ref_code" placeholder="Ref (ej: A-102) *" class="num rounded-[6px] border border-line px-3 py-2.5 text-sm sm:py-2" />
+      <input data-field="title" placeholder="Título *" class="rounded-[6px] border border-line px-3 py-2.5 text-sm sm:py-2" />
+      <select data-field="operation" class="rounded-[6px] border border-line px-3 py-2.5 text-sm sm:py-2">
         <option value="venta">Venta</option>
         <option value="alquiler">Alquiler</option>
       </select>
-      <select data-field="property_type" class="rounded-[4px] border border-line px-3 py-2 text-sm">
+      <select data-field="property_type" class="rounded-[6px] border border-line px-3 py-2.5 text-sm sm:py-2">
         <option value="apartamento">Apartamento</option>
         <option value="casa">Casa</option>
         <option value="terreno">Terreno</option>
         <option value="local">Local</option>
         <option value="quinta">Quinta</option>
       </select>
-      <input data-field="price_usd" type="number" min="0" placeholder="Precio USD *" class="num rounded-[4px] border border-line px-3 py-2 text-sm" />
-      <input data-field="location" placeholder="Ubicación *" class="rounded-[4px] border border-line px-3 py-2 text-sm" />
-      <div class="grid grid-cols-4 gap-2 md:col-span-2">
-        <input data-field="bedrooms" type="number" min="0" placeholder="Hab" class="num rounded-[4px] border border-line px-3 py-2 text-sm" />
-        <input data-field="bathrooms" type="number" min="0" placeholder="Baños" class="num rounded-[4px] border border-line px-3 py-2 text-sm" />
-        <input data-field="parking" type="number" min="0" placeholder="Ptos" class="num rounded-[4px] border border-line px-3 py-2 text-sm" />
-        <input data-field="area_m2" type="number" min="0" placeholder="m²" class="num rounded-[4px] border border-line px-3 py-2 text-sm" />
+      <input data-field="price_usd" type="number" min="0" placeholder="Precio USD *" class="num rounded-[6px] border border-line px-3 py-2.5 text-sm sm:py-2" />
+      <input data-field="location" placeholder="Ubicación *" class="rounded-[6px] border border-line px-3 py-2.5 text-sm sm:py-2" />
+      <div class="grid grid-cols-2 gap-2 sm:col-span-2 sm:grid-cols-4">
+        <input data-field="bedrooms" type="number" min="0" placeholder="Hab" class="num rounded-[6px] border border-line px-3 py-2.5 text-sm sm:py-2" />
+        <input data-field="bathrooms" type="number" min="0" placeholder="Baños" class="num rounded-[6px] border border-line px-3 py-2.5 text-sm sm:py-2" />
+        <input data-field="parking" type="number" min="0" placeholder="Ptos" class="num rounded-[6px] border border-line px-3 py-2.5 text-sm sm:py-2" />
+        <input data-field="area_m2" type="number" min="0" placeholder="m²" class="num rounded-[6px] border border-line px-3 py-2.5 text-sm sm:py-2" />
       </div>
-      <textarea data-field="description" rows="2" placeholder="Descripción" class="rounded-[4px] border border-line px-3 py-2 text-sm md:col-span-2"></textarea>
-      <input data-field="features" placeholder="Características separadas por coma (Piscina, Vigilancia 24h)" class="rounded-[4px] border border-line px-3 py-2 text-sm md:col-span-2" />
-      <input data-field="maps_query" placeholder="Búsqueda de Google Maps del inmueble" class="rounded-[4px] border border-line px-3 py-2 text-sm md:col-span-2" />
+      <textarea data-field="description" rows="2" placeholder="Descripción" class="rounded-[6px] border border-line px-3 py-2.5 text-sm sm:col-span-2 sm:py-2"></textarea>
+      <input data-field="features" placeholder="Características separadas por coma (Piscina, Vigilancia 24h)" class="rounded-[6px] border border-line px-3 py-2.5 text-sm sm:col-span-2 sm:py-2" />
+      <input data-field="maps_query" placeholder="Búsqueda de Google Maps del inmueble" class="rounded-[6px] border border-line px-3 py-2.5 text-sm sm:col-span-2 sm:py-2" />
     </div>
 
     {/* Uploader */}
     <div class="mt-3">
       <div
         data-dropzone
-        class="flex min-h-[80px] cursor-pointer flex-wrap items-center gap-2 rounded-[4px] border-2 border-dashed border-line bg-paper p-3 text-sm text-ink-soft"
+        class="flex min-h-[96px] cursor-pointer flex-wrap items-center gap-2 rounded-[6px] border-2 border-dashed border-line bg-paper p-4 text-sm text-ink-soft"
       >
-        <span data-drop-hint>Arrastre fotos aquí o haga clic (máx 6, se comprimen solas)</span>
+        <span data-drop-hint>Toque para elegir fotos de su galería (máx 6, se comprimen solas)</span>
         <div data-previews class="flex flex-wrap gap-2"></div>
       </div>
-      <input type="file" data-file-input accept="image/*" multiple class="hidden" />
+      <input type="file" data-file-input accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.avif" multiple class="hidden" />
       <p data-upload-status class="mt-1 text-[0.75rem] text-ink-soft"></p>
     </div>
   </div>
@@ -266,10 +269,10 @@ const ACCENT_SWATCHES = [
 {/* Plantilla de un vehículo del repetidor (concesionarios) */}
 <template id="vehicle-template">
   <div class="property-item rounded-[8px] border border-line bg-paper-alt p-4" data-kind="vehicle">
-    <div class="mb-3 flex items-center justify-between">
+    <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
       <p class="text-sm font-bold">Vehículo <span data-num></span></p>
       <div class="flex items-center gap-3">
-        <button type="button" data-paste class="rounded-[4px] border border-line bg-paper px-2.5 py-1.5 text-[0.75rem] font-semibold">Pegar datos</button>
+        <button type="button" data-paste class="rounded-[6px] border border-line bg-paper px-3 py-2 text-[0.75rem] font-semibold">Pegar datos</button>
         <label class="flex items-center gap-1.5 text-[0.75rem] font-medium">
           <input type="radio" name="featured_radio" data-field="is_featured" />
           Destacado
@@ -279,23 +282,23 @@ const ACCENT_SWATCHES = [
     </div>
 
     <div data-paste-fallback class="mb-3 hidden">
-      <textarea data-paste-area rows="6" placeholder="Pega aquí los datos con el formato copiado…" class="w-full rounded-[4px] border border-line px-3 py-2 text-sm"></textarea>
-      <button type="button" data-paste-apply class="mt-1 rounded-[4px] bg-ink px-3 py-1.5 text-[0.75rem] font-semibold text-white">Aplicar datos</button>
+      <textarea data-paste-area rows="6" placeholder="Pega aquí los datos con el formato copiado…" class="w-full rounded-[6px] border border-line px-3 py-2.5 text-sm sm:py-2"></textarea>
+      <button type="button" data-paste-apply class="mt-1 rounded-[6px] bg-ink px-3 py-2 text-[0.75rem] font-semibold text-white">Aplicar datos</button>
     </div>
 
-    <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-      <input data-field="ref_code" placeholder="Ref (ej: C-001) *" class="num rounded-[4px] border border-line px-3 py-2 text-sm" />
-      <input data-field="title" placeholder="Título (ej: Toyota Corolla SE 2022) — se autogenera si lo dejas vacío" class="rounded-[4px] border border-line px-3 py-2 text-sm" />
-      <div class="grid grid-cols-3 gap-2 md:col-span-2">
-        <input data-field="brand" placeholder="Marca *" class="rounded-[4px] border border-line px-3 py-2 text-sm" />
-        <input data-field="model" placeholder="Modelo" class="rounded-[4px] border border-line px-3 py-2 text-sm" />
-        <input data-field="year" type="number" min="1950" max="2035" placeholder="Año" class="num rounded-[4px] border border-line px-3 py-2 text-sm" />
+    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <input data-field="ref_code" placeholder="Ref (ej: C-001) *" class="num rounded-[6px] border border-line px-3 py-2.5 text-sm sm:py-2" />
+      <input data-field="title" placeholder="Título (ej: Toyota Corolla SE 2022) — se autogenera si lo dejas vacío" class="rounded-[6px] border border-line px-3 py-2.5 text-sm sm:py-2" />
+      <div class="grid grid-cols-1 gap-2 sm:col-span-2 sm:grid-cols-3">
+        <input data-field="brand" placeholder="Marca *" class="rounded-[6px] border border-line px-3 py-2.5 text-sm sm:py-2" />
+        <input data-field="model" placeholder="Modelo" class="rounded-[6px] border border-line px-3 py-2.5 text-sm sm:py-2" />
+        <input data-field="year" type="number" min="1950" max="2035" placeholder="Año" class="num rounded-[6px] border border-line px-3 py-2.5 text-sm sm:py-2" />
       </div>
-      <select data-field="condition" class="rounded-[4px] border border-line px-3 py-2 text-sm">
+      <select data-field="condition" class="rounded-[6px] border border-line px-3 py-2.5 text-sm sm:py-2">
         <option value="nuevo">Nuevo</option>
         <option value="usado">Usado</option>
       </select>
-      <select data-field="vehicle_type" class="rounded-[4px] border border-line px-3 py-2 text-sm">
+      <select data-field="vehicle_type" class="rounded-[6px] border border-line px-3 py-2.5 text-sm sm:py-2">
         <option value="">Tipo de vehículo…</option>
         <option value="sedan">Sedán</option>
         <option value="suv">SUV</option>
@@ -305,21 +308,21 @@ const ACCENT_SWATCHES = [
         <option value="moto">Moto</option>
         <option value="camion">Camión</option>
       </select>
-      <input data-field="price_usd" type="number" min="0" placeholder="Precio USD *" class="num rounded-[4px] border border-line px-3 py-2 text-sm" />
-      <input data-field="mileage_km" type="number" min="0" placeholder="Kilometraje (0 si es nuevo)" class="num rounded-[4px] border border-line px-3 py-2 text-sm" />
-      <select data-field="transmission" class="rounded-[4px] border border-line px-3 py-2 text-sm">
+      <input data-field="price_usd" type="number" min="0" placeholder="Precio USD *" class="num rounded-[6px] border border-line px-3 py-2.5 text-sm sm:py-2" />
+      <input data-field="mileage_km" type="number" min="0" placeholder="Kilometraje (0 si es nuevo)" class="num rounded-[6px] border border-line px-3 py-2.5 text-sm sm:py-2" />
+      <select data-field="transmission" class="rounded-[6px] border border-line px-3 py-2.5 text-sm sm:py-2">
         <option value="">Transmisión…</option>
         <option value="automatica">Automática</option>
         <option value="sincronica">Sincrónica</option>
       </select>
-      <select data-field="fuel" class="rounded-[4px] border border-line px-3 py-2 text-sm">
+      <select data-field="fuel" class="rounded-[6px] border border-line px-3 py-2.5 text-sm sm:py-2">
         <option value="">Combustible…</option>
         <option value="gasolina">Gasolina</option>
         <option value="diesel">Diésel</option>
         <option value="hibrido">Híbrido</option>
         <option value="electrico">Eléctrico</option>
       </select>
-      <input data-field="color" placeholder="Color" class="rounded-[4px] border border-line px-3 py-2 text-sm" />
+      <input data-field="color" placeholder="Color" class="rounded-[6px] border border-line px-3 py-2.5 text-sm sm:py-2" />
 
       <div class="flex items-center gap-4 rounded-[4px] border border-dashed border-line bg-paper px-3 py-2 md:col-span-1">
         <label class="flex items-center gap-2 text-sm font-medium">
@@ -329,20 +332,20 @@ const ACCENT_SWATCHES = [
         <input data-field="import_wait" placeholder="Tiempo de espera (ej: 45-60 días)" class="num hidden flex-1 rounded-[4px] border border-line px-3 py-2 text-sm" />
       </div>
 
-      <textarea data-field="description" rows="2" placeholder="Descripción" class="rounded-[4px] border border-line px-3 py-2 text-sm md:col-span-2"></textarea>
-      <input data-field="features" placeholder="Equipamiento separado por coma (Cámara de reversa, Asientos de cuero)" class="rounded-[4px] border border-line px-3 py-2 text-sm md:col-span-2" />
+      <textarea data-field="description" rows="2" placeholder="Descripción" class="rounded-[6px] border border-line px-3 py-2.5 text-sm sm:col-span-2 sm:py-2"></textarea>
+      <input data-field="features" placeholder="Equipamiento separado por coma (Cámara de reversa, Asientos de cuero)" class="rounded-[6px] border border-line px-3 py-2.5 text-sm sm:col-span-2 sm:py-2" />
     </div>
 
     {/* Uploader */}
     <div class="mt-3">
       <div
         data-dropzone
-        class="flex min-h-[80px] cursor-pointer flex-wrap items-center gap-2 rounded-[4px] border-2 border-dashed border-line bg-paper p-3 text-sm text-ink-soft"
+        class="flex min-h-[96px] cursor-pointer flex-wrap items-center gap-2 rounded-[6px] border-2 border-dashed border-line bg-paper p-4 text-sm text-ink-soft"
       >
-        <span data-drop-hint>Arrastre fotos del vehículo aquí o haga clic (máx 6, se comprimen solas)</span>
+        <span data-drop-hint>Toque para elegir fotos del vehículo desde su galería (máx 6)</span>
         <div data-previews class="flex flex-wrap gap-2"></div>
       </div>
-      <input type="file" data-file-input accept="image/*" multiple class="hidden" />
+      <input type="file" data-file-input accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.avif" multiple class="hidden" />
       <p data-upload-status class="mt-1 text-[0.75rem] text-ink-soft"></p>
     </div>
   </div>

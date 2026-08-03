@@ -61,6 +61,24 @@ export function proCtaMessage(proName: string, ctaLabel: string): string {
   );
 }
 
+/**
+ * Mensaje del CTA con formulario. Llega con nombre y consulta ya escritos: el
+ * profesional recibe un lead calificado en vez de un "hola" que hay que
+ * desenredar. `slot` viaja cuando el visitante venía de tocar un cupo.
+ */
+export function proFormMessage(
+  proName: string,
+  visitorName: string,
+  question: string,
+  slot?: string
+): string {
+  const saludo = visitorName
+    ? `Hola ${proName}, soy ${visitorName}.`
+    : `Hola ${proName}.`;
+  const cuando = slot ? `\nMe interesa el cupo del ${slot}.` : '';
+  return `${saludo} Vi su página.${cuando}\n\n${question}`;
+}
+
 /** Llega con día y hora ya escritos: eso es lo que hoy cuesta catorce mensajes. */
 export function proSlotMessage(proName: string, day: string, time: string): string {
   return (

@@ -209,14 +209,32 @@ function collectMeta() {
     try { meta.slots = JSON.parse(slotsEl.value || '[]'); } catch { meta.slots = null; }
   }
   meta.before_after = collectBeforeAfter();
+  meta.services = collectServices();
   return meta;
 }
 
-const saveStatus = document.getElementById('save-status');
+/** Servicios del layout visual. Sin etiqueta, la fila no cuenta. */
+function collectServices() {
+  const rows = document.querySelectorAll('[data-service]');
+  const out = [];
+  rows.forEach((row) => {
+    const label = row.querySelector('[data-svc-label]')?.value.trim();
+    const icon = row.querySelector('[data-svc-icon]')?.value || 'estrella';
+    if (label) out.push({ label, icon });
+  });
+  return out.length ? out : null;
+}
+
+// Dos botones de guardar: el del encabezado (escritorio) y el de la barra fija
+// (móvil). El estado se escribe en ambos para que se vea desde donde se tocó.
+const statusEls = ['save-status', 'save-status-mobile']
+  .map((id) => document.getElementById(id))
+  .filter(Boolean);
+const setStatus = (txt) => statusEls.forEach((el) => (el.textContent = txt));
 const iframe = document.getElementById('preview');
 
 async function save() {
-  saveStatus.textContent = 'Guardando…';
+  setStatus('Guardando…');
   const creds = document.querySelector('[data-creds]').value.split('\n').map((s) => s.trim()).filter(Boolean);
   copy.proof.credentials = creds;
 
@@ -227,18 +245,20 @@ async function save() {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error);
-    saveStatus.textContent = 'Guardado ✓';
+    setStatus('Guardado ✓');
     localStorage.removeItem(LS_KEY);
-    iframe.src = `/p/${SLUG}?v=0&t=${Date.now()}`;
-    setTimeout(() => (saveStatus.textContent = ''), 2500);
+    if (iframe) iframe.src = `/p/${SLUG}?v=0&t=${Date.now()}`;
+    setTimeout(() => setStatus(''), 2500);
   } catch (e) {
-    saveStatus.textContent = `Error: ${e.message}`;
+    setStatus(`Error: ${e.message}`);
   }
 }
 
-document.getElementById('save-btn').addEventListener('click', save);
-document.getElementById('reload-preview').addEventListener('click', () => {
-  iframe.src = `/p/${SLUG}?v=0&t=${Date.now()}`;
+['save-btn', 'save-btn-mobile'].forEach((id) =>
+  document.getElementById(id)?.addEventListener('click', save)
+);
+document.getElementById('reload-preview')?.addEventListener('click', () => {
+  if (iframe) iframe.src = `/p/${SLUG}?v=0&t=${Date.now()}`;
 });
 
 // Ctrl/Cmd+S guarda.
@@ -361,7 +381,7 @@ function makeBAImg(labelText, url) {
     `<input type="hidden" data-ba-url value="${url ? url.replace(/"/g, '&quot;') : ''}" />` +
     `<div class="imgfield__preview" data-preview></div>` +
     `<div class="imgfield__row">` +
-      `<label class="imgfield__btn">Subir<input type="file" accept="image/*" hidden data-file /></label>` +
+      `<label class="imgfield__btn">Subir<input type="file" accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.avif" hidden data-file /></label>` +
       `<button type="button" class="imgfield__clear" data-clear>Quitar</button>` +
     `</div>` +
     `<span class="imgfield__status" data-status></span>`;
@@ -394,15 +414,29 @@ function addBARow(pair = { before: '', after: '', label: '' }) {
   del.type = 'button';
   del.className = 'ba-row__del';
   del.textContent = 'Eliminar par';
-  del.addEventListener('click', () => { row.remove(); scheduleAutosave(); });
+  del.addEventListener('click', () => { row.remove(); syncBAButton(); scheduleAutosave(); });
   foot.append(label, del);
 
   row.append(imgs, foot);
   baList.appendChild(row);
+  syncBAButton();
 }
 
-initialBA.forEach((p) => addBARow(p));
-document.getElementById('ba-add').addEventListener('click', () => addBARow());
+/** Dos pares como techo: el tercero ya no suma prueba, solo alarga la página. */
+const MAX_BA = 2;
+const baAddBtn = document.getElementById('ba-add');
+
+function syncBAButton() {
+  baAddBtn.style.display =
+    document.querySelectorAll('[data-ba-row]').length >= MAX_BA ? 'none' : '';
+}
+
+initialBA.slice(0, MAX_BA).forEach((p) => addBARow(p));
+syncBAButton();
+baAddBtn.addEventListener('click', () => {
+  if (document.querySelectorAll('[data-ba-row]').length >= MAX_BA) return;
+  addBARow();
+});
 
 /** Solo pares con ambas imágenes cargadas. */
 function collectBeforeAfter() {
@@ -417,5 +451,5 @@ function collectBeforeAfter() {
       pairs.push(pair);
     }
   });
-  return pairs;
+  return pairs.slice(0, MAX_BA);
 }

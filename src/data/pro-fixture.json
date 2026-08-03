@@ -2,7 +2,6 @@
   "id": "dev-fixture-pro",
   "slug": "dra-mariana-rojas",
   "created_at": "2026-07-21T00:00:00.000Z",
-
   "pro_name": "Dra. Mariana Rojas",
   "pro_title": "Dermatóloga · Caracas",
   "profession_key": "dermatologia",
@@ -12,13 +11,10 @@
   "photo_hero_url": null,
   "photo_story_url": null,
   "logo_url": null,
-
   "mood": "clinico",
   "accent_hex": null,
-
   "whatsapp_e164": "584141234567",
   "booking_url": null,
-
   "copy": {
     "hero": {
       "callout": "Llevas 3 años cambiando de crema cada vez que sale un TikTok.",
@@ -112,9 +108,18 @@
         }
       ],
       "metrics": [
-        { "number": "340", "label": "pacientes atendidos" },
-        { "number": "9", "label": "años en consulta" },
-        { "number": "24 h", "label": "respuesta a dudas de control" }
+        {
+          "number": "340",
+          "label": "pacientes atendidos"
+        },
+        {
+          "number": "9",
+          "label": "años en consulta"
+        },
+        {
+          "number": "24 h",
+          "label": "respuesta a dudas de control"
+        }
       ]
     },
     "inaction": {
@@ -153,18 +158,75 @@
       "cta_label": "Ver cupos de esta semana"
     }
   },
-
   "slots": [
-    { "day": "JUE 24", "time": "9:00 AM", "status": "taken" },
-    { "day": "JUE 24", "time": "11:00 AM", "status": "open", "remaining": 2 },
-    { "day": "VIE 25", "time": "8:00 AM", "status": "open", "remaining": 1 },
-    { "day": "VIE 25", "time": "2:00 PM", "status": "taken" },
-    { "day": "LUN 28", "time": "10:00 AM", "status": "open", "remaining": 1 }
+    {
+      "day": "JUE 24",
+      "time": "9:00 AM",
+      "status": "taken"
+    },
+    {
+      "day": "JUE 24",
+      "time": "11:00 AM",
+      "status": "open",
+      "remaining": 2
+    },
+    {
+      "day": "VIE 25",
+      "time": "8:00 AM",
+      "status": "open",
+      "remaining": 1
+    },
+    {
+      "day": "VIE 25",
+      "time": "2:00 PM",
+      "status": "taken"
+    },
+    {
+      "day": "LUN 28",
+      "time": "10:00 AM",
+      "status": "open",
+      "remaining": 1
+    }
   ],
   "monthly_capacity": 15,
   "slots_remaining": 4,
-
   "is_active": true,
   "copy_source": "manual",
-  "notes": "Fixture de desarrollo. No es una persona real."
+  "notes": "Fixture de desarrollo. No es una persona real.",
+  "cta_mode": "formulario",
+  "cta_form_title": "Cuénteme brevemente",
+  "cta_question_label": "¿Qué desea saber?",
+  "address": "Centro Médico Docente La Trinidad, Torre B, Piso 4, Consultorio 4-C",
+  "maps_query": "Centro Médico Docente La Trinidad, Caracas",
+  "trust_line": "+8 años transformando sonrisas · Materiales importados · Caracas",
+  "services": [
+    {
+      "label": "Carillas",
+      "icon": "diente"
+    },
+    {
+      "label": "Ortodoncia",
+      "icon": "alineador"
+    },
+    {
+      "label": "Diseño de sonrisa",
+      "icon": "sonrisa"
+    },
+    {
+      "label": "Blanqueamiento",
+      "icon": "brillo"
+    }
+  ],
+  "before_after": [
+    {
+      "before": "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?w=800&q=70",
+      "after": "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=800&q=70",
+      "label": "Carillas en 2 sesiones"
+    },
+    {
+      "before": "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=800&q=70",
+      "after": "https://images.unsplash.com/photo-1609840114035-3c981b782dfe?w=800&q=70",
+      "label": "Ortodoncia · 14 meses"
+    }
+  ]
 }
