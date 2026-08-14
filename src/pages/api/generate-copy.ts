@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 import { generateCopy, generateBlockOnly } from '../../lib/generate-copy';
 import { resolvePack } from '../../lib/profession-packs';
 import { isAuthed } from '../../lib/auth';
-import { blockSchemas, type BlockKey } from '../../lib/copy-schema';
+import { blockSchemas, type BlockKey } from '../../lib/outreach-schema';
 import type { ProInput } from '../../lib/pro-prompts';
 
 export const prerender = false;
@@ -10,8 +10,8 @@ export const prerender = false;
 /**
  * Generación de copy. Dos modos:
  *
- * - Sin `block`: corre A→B→C→D en secuencia y devuelve el copy completo + reporte.
- * - Con `block` (A|B|C|D) y `previous`: genera solo ese bloque. Lo usa el panel
+ * - Sin `block`: corre A→B en secuencia y devuelve el copy completo + reporte.
+ * - Con `block` (A|B) y `previous`: genera solo ese bloque. Lo usa el panel
  *   para dibujar una barra de progreso real — el cliente pide A, luego B con el
  *   contexto de A, y así — y también el botón "Regenerar este bloque" del editor.
  *

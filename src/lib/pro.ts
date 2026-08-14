@@ -1,5 +1,5 @@
 import { supabaseAnon, supabaseAdmin } from './supabase';
-import { coerceCopy, emptyCopy } from './copy-schema';
+import { coerceOutreachCopy, emptyOutreachCopy, coercePruebas } from './outreach-schema';
 import type { ProDemo, Slot, BeforeAfter, Service } from './pro-types';
 import proFixture from '../data/pro-fixture.json';
 
@@ -14,7 +14,14 @@ const DEV_FIXTURE = proFixture as unknown as ProDemo;
 function hydrate(row: Record<string, unknown>): ProDemo {
   return {
     ...(row as unknown as ProDemo),
-    copy: coerceCopy(row.copy),
+    copy: coerceOutreachCopy(row.copy),
+    // Columnas de la migración 008. Sin ella, la landing renderiza igual: el
+    // muro sale vacío y el link no expira.
+    expira: typeof row.expira === 'string' ? row.expira : null,
+    muro_pruebas: coercePruebas(row.muro_pruebas),
+    autoria_mensaje: str(row.autoria_mensaje),
+    bg_hex: str(row.bg_hex),
+    text_hex: str(row.text_hex),
     slots: normalizeSlots(row.slots),
     before_after: normalizeBeforeAfter(row.before_after),
     // Columnas de la migración 005: si aún no se corrió, la landing sigue
@@ -94,7 +101,7 @@ function devFixture(slug: string): ProDemo | null {
     return {
       ...hydrate(DEV_FIXTURE as unknown as Record<string, unknown>),
       slug,
-      copy: emptyCopy(),
+      copy: emptyOutreachCopy(),
       slots: null,
       monthly_capacity: null,
       slots_remaining: null,

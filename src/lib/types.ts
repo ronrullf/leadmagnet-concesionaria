@@ -1,4 +1,4 @@
-export type Vertical = 'inmobiliaria' | 'concesionario';
+export type Vertical = 'inmobiliaria' | 'concesionario' | 'tienda';
 
 export interface Demo {
   id: string;
@@ -84,4 +84,25 @@ export interface Vehicle {
 export interface BcvRate {
   rate: number;
   fetched_at: string | null;
+}
+
+export interface Product {
+  id: string;
+  demo_id: string;
+  sort_order: number;
+
+  ref_code: string;
+  title: string;
+  category: string | null;
+
+  price_usd: number;
+  /** Precio tachado. Solo se muestra si es mayor que el vigente. */
+  compare_at_usd: number | null;
+
+  description: string | null;
+  /** Tallas o colores. Sin variantes, no se muestra la fila. */
+  variants: string[] | null;
+  image_urls: string[];
+  in_stock: boolean;
+  is_featured: boolean;
 }

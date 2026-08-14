@@ -1,0 +1,118 @@
+---
+/**
+ * Layout de una landing-demo de outreach.
+ *
+ * Presupuesto de rendimiento (§8): él la abre en un Android de gama media con
+ * datos móviles venezolanos, y es tu ÚNICO visitante. Por eso:
+ *   · tipografía del sistema, cero descargas de fuentes
+ *   · cero JS de terceros, cero librerías
+ *   · los tokens de marca salen de su Instagram y entran inline
+ *
+ * Lo que este layout deliberadamente NO trae: el pop-up de TiendaPana. En una
+ * landing de outreach, cualquier mención tuya fuera de la barra de autoría
+ * convierte el regalo en un anuncio (LEY 0 y §9).
+ */
+import { inkOn, normalizeHex } from '../lib/color';
+import { siteBase } from '../lib/site';
+import AuthorBar from '../components/outreach/AuthorBar.astro';
+import type { ProDemo } from '../lib/pro-types';
+
+interface Props {
+  pro: ProDemo;
+  path: string;
+}
+
+const { pro, path } = Astro.props;
+
+const acento = normalizeHex(pro.accent_hex) ?? '#1F6FEB';
+const acentoTinta = inkOn(acento);
+const fondo = normalizeHex(pro.bg_hex) ?? '#FFFFFF';
+const texto = normalizeHex(pro.text_hex) ?? '#14181D';
+
+const siteUrl = siteBase(Astro.url.origin);
+const canonical = `${siteUrl}/p/${pro.slug}`;
+// La vista previa de WhatsApp es lo primero que ve, antes de abrir (§7.3).
+const ogImage = `${siteUrl}/api/og/pro/${pro.slug}`;
+
+const titulo = pro.copy.hero.headline
+  ? `${pro.copy.hero.headline} · ${pro.pro_name}`
+  : pro.pro_name;
+const descripcion = pro.copy.hero.subheadline || pro.copy.problema.parrafo || '';
+
+const rootStyle = [
+  `--acento:${acento}`,
+  `--acento-tinta:${acentoTinta}`,
+  `--fondo:${fondo}`,
+  `--texto:${texto}`,
+].join(';');
+
+const autoriaMensaje =
+  pro.autoria_mensaje ||
+  `Hola, vi la página que hiciste para ${pro.pro_name} y quiero saber más`;
+---
+
+<html lang="es" style={rootStyle}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{titulo}</title>
+    {descripcion && <meta name="description" content={descripcion} />}
+    {/* Una demo de outreach nunca se indexa. */}
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="canonical" href={canonical} />
+
+    <meta property="og:title" content={titulo} />
+    {descripcion && <meta property="og:description" content={descripcion} />}
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content={acento} />
+
+    {pro.logo_url && <link rel="icon" href={pro.logo_url} />}
+
+    <style is:global>
+      *, *::before, *::after { box-sizing: border-box; }
+      html {
+        background: var(--fondo);
+        color: var(--texto);
+        -webkit-font-smoothing: antialiased;
+        -webkit-text-size-adjust: 100%;
+      }
+      body { margin: 0; overflow-x: hidden; }
+      img, video { max-width: 100%; }
+      h1, h2, h3, p, ul, ol, figure { margin: 0; }
+      a { color: inherit; }
+      :focus-visible { outline: 3px solid var(--acento); outline-offset: 3px; }
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          animation-duration: 0.01ms !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <slot />
+
+    <AuthorBar negocio={pro.pro_name} mensaje={autoriaMensaje} />
+
+    <script is:inline define:vars={{ slug: pro.slug, path }}>
+      // Tracking fire-and-forget. Sin librerías: es un fetch y nada más.
+      try {
+        const params = new URLSearchParams(location.search);
+        const payload = JSON.stringify({
+          slug,
+          path,
+          referrer: document.referrer || null,
+          owner: params.get('v') === '1',
+        });
+        if (navigator.sendBeacon) {
+          navigator.sendBeacon('/api/track-pro', new Blob([payload], { type: 'application/json' }));
+        } else {
+          fetch('/api/track-pro', { method: 'POST', body: payload, keepalive: true });
+        }
+      } catch {}
+    </script>
+  </body>
+</html>

@@ -1,7 +1,7 @@
 ---
 import AdminLayout from '../../../../layouts/AdminLayout.astro';
 import { supabaseAdmin } from '../../../../lib/supabase';
-import { coerceCopy, SLOT_LIMITS } from '../../../../lib/copy-schema';
+import { coerceOutreachCopy, coercePruebas, defaultExpiry } from '../../../../lib/outreach-schema';
 import { MOODS, SERVICE_ICONS } from '../../../../lib/pro-types';
 
 const { slug } = Astro.params;
@@ -9,7 +9,10 @@ const db = supabaseAdmin();
 const { data: row } = await db.from('pro_demos').select('*').eq('slug', slug).maybeSingle();
 if (!row) return Astro.redirect('/admin/pro');
 
-const pro = { ...row, copy: coerceCopy(row.copy) };
+const pro = { ...row, copy: coerceOutreachCopy(row.copy) };
+const pruebas = coercePruebas(row.muro_pruebas);
+// Un link sin fecha se propone a 7 días, que es la vida del link del spec.
+const expira = row.expira ?? defaultExpiry();
 const c = pro.copy;
 ---
 
@@ -23,9 +26,13 @@ const c = pro.copy;
     <div class="hidden items-center gap-3 sm:flex">
       <span id="save-status" class="text-sm text-ink-soft"></span>
       <a href={`/p/${pro.slug}?v=0`} target="_blank" rel="noopener" class="text-sm underline">Abrir ↗</a>
+      <button id="save-draft" class="rounded-[6px] border border-line px-4 py-2 text-sm font-medium text-ink-soft">Guardar borrador</button>
       <button id="save-btn" class="rounded-[6px] bg-ink px-5 py-2 text-sm font-semibold text-white">Guardar</button>
     </div>
   </div>
+
+  {/* Checklist del estándar: lo que falta para poder enviar el link. */}
+  <div id="problemas" class="problemas mb-4"></div>
 
   {/* Barra fija de móvil: el editor es largo y hay que poder guardar desde
       cualquier punto sin volver arriba. */}
@@ -58,60 +65,25 @@ const c = pro.copy;
           <label class="f"><span>Mood</span>
             <select data-meta="mood">{MOODS.map((m) => <option value={m} selected={m === pro.mood}>{m}</option>)}</select>
           </label>
-          <label class="f"><span>Acento (hex, opcional)</span><input class="num" data-meta="accent_hex" value={pro.accent_hex ?? ''} placeholder="#0E6B7A" /></label>
+          <label class="f"><span>Acento (de su Instagram)</span><input class="num" data-meta="accent_hex" value={pro.accent_hex ?? ''} placeholder="#0E6B7A" /></label>
+          <label class="f"><span>Fondo (opcional)</span><input class="num" data-meta="bg_hex" value={pro.bg_hex ?? ''} placeholder="#FFFFFF" /></label>
+          <label class="f"><span>Texto (opcional)</span><input class="num" data-meta="text_hex" value={pro.text_hex ?? ''} placeholder="#14181D" /></label>
         </div>
       </details>
 
-      {/* Confianza y servicios */}
+      {/* Capa 2 y vida del link */}
       <details open class="sec">
-        <summary class="sec__h">Confianza y servicios</summary>
+        <summary class="sec__h">Entrega — vida del link y barra de autoría</summary>
         <div class="sec__b grid gap-3">
-          <label class="f"><span>Línea de confianza (un renglón, no un párrafo)</span>
-            <input data-meta="trust_line" value={pro.trust_line ?? ''} placeholder="+8 años transformando sonrisas · Materiales importados · Caracas" />
+          <label class="f"><span>El link expira el (máx 14 días)</span>
+            <input type="date" data-meta="expira" value={expira} />
           </label>
-
-          <div class="grid gap-2">
-            <span class="text-[0.8rem] font-semibold">Servicios (hasta 4, una palabra cada uno)</span>
-            <div id="services-list" class="grid gap-2"></div>
-            <button type="button" id="add-service" class="w-fit rounded-[4px] border border-line px-3 py-1.5 text-[0.75rem] font-medium">+ Agregar servicio</button>
-          </div>
-        </div>
-      </details>
-
-      {/* CTA y ubicación */}
-      <details open class="sec">
-        <summary class="sec__h">CTA y ubicación</summary>
-        <div class="sec__b grid gap-3">
-          <label class="f"><span>Modo del CTA</span>
-            <select data-meta="cta_mode" id="cta-mode">
-              <option value="directo" selected={pro.cta_mode !== 'formulario'}>
-                Directo — abre WhatsApp de una vez
-              </option>
-              <option value="formulario" selected={pro.cta_mode === 'formulario'}>
-                Formulario — pide nombre y consulta, y arma el mensaje
-              </option>
-            </select>
+          <label class="f"><span>Mensaje de la barra de autoría (va a TU WhatsApp)</span>
+            <textarea data-meta="autoria_mensaje" rows="2" placeholder={`Hola, vi la página que hiciste para ${pro.pro_name} y quiero saber más`}>{pro.autoria_mensaje ?? ''}</textarea>
           </label>
-
-          <div id="cta-form-fields" class="grid gap-3 sm:grid-cols-2" hidden={pro.cta_mode !== 'formulario'}>
-            <label class="f"><span>Título del formulario</span>
-              <input data-meta="cta_form_title" value={pro.cta_form_title ?? ''} placeholder="Cuénteme brevemente" />
-            </label>
-            <label class="f"><span>Pregunta que se le hace al visitante</span>
-              <input data-meta="cta_question_label" value={pro.cta_question_label ?? ''} placeholder="¿Qué desea saber?" />
-            </label>
-          </div>
-
-          <div class="grid gap-3 sm:grid-cols-2">
-            <label class="f"><span>Dirección (opcional)</span>
-              <input data-meta="address" value={pro.address ?? ''} placeholder="Av. Principal, Torre X, Piso 3, Consultorio 3-B" />
-            </label>
-            <label class="f"><span>Búsqueda de Google Maps (opcional)</span>
-              <input data-meta="maps_query" value={pro.maps_query ?? ''} placeholder="Clínica Santa Sofía, Caracas" />
-            </label>
-          </div>
           <p class="text-[0.75rem] text-ink-soft">
-            Sin dirección ni búsqueda de Maps, la sección de ubicación no aparece en la landing.
+            La barra es lo único de la página que le habla a él. Todo lo demás le habla a sus
+            pacientes y va a <strong>su</strong> WhatsApp.
           </p>
         </div>
       </details>
@@ -121,15 +93,15 @@ const c = pro.copy;
         <summary class="sec__h">Imágenes</summary>
         <div class="sec__b grid gap-4">
           <p class="text-[0.75rem] text-ink-soft">
-            Fotos a pedirle al profesional: <strong>1 para el hero</strong> (su mejor caso o un
-            retrato suyo — ocupa toda la primera pantalla), <strong>1 de perfil</strong> para
-            acompañar la historia, <strong>el logo</strong> si lo tiene, y
-            <strong>2 casos antes/después</strong>. Nunca fotos de banco de imágenes: una foto
-            genérica destruye la credibilidad de golpe.
+            Todo sale de su Instagram: <strong>el visual del hero</strong> (frame de su reel más
+            visto, o su mejor foto de resultado), <strong>su foto</strong> para "quién te atiende",
+            y <strong>su logo</strong> de la foto de perfil.
+            <strong>Jamás stock, jamás la fachada del local</strong>: el reconocimiento es todo el
+            trabajo del hero.
           </p>
         <div class="grid gap-4 sm:grid-cols-3">
           <div class="imgfield" data-imgfield>
-            <span class="imgfield__label">Hero — a pantalla completa (su mejor caso o retrato)</span>
+            <span class="imgfield__label">Visual del hero (su reel top o su mejor resultado)</span>
             <input type="hidden" data-meta="photo_hero_url" value={pro.photo_hero_url ?? ''} />
             <div class="imgfield__preview" data-preview></div>
             <div class="imgfield__row">
@@ -140,7 +112,7 @@ const c = pro.copy;
           </div>
 
           <div class="imgfield" data-imgfield>
-            <span class="imgfield__label">Foto de perfil / historia</span>
+            <span class="imgfield__label">Su foto (sección "quién te atiende")</span>
             <input type="hidden" data-meta="photo_story_url" value={pro.photo_story_url ?? ''} />
             <div class="imgfield__preview" data-preview></div>
             <div class="imgfield__row">
@@ -151,7 +123,7 @@ const c = pro.copy;
           </div>
 
           <div class="imgfield" data-imgfield>
-            <span class="imgfield__label">Logo (empresa / profesional)</span>
+            <span class="imgfield__label">Su logo</span>
             <input type="hidden" data-meta="logo_url" value={pro.logo_url ?? ''} />
             <div class="imgfield__preview" data-preview></div>
             <div class="imgfield__row">
@@ -164,18 +136,19 @@ const c = pro.copy;
         </div>
       </details>
 
-      {/* Antes / Después: prueba visual real del profesional */}
-      <details class="sec">
-        <summary class="sec__h">Antes / Después</summary>
+      {/* Muro de pruebas */}
+      <details open class="sec">
+        <summary class="sec__h">Muro de pruebas — mínimo 4</summary>
         <div class="sec__b grid gap-3">
           <p class="text-[0.75rem] text-ink-soft">
-            Máximo 2 casos: el tercero ya no suma prueba, solo alarga la página. Imágenes reales
-            del trabajo del profesional — sin ambas (antes y después), el par no aparece. Si no
-            cargas ninguno, la sección se oculta.
+            Solo lo que ya existe en público: comentarios de sus posts, reseñas de Google, o sus
+            propias fotos de resultado. <strong>Nunca inventes un testimonio</strong> — si él lo
+            reconoce como falso, pierdes el prospecto. Cada prueba exige su fuente.
           </p>
-          <div id="ba-list" class="grid gap-3"></div>
-          <button type="button" id="ba-add" class="justify-self-start rounded-[4px] border border-dashed border-line px-4 py-2 text-sm font-medium text-ink-soft hover:text-ink">
-            + Agregar antes/después
+          <span id="muro-count" class="text-[0.75rem] font-semibold"></span>
+          <div id="muro-list" class="grid gap-3"></div>
+          <button type="button" id="muro-add" class="justify-self-start rounded-[6px] border border-dashed border-line px-4 py-2.5 text-sm font-medium text-ink-soft hover:text-ink">
+            + Agregar prueba
           </button>
         </div>
       </details>
@@ -199,13 +172,6 @@ const c = pro.copy;
       <div id="copy-fields"></div>
 
       {/* Credenciales: solo a mano */}
-      <details class="sec">
-        <summary class="sec__h">Credenciales reales (a mano)</summary>
-        <div class="sec__b grid gap-2">
-          <p class="text-[0.75rem] text-ink-soft">Una por línea. La IA nunca las genera. Vacío = la fila no aparece.</p>
-          <textarea data-creds rows="3">{c.proof.credentials.join('\n')}</textarea>
-        </div>
-      </details>
     </div>
 
     {/* Columna derecha: preview en vivo */}
@@ -221,8 +187,8 @@ const c = pro.copy;
   </div>
 
   <script type="application/json" id="copy-data" set:html={JSON.stringify(c)}></script>
-  <script type="application/json" id="slot-limits" set:html={JSON.stringify(SLOT_LIMITS)}></script>
-  <script type="application/json" id="ba-data" set:html={JSON.stringify(pro.before_after ?? [])}></script>
+  <script type="application/json" id="slot-limits" set:html={JSON.stringify({})}></script>
+  <script type="application/json" id="muro-data" set:html={JSON.stringify(pruebas)}></script>
   <script define:vars={{ slug: pro.slug }}>window.__PRO_SLUG__ = slug;</script>
   <script type="application/json" id="services-data" set:html={JSON.stringify(pro.services ?? [])}></script>
   <script type="application/json" id="service-icons" set:html={JSON.stringify(SERVICE_ICONS)}></script>
@@ -283,6 +249,16 @@ const c = pro.copy;
   </script>
 
   <style>
+    .problemas { display: none; }
+    .problemas:not(:empty) {
+      display: block; border-radius: 8px; padding: 12px 14px;
+      font-size: 13px; line-height: 1.5;
+      background: #FEF3C7; border: 1px solid #FCD34D; color: #92400E;
+    }
+    .problemas--ok { background: #ECFDF5 !important; border-color: #A7F3D0 !important; color: #065F46 !important; }
+    .problemas ul { margin: 6px 0 0; padding-left: 18px; }
+    .problemas li { margin-top: 3px; }
+    #muro-count.over { color: #B45309; }
     .sec { border: 1px solid var(--color-line, #E2E2E2); border-radius: 8px; background: #fff; }
     .sec__h { cursor: pointer; padding: 16px; font-weight: 600; font-size: 15px; min-height: 52px; display: flex; align-items: center; }
     .sec__b { padding: 0 16px 16px; }

@@ -1,59 +1,97 @@
 /**
- * Editor de ranuras con preview en vivo.
+ * Editor de la landing-demo de outreach.
  *
- * Construye los campos desde la estructura del copy, así que agregar una ranura
- * al schema no obliga a tocar aquí más que el mapa de abajo. Contador por campo,
- * autoguardado a localStorage, guardado a Supabase y recarga del preview.
+ * Los campos se construyen desde el mapa de abajo, así que agregar una ranura
+ * al schema no obliga a tocar el resto. Contador por campo, autoguardado a
+ * localStorage, guardado a Supabase y recarga del preview.
  */
 const copy = JSON.parse(document.getElementById('copy-data').textContent);
 const LIMITS = JSON.parse(document.getElementById('slot-limits').textContent);
 const SLUG = window.__PRO_SLUG__;
 const LS_KEY = `pro-editor:${SLUG}`;
 
-// Mapa de secciones → ranuras. El orden es el del esqueleto persuasivo.
+/**
+ * Las listas se rellenan con ranuras vacías antes de pintar la UI. Sin esto,
+ * un copy que la IA devolvió corto no deja dónde escribir a mano lo que falta,
+ * y las validaciones duras (3 badges, 4 pruebas) serían imposibles de cumplir.
+ */
+const SLOTS_MINIMOS = {
+  'hero.badges': 3,
+  'comoFunciona.pasos': 3,
+  'incluye.items': 5,
+  faq: 4,
+  placeholders: 3,
+};
+
+function rellenarRanuras() {
+  const vacio = { 'comoFunciona.pasos': { titulo: '', texto: '' },
+                  faq: { pregunta: '', respuesta: '', origenComentario: '' } };
+  for (const [path, min] of Object.entries(SLOTS_MINIMOS)) {
+    const keys = path.split('.');
+    const last = keys.pop();
+    const obj = keys.reduce((o, k) => (o[k] ??= {}), copy);
+    obj[last] = Array.isArray(obj[last]) ? obj[last] : [];
+    while (obj[last].length < min) {
+      obj[last].push(vacio[path] ? { ...vacio[path] } : '');
+    }
+  }
+}
+rellenarRanuras();
+
+// Mapa de secciones → ranuras. El orden es el del blueprint de outreach.
 const SECTIONS = [
-  { title: 'S1 · Hero', fields: [
-    ['hero.callout', 'Callout', 'area'],
-    ['hero.headline', 'Headline', 'area'],
-    ['hero.subheadline', 'Subheadline', 'area'],
-    ['hero.cta_label', 'CTA (se repite en toda la página)', 'input'],
+  { title: '1 · Hero — lo único que él ve en 5 segundos', fields: [
+    ['hero.headline', 'Headline (máx 12 palabras · el resultado que quieren SUS pacientes)', 'area'],
+    ['hero.headlineOrigen', 'Caption suyo del que salió (trazabilidad)', 'area'],
+    ['hero.subheadline', 'Subheadline (sin X, sin Y, sin Z)', 'area'],
+    ['hero.visual.alt', 'Descripción del visual (accesibilidad)', 'input'],
+    ['hero.cta.texto', 'Texto del botón (primera persona)', 'input'],
+    ['hero.cta.mensaje', 'Mensaje precargado a SU WhatsApp', 'area'],
+  ], list: 'hero.badges', label: 'Badge', limit: '' },
+
+  { title: '2 · Franja de prueba — solo números verificables', fields: [
+    ['franjaPrueba.estrellas', 'Estrellas en Google (vacío = no se muestra)', 'input'],
+    ['franjaPrueba.resenas', 'Cantidad de reseñas', 'input'],
+    ['franjaPrueba.etiqueta', 'Etiqueta ("8 años en Valencia")', 'input'],
   ]},
-  { title: 'S3 · Calificación', list: 'qualify.yes', label: 'Para ti si…', limit: 'qualify.yes' },
-  { title: 'S3 · Calificación (no)', list: 'qualify.no', label: 'No es para ti si…', limit: 'qualify.no' },
-  { title: 'S4 · Historia', fields: [
-    ['story.backstory', 'Dónde estaba', 'area'],
-    ['story.wall', 'El muro', 'area'],
-    ['story.epiphany', 'La epifanía', 'area'],
-    ['story.plan', 'El plan', 'area'],
-    ['story.result', 'El resultado (con número)', 'area'],
+
+  { title: '4 · El problema — espejo del dolor del paciente', fields: [
+    ['problema.headline', 'Titular', 'area'],
+    ['problema.parrafo', 'Párrafo (máx 3 líneas)', 'area'],
   ]},
-  { title: 'S5 · Nueva Oportunidad', fields: [
-    ['opportunity.name', 'Nombre del método', 'input'],
-    ['opportunity.old_way', 'Lo viejo', 'area'],
-    ['opportunity.new_way', 'Lo nuevo', 'area'],
-    ['opportunity.why_different', 'Por qué es distinto', 'area'],
-  ]},
-  { title: 'S6 · Los Tres Secretos', objList: 'secrets', itemFields: [
-    ['title', 'Objeción', 'area'], ['body', 'Cuerpo', 'area'], ['proof', 'Prueba', 'area'],
-  ], limits: { title: 'secrets[].title', body: 'secrets[].body', proof: 'secrets[].proof' } },
-  { title: 'S7 · El Stack', fields: [
-    ['offer.program_name', 'Nombre del programa', 'input'],
-    ['offer.total_label', 'Ancla de valor total', 'area'],
-    ['offer.price_display', 'Precio (vacío = null)', 'input'],
-  ], objList: 'offer.items', itemFields: [
-    ['title', 'Título', 'input'], ['description', 'Descripción', 'area'], ['value_label', 'Valor', 'input'],
-  ], limits: { title: 'offer.items[].title', description: 'offer.items[].description', value_label: 'offer.items[].value_label' } },
-  { title: 'S8 · Testimonios (muestra)', objList: 'proof.testimonials', itemFields: [
-    ['quote', 'Cita (experiencia, nunca resultado)', 'area'], ['author', 'Autor', 'input'], ['context', 'Contexto', 'input'],
-  ], limits: { quote: 'proof.testimonials[].quote', author: '', context: 'proof.testimonials[].context' } },
-  { title: 'S8 · Métricas (muestra)', objList: 'proof.metrics', itemFields: [
-    ['number', 'Número', 'input'], ['label', 'Etiqueta', 'input'],
+
+  { title: '5 · Cómo funciona — 3 o 4 pasos, jamás 5', fields: [
+    ['comoFunciona.headline', 'Titular', 'area'],
+  ], objList: 'comoFunciona.pasos', itemFields: [
+    ['titulo', 'Título del paso', 'input'], ['texto', 'Detalle', 'area'],
   ], limits: {} },
-  { title: 'S9 · Costo de no actuar', fields: [['inaction.headline', 'Titular', 'area'], ['inaction.close', 'Cierre', 'area']],
-    list: 'inaction.items', label: 'Costos cuantificados', limit: 'inaction.items' },
-  { title: 'S10 · Garantía', fields: [['guarantee.title', 'Título', 'input'], ['guarantee.body', 'Cuerpo (integridad, no resultado)', 'area']] },
-  { title: 'S10 · FAQ', objList: 'faqs', itemFields: [['q', 'Pregunta', 'area'], ['a', 'Respuesta', 'area']], limits: {} },
-  { title: 'S11 · Cierre', fields: [['closing.headline', 'Titular', 'area']] },
+
+  { title: '6 · Qué incluye', fields: [
+    ['incluye.headline', 'Titular', 'area'],
+  ], list: 'incluye.items', label: 'Ítem', limit: '' },
+
+  { title: '7 · Riesgo cero — solo si él ya lo ofrece en público', fields: [
+    ['riesgo.headline', 'Titular', 'input'],
+    ['riesgo.texto', 'Texto', 'area'],
+  ]},
+
+  { title: '8 · Quién te atiende', fields: [
+    ['profesional.bio', 'Bio (credencial pública, sin inventar)', 'area'],
+  ]},
+
+  { title: '9 · Preguntas — sacadas de comentarios reales', objList: 'faq', itemFields: [
+    ['pregunta', 'Pregunta', 'area'],
+    ['respuesta', 'Respuesta', 'area'],
+    ['origenComentario', 'Comentario del que salió', 'area'],
+  ], limits: {} },
+
+  { title: '10 · Cierre — repite el headline del hero', fields: [
+    ['cierre.headline', 'Titular', 'area'],
+    ['cierre.cta.texto', 'Texto del botón', 'input'],
+    ['cierre.cta.mensaje', 'Mensaje precargado', 'area'],
+  ]},
+
+  { title: 'Rótulos de placeholder — máximo 3', list: 'placeholders', label: 'Rótulo', limit: '' },
 ];
 
 const get = (path) => path.split('.').reduce((o, k) => (o == null ? o : o[k]), copy);
@@ -208,7 +246,7 @@ function collectMeta() {
   if (slotsEl) {
     try { meta.slots = JSON.parse(slotsEl.value || '[]'); } catch { meta.slots = null; }
   }
-  meta.before_after = collectBeforeAfter();
+  meta.muro_pruebas = collectMuroPruebas();
   meta.services = collectServices();
   return meta;
 }
@@ -233,30 +271,59 @@ const statusEls = ['save-status', 'save-status-mobile']
 const setStatus = (txt) => statusEls.forEach((el) => (el.textContent = txt));
 const iframe = document.getElementById('preview');
 
-async function save() {
+async function save({ forzar = false } = {}) {
   setStatus('Guardando…');
-  const creds = document.querySelector('[data-creds]').value.split('\n').map((s) => s.trim()).filter(Boolean);
-  copy.proof.credentials = creds;
 
-  const record = { ...collectMeta(), slug: SLUG, copy, copy_source: 'mixto' };
+  const record = { ...collectMeta(), slug: SLUG, copy, copy_source: 'mixto', forzar };
   try {
     const res = await fetch('/api/pro/save', {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(record),
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error);
-    setStatus('Guardado ✓');
+
+    // El servidor devuelve la lista de incumplimientos del estándar. Se pintan
+    // siempre, incluso al guardar bien: son la checklist de lo que falta.
+    renderProblemas(data.problemas ?? []);
+
+    if (!res.ok) {
+      // Un borrador a medio armar se puede guardar igual, pero avisando.
+      if (data.problemas?.length) {
+        setStatus('Falta cumplir el estándar — revisa la lista');
+        return;
+      }
+      throw new Error(data.error || 'Error al guardar');
+    }
+
+    setStatus(data.problemas?.length ? 'Guardado como borrador ⚠' : 'Guardado ✓');
     localStorage.removeItem(LS_KEY);
     if (iframe) iframe.src = `/p/${SLUG}?v=0&t=${Date.now()}`;
-    setTimeout(() => setStatus(''), 2500);
+    setTimeout(() => setStatus(''), 2800);
   } catch (e) {
     setStatus(`Error: ${e.message}`);
   }
 }
 
+/** Lista de incumplimientos del §8. Vacía = la landing cumple el estándar. */
+function renderProblemas(problemas) {
+  const box = document.getElementById('problemas');
+  if (!box) return;
+  if (!problemas.length) {
+    box.className = 'problemas problemas--ok';
+    box.innerHTML = '<strong>✓ Cumple el estándar de outreach.</strong>';
+    return;
+  }
+  box.className = 'problemas';
+  box.innerHTML =
+    '<strong>Falta para cumplir el estándar:</strong><ul>' +
+    problemas.map((p) => `<li>${p}</li>`).join('') +
+    '</ul>';
+}
+
+
 ['save-btn', 'save-btn-mobile'].forEach((id) =>
-  document.getElementById(id)?.addEventListener('click', save)
+  document.getElementById(id)?.addEventListener('click', () => save())
 );
+document.getElementById('save-draft')?.addEventListener('click', () => save({ forzar: true }));
 document.getElementById('reload-preview')?.addEventListener('click', () => {
   if (iframe) iframe.src = `/p/${SLUG}?v=0&t=${Date.now()}`;
 });
@@ -369,87 +436,116 @@ document.querySelectorAll('[data-imgfield]').forEach((root) => {
 // ============================================================
 // Antes / Después
 // ============================================================
-const baList = document.getElementById('ba-list');
-const initialBA = JSON.parse(document.getElementById('ba-data').textContent || '[]');
+/* ============================================================
+   Muro de pruebas
+   Cada prueba exige FUENTE. Es la barrera contra el testimonio inventado:
+   sin origen público no entra, porque atribuirle a un consultorio real una
+   reseña que nadie escribió cuesta el prospecto y la reputación.
+   ============================================================ */
+const muroList = document.getElementById('muro-list');
+const initialMuro = JSON.parse(document.getElementById('muro-data').textContent || '[]');
+const MIN_PRUEBAS = 4;
 
-function makeBAImg(labelText, url) {
-  const wrap = document.createElement('div');
-  wrap.className = 'imgfield';
-  wrap.setAttribute('data-imgfield', '');
-  wrap.innerHTML =
-    `<span class="imgfield__label">${labelText}</span>` +
-    `<input type="hidden" data-ba-url value="${url ? url.replace(/"/g, '&quot;') : ''}" />` +
-    `<div class="imgfield__preview" data-preview></div>` +
-    `<div class="imgfield__row">` +
-      `<label class="imgfield__btn">Subir<input type="file" accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.avif" hidden data-file /></label>` +
-      `<button type="button" class="imgfield__clear" data-clear>Quitar</button>` +
-    `</div>` +
-    `<span class="imgfield__status" data-status></span>`;
-  const hidden = wrap.querySelector('[data-ba-url]');
-  wireImageField(wrap, hidden);
-  return { wrap, hidden };
+const TIPOS = [['comentario', 'Comentario de Instagram'], ['resena', 'Reseña'], ['foto', 'Foto de resultado']];
+const FUENTES = [['instagram', 'Instagram'], ['google', 'Google'], ['doctoralia', 'Doctoralia'], ['otra', 'Otra']];
+
+function selectEl(attr, opciones, valor) {
+  const sel = document.createElement('select');
+  sel.setAttribute(attr, '');
+  for (const [v, label] of opciones) {
+    const o = document.createElement('option');
+    o.value = v;
+    o.textContent = label;
+    if (v === valor) o.selected = true;
+    sel.appendChild(o);
+  }
+  sel.addEventListener('change', scheduleAutosave);
+  return sel;
 }
 
-function addBARow(pair = { before: '', after: '', label: '' }) {
+function addPruebaRow(p = {}) {
   const row = document.createElement('div');
   row.className = 'ba-row';
-  row.setAttribute('data-ba-row', '');
+  row.setAttribute('data-prueba-row', '');
 
-  const imgs = document.createElement('div');
-  imgs.className = 'ba-row__imgs';
-  const before = makeBAImg('Antes', pair.before);
-  const after = makeBAImg('Después', pair.after);
-  before.hidden.setAttribute('data-ba-before', '');
-  after.hidden.setAttribute('data-ba-after', '');
-  imgs.append(before.wrap, after.wrap);
-
-  const foot = document.createElement('div');
-  foot.className = 'ba-row__foot';
-  const label = document.createElement('input');
-  label.setAttribute('data-ba-label', '');
-  label.placeholder = 'Descripción opcional (ej: Blanqueamiento, 2 sesiones)';
-  label.value = pair.label || '';
-  label.addEventListener('input', scheduleAutosave);
+  const top = document.createElement('div');
+  top.className = 'prueba-top';
+  top.append(
+    selectEl('data-p-tipo', TIPOS, p.tipo || 'comentario'),
+    selectEl('data-p-fuente', FUENTES, p.fuente || 'instagram')
+  );
   const del = document.createElement('button');
   del.type = 'button';
   del.className = 'ba-row__del';
-  del.textContent = 'Eliminar par';
-  del.addEventListener('click', () => { row.remove(); syncBAButton(); scheduleAutosave(); });
-  foot.append(label, del);
+  del.textContent = 'Eliminar';
+  del.addEventListener('click', () => { row.remove(); syncMuro(); scheduleAutosave(); });
+  top.appendChild(del);
 
-  row.append(imgs, foot);
-  baList.appendChild(row);
-  syncBAButton();
+  const mkInput = (attr, ph, val, tag = 'input') => {
+    const el = document.createElement(tag);
+    el.setAttribute(attr, '');
+    el.placeholder = ph;
+    el.value = val || '';
+    if (tag === 'textarea') el.rows = 2;
+    el.addEventListener('input', scheduleAutosave);
+    return el;
+  };
+
+  const texto = mkInput('data-p-texto', 'Texto textual del comentario o reseña', p.texto, 'textarea');
+  const autor = mkInput('data-p-autor', 'Autor como aparece público (@ana_r)', p.autor);
+  const ctx = mkInput('data-p-contexto', 'Contexto de una línea: quién, qué problema, qué pasó', p.contexto);
+
+  // Captura de pantalla o foto del resultado.
+  const img = document.createElement('div');
+  img.className = 'imgfield';
+  img.setAttribute('data-imgfield', '');
+  img.innerHTML =
+    '<span class="imgfield__label">Captura / foto (opcional si hay texto)</span>' +
+    `<input type="hidden" data-p-src value="${p.src ? String(p.src).replace(/"/g, '&quot;') : ''}" />` +
+    '<div class="imgfield__preview" data-preview></div>' +
+    '<div class="imgfield__row">' +
+      '<label class="imgfield__btn">Subir<input type="file" accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.avif" hidden data-file /></label>' +
+      '<button type="button" class="imgfield__clear" data-clear>Quitar</button>' +
+    '</div>' +
+    '<span class="imgfield__status" data-status></span>';
+  wireImageField(img, img.querySelector('[data-p-src]'));
+
+  row.append(top, texto, autor, ctx, img);
+  muroList.appendChild(row);
+  syncMuro();
 }
 
-/** Dos pares como techo: el tercero ya no suma prueba, solo alarga la página. */
-const MAX_BA = 2;
-const baAddBtn = document.getElementById('ba-add');
+const muroAddBtn = document.getElementById('muro-add');
+const muroCount = document.getElementById('muro-count');
 
-function syncBAButton() {
-  baAddBtn.style.display =
-    document.querySelectorAll('[data-ba-row]').length >= MAX_BA ? 'none' : '';
+function syncMuro() {
+  const n = document.querySelectorAll('[data-prueba-row]').length;
+  if (muroCount) {
+    muroCount.textContent = `${n} de ${MIN_PRUEBAS} mínimas`;
+    muroCount.classList.toggle('over', n < MIN_PRUEBAS);
+  }
 }
 
-initialBA.slice(0, MAX_BA).forEach((p) => addBARow(p));
-syncBAButton();
-baAddBtn.addEventListener('click', () => {
-  if (document.querySelectorAll('[data-ba-row]').length >= MAX_BA) return;
-  addBARow();
-});
+initialMuro.forEach((p) => addPruebaRow(p));
+// Arranca con las cuatro ranuras mínimas para que el estándar sea alcanzable.
+while (document.querySelectorAll('[data-prueba-row]').length < MIN_PRUEBAS) addPruebaRow();
+muroAddBtn?.addEventListener('click', () => addPruebaRow());
 
-/** Solo pares con ambas imágenes cargadas. */
-function collectBeforeAfter() {
-  const pairs = [];
-  document.querySelectorAll('[data-ba-row]').forEach((row) => {
-    const before = row.querySelector('[data-ba-before]')?.value.trim() || '';
-    const after = row.querySelector('[data-ba-after]')?.value.trim() || '';
-    const label = row.querySelector('[data-ba-label]')?.value.trim() || '';
-    if (before && after) {
-      const pair = { before, after };
-      if (label) pair.label = label;
-      pairs.push(pair);
-    }
+/** Solo pruebas con fuente y con algo que mostrar. */
+function collectMuroPruebas() {
+  const out = [];
+  document.querySelectorAll('[data-prueba-row]').forEach((row) => {
+    const texto = row.querySelector('[data-p-texto]')?.value.trim() || '';
+    const src = row.querySelector('[data-p-src]')?.value.trim() || '';
+    if (!texto && !src) return;
+    out.push({
+      tipo: row.querySelector('[data-p-tipo]')?.value || 'comentario',
+      fuente: row.querySelector('[data-p-fuente]')?.value || 'instagram',
+      texto,
+      src,
+      autor: row.querySelector('[data-p-autor]')?.value.trim() || '',
+      contexto: row.querySelector('[data-p-contexto]')?.value.trim() || '',
+    });
   });
-  return pairs.slice(0, MAX_BA);
+  return out;
 }

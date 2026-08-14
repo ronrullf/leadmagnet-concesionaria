@@ -7,14 +7,13 @@
  */
 import {
   blockSchemas,
-  emptyCopy,
-  findOverflows,
+  emptyOutreachCopy,
   type BlockKey,
-  type Overflow,
-  type ProCopy,
-} from './copy-schema';
-import type { z } from 'zod';
+  type OutreachCopy,
+} from './outreach-schema';
 import { lintCopy, type LintFinding } from './copy-lint';
+import type { z } from 'zod';
+
 import { generateJSON } from './openrouter';
 import { SYSTEM_PROMPT, sharedContext, userPrompt, type ProInput } from './pro-prompts';
 import type { ProfessionPack } from './pro-types';
@@ -24,19 +23,17 @@ export interface GenerationReport {
   blocks_failed: BlockKey[];
   attempts: Record<BlockKey, number>;
   errors: Partial<Record<BlockKey, string>>;
-  /** Ranuras que se pasaron del límite de diseño. Se guardan; se recortan a mano. */
-  overflows: Overflow[];
   /** Hallazgos del linter. Los de severidad 'error' no deberían salir a la calle. */
   lint: LintFinding[];
   duration_ms: number;
 }
 
 export interface GenerationResult {
-  copy: ProCopy;
+  copy: OutreachCopy;
   report: GenerationReport;
 }
 
-const BLOCKS: BlockKey[] = ['A', 'B', 'C', 'D'];
+const BLOCKS: BlockKey[] = ['A', 'B'];
 
 /**
  * Cola de una sola generación concurrente. Los modelos gratuitos de OpenRouter
@@ -66,14 +63,13 @@ async function runGeneration(
 ): Promise<GenerationResult> {
   const started = Date.now();
   const context = sharedContext(input, pack);
-  const copy = emptyCopy();
+  const copy = emptyOutreachCopy();
 
   const report: GenerationReport = {
     blocks_ok: [],
     blocks_failed: [],
-    attempts: { A: 0, B: 0, C: 0, D: 0 },
+    attempts: { A: 0, B: 0 },
     errors: {},
-    overflows: [],
     lint: [],
     duration_ms: 0,
   };
@@ -96,13 +92,11 @@ async function runGeneration(
     Object.assign(previous, result.data);
   }
 
-  // credentials nunca sale de la IA: se llena a mano con el input real.
-  copy.proof.credentials = [];
-  // El CTA del cierre repite el del hero. La consistencia del vocabulario es lo
-  // que enseña al usuario a navegar, y el modelo tiende a inventarse otro.
-  if (copy.hero.cta_label) copy.closing.cta_label = copy.hero.cta_label;
+  // El cierre repite el hero palabra por palabra: es la última llamada, no el
+  // sitio para un mensaje nuevo. El modelo tiende a inventarse otro.
+  if (copy.hero.cta.texto) copy.cierre.cta = { ...copy.hero.cta };
+  if (copy.hero.headline && !copy.cierre.headline) copy.cierre.headline = copy.hero.headline;
 
-  report.overflows = findOverflows(copy);
   report.lint = lintCopy(copy);
   report.duration_ms = Date.now() - started;
   return { copy, report };
@@ -189,14 +183,8 @@ async function generateBlock(
  * proof.credentials en undefined y el linter reventaría al leer su length.
  */
 function lintBlock(data: object): LintFinding[] {
-  const base = emptyCopy();
-  const part = data as Partial<ProCopy>;
-  const copy: ProCopy = {
-    ...base,
-    ...part,
-    proof: { ...base.proof, ...(part.proof ?? {}) },
-  };
-  return lintCopy(copy).filter(
-    (f) => f.severity === 'error' && f.rule !== 'credencial-generada'
-  );
+  const base = emptyOutreachCopy();
+  const part = data as Partial<OutreachCopy>;
+  const copy: OutreachCopy = { ...base, ...part };
+  return lintCopy(copy).filter((f) => f.severity === 'error');
 }

@@ -1,55 +1,53 @@
 ---
 /**
- * Landing de conversión de un profesional. Única página pública del módulo y
- * único formato: el de ProLanding (50% visual · 40% copy · 10% CTA).
+ * Landing-demo de outreach. Única página pública del módulo.
  *
- * El profesional aporta las fotos, la IA aporta el copy. Toda sección con su
- * ranura vacía se omite: nunca un hueco ni un placeholder.
+ * Quien la abre es el PROSPECTO, no un paciente. Todo el contenido le habla a
+ * sus pacientes y todos los CTA van a SU WhatsApp; la única pieza dirigida a él
+ * es la barra de autoría del layout.
  */
-import ProLayout from '../../layouts/ProLayout.astro';
-import ProLanding from '../../components/pro/ProLanding.astro';
+import OutreachLayout from '../../layouts/OutreachLayout.astro';
+import OutreachLanding from '../../components/outreach/OutreachLanding.astro';
 import { getProBySlug } from '../../lib/pro';
+import { isExpired } from '../../lib/outreach-schema';
 import { notFoundResponse } from '../../lib/not-found';
 import { isAuthed } from '../../lib/auth';
-import { waLink } from '../../lib/whatsapp';
 
 const { slug } = Astro.params;
 
-// Un admin autenticado puede previsualizar borradores (is_active=false); el
-// público no. Así el editor y el botón "Abrir" funcionan antes de activar.
+// Un admin autenticado puede previsualizar borradores y links vencidos; el
+// prospecto no. Así el editor funciona antes de activar y después de expirar.
 const admin = isAuthed(Astro);
 const pro = slug ? await getProBySlug(slug, admin) : null;
 if (!pro) return notFoundResponse();
 
-const isDraft = admin && !pro.is_active;
+// Vida del link (§7.3): al octavo día deja de existir para el prospecto.
+if (!admin && isExpired(pro.expira)) {
+  return Astro.redirect('/expirado', 302);
+}
 
-const tpMsg = `Hola, vi el demo de ${pro.pro_name} (ref: ${pro.slug}) y quiero información.`;
-const tpHref = waLink(import.meta.env.TIENDAPANA_WHATSAPP ?? '', tpMsg);
+const isDraft = admin && !pro.is_active;
+const vencido = admin && isExpired(pro.expira);
 ---
 
-<ProLayout pro={pro} path="/">
-  {isDraft && (
-    <div class="draft-banner">
-      Borrador · solo visible para ti. Actívalo en el panel para hacerlo público.
+<OutreachLayout pro={pro} path="/">
+  {(isDraft || vencido) && (
+    <div class="aviso">
+      {isDraft && 'Borrador · solo visible para ti. Actívalo en el panel.'}
+      {isDraft && vencido && ' · '}
+      {vencido && 'Link vencido · el prospecto ya vería la página de expirado.'}
     </div>
   )}
 
-  <ProLanding pro={pro} />
-
-  {/* Barra de cierre TiendaPana */}
-  <aside class="tp-bar">
-    <p class="tp-bar__txt">
-      <strong>Esta página es una demo.</strong>
-      Si la quiere 100% funcional y lista para vender, hablemos.
-    </p>
-    <a class="tp-bar__btn" href={tpHref}>Hablar con TiendaPana</a>
-  </aside>
-</ProLayout>
+  <OutreachLanding pro={pro} />
+</OutreachLayout>
 
 <style>
-  .draft-banner {
-    position: sticky; top: 0; z-index: 60; text-align: center;
-    background: #FEF3C7; color: #92400E; font-size: 13px; font-weight: 600;
-    padding: 8px 16px; border-bottom: 1px solid #FCD34D;
+  .aviso {
+    position: sticky; top: 0; z-index: 60;
+    padding: 8px 16px;
+    background: #fef3c7; color: #92400e;
+    border-bottom: 1px solid #fcd34d;
+    font-size: 13px; font-weight: 600; text-align: center;
   }
 </style>

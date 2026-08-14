@@ -36,7 +36,20 @@ export const VERTICALS: Record<Vertical, VerticalConfig> = {
     catalogTitle: 'Vehículos disponibles',
     emptyMessage: 'Escríbanos por WhatsApp y le enviamos los vehículos disponibles.',
   },
+  tienda: {
+    nounPlural: 'Productos',
+    detailPath: 'producto',
+    soldLabel: 'pedidos entregados',
+    ogDescription: 'Vea nuestro catálogo con precios en dólares y bolívares al día.',
+    catalogTitle: 'Nuestros productos',
+    emptyMessage: 'Escríbanos por WhatsApp y le enviamos el catálogo completo.',
+  },
 };
+
+/** Texto del enlace final del pop-up de demo. Cambia por vertical. */
+export function demoPopupLabel(vertical: string | null | undefined): string {
+  return vertical === 'tienda' ? 'Quiero mi propia tienda online' : 'Quiero mi propio sitio web';
+}
 
 export function verticalConfig(vertical: string | null | undefined): VerticalConfig {
   return VERTICALS[(vertical as Vertical) ?? 'inmobiliaria'] ?? VERTICALS.inmobiliaria;

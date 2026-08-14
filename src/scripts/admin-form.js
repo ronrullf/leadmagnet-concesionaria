@@ -10,30 +10,44 @@ function initForm() {
   const list = document.getElementById('properties-list');
   const propertyTemplate = document.getElementById('property-template');
   const vehicleTemplate = document.getElementById('vehicle-template');
+  const productTemplate = document.getElementById('product-template');
   const MAX_PROPERTIES = 6;
   const MAX_IMAGES = 6;
 
   /* ============ Vertical (inmobiliaria / concesionario) ============ */
   const verticalSelect = form.querySelector('[name=vertical]');
 
+  const VERTICALS = ['inmobiliaria', 'concesionario', 'tienda'];
+
   function currentVertical() {
-    return verticalSelect.value === 'concesionario' ? 'concesionario' : 'inmobiliaria';
+    return VERTICALS.includes(verticalSelect.value) ? verticalSelect.value : 'inmobiliaria';
   }
   function currentTemplate() {
-    return currentVertical() === 'concesionario' ? vehicleTemplate : propertyTemplate;
+    const v = currentVertical();
+    if (v === 'tienda') return productTemplate;
+    if (v === 'concesionario') return vehicleTemplate;
+    return propertyTemplate;
   }
+  const NOUNS = {
+    inmobiliaria: ['Inmuebles', '+ Agregar inmueble'],
+    concesionario: ['Vehículos', '+ Agregar vehículo'],
+    tienda: ['Productos', '+ Agregar producto'],
+  };
   function refreshVerticalLabels() {
-    const isV = currentVertical() === 'concesionario';
+    const [plural, addLabel] = NOUNS[currentVertical()];
     const label = document.querySelector('[data-items-label]');
-    if (label) label.textContent = isV ? 'Vehículos' : 'Inmuebles';
-    document.getElementById('add-property').textContent = isV ? '+ Agregar vehículo' : '+ Agregar inmueble';
+    if (label) label.textContent = plural;
+    document.getElementById('add-property').textContent = addLabel;
   }
 
   verticalSelect.addEventListener('change', () => {
     // Cambiar de nicho invalida los bloques ya cargados: se reinicia el repetidor.
     const hasBlocks = list.querySelectorAll('.property-item').length > 0;
+    const previous = list.querySelector('.property-item')?.dataset.kind;
+    const KIND_TO_VERTICAL = { property: 'inmobiliaria', vehicle: 'concesionario', product: 'tienda' };
     if (hasBlocks && !confirm('Cambiar el tipo de negocio vacía los ítems cargados. ¿Continuar?')) {
-      verticalSelect.value = currentVertical() === 'concesionario' ? 'inmobiliaria' : 'concesionario';
+      // Volver al valor que corresponde a los bloques que ya están en pantalla.
+      verticalSelect.value = KIND_TO_VERTICAL[previous] ?? 'inmobiliaria';
       return;
     }
     list.innerHTML = '';
@@ -194,6 +208,14 @@ Importación: sí
 Tiempo de espera: 45-60 días
 Descripción: Full equipo, versión SE con pantalla de 9 pulgadas y asistencias de manejo.
 Características: Cámara de reversa, Asientos de cuero, Sunroof`,
+    tienda: `Ref: P-001
+Nombre: Blusa de lino manga corta
+Categoría: Blusas
+Precio USD: 24
+Antes: 32
+Descripción: Lino fresco, corte holgado. Ideal para el calor de Maracaibo.
+Tallas: S, M, L
+Disponible: sí`,
   };
 
   function normalizeKey(raw) {
@@ -220,6 +242,12 @@ Características: Cámara de reversa, Asientos de cuero, Sunroof`,
     puestos: 'parking', estacionamiento: 'parking', estacionamientos: 'parking', ptos: 'parking',
     metros: 'area_m2', m2: 'area_m2', area: 'area_m2', metroscuadrados: 'area_m2', superficie: 'area_m2',
     maps: 'maps_query', mapa: 'maps_query', googlemaps: 'maps_query', direccion: 'maps_query',
+    // Tienda
+    categoria: 'category', category: 'category',
+    antes: 'compare_at_usd', preciotachado: 'compare_at_usd', precioanterior: 'compare_at_usd',
+    tallas: 'variants', talla: 'variants', colores: 'variants', variantes: 'variants',
+    presentaciones: 'variants', presentacion: 'variants',
+    disponible: 'in_stock', existencia: 'in_stock', enexistencia: 'in_stock', stock: 'in_stock',
     // Vehículos
     marca: 'brand',
     modelo: 'model',
@@ -252,6 +280,21 @@ Características: Cámara de reversa, Asientos de cuero, Sunroof`,
     return data;
   }
 
+  /**
+   * Precio en texto → número. Acepta "24", "$24", "24,50" y "1.250,00".
+   * La coma se trata como decimal (uso venezolano) y el punto como separador
+   * de miles solo cuando le siguen exactamente tres dígitos.
+   */
+  function parsePrice(raw) {
+    let v = String(raw).replace(/[^0-9.,]/g, '');
+    if (v.includes(',')) {
+      v = v.replace(/\./g, '').replace(',', '.');
+    } else {
+      v = v.replace(/\.(?=[0-9]{3}(?:[^0-9]|$))/g, '');
+    }
+    return v;
+  }
+
   function applyParsedData(node, data) {
     // "Tipo:" es ambiguo entre nichos: se resuelve contra el campo que exista en el bloque.
     if ('_type' in data) {
@@ -264,6 +307,18 @@ Características: Cámara de reversa, Asientos de cuero, Sunroof`,
       const field = input.dataset.field;
       if (!(field in data) || field === 'is_featured') return;
       let value = data[field];
+
+      if (field === 'in_stock') {
+        input.checked = !/^(no|agotado|false|0)/i.test(value.trim());
+        applied++;
+        return;
+      }
+
+      if (field === 'variants') {
+        input.value = value.split(',').map((x) => x.trim()).filter(Boolean).join(', ');
+        applied++;
+        return;
+      }
 
       if (field === 'is_import') {
         input.checked = /^(si|sí|s|yes|true|1)/i.test(value.trim());
@@ -300,7 +355,10 @@ Características: Cámara de reversa, Asientos de cuero, Sunroof`,
           t.includes('diesel') || t.includes('gasoil') ? 'diesel' :
           t.includes('hibrid') ? 'hibrido' :
           t.includes('electric') ? 'electrico' : 'gasolina';
-      } else if (['price_usd', 'bedrooms', 'bathrooms', 'parking', 'area_m2', 'year', 'mileage_km'].includes(field)) {
+      } else if (['price_usd', 'compare_at_usd'].includes(field)) {
+        value = parsePrice(value);
+        if (value === '') return;
+      } else if (['bedrooms', 'bathrooms', 'parking', 'area_m2', 'year', 'mileage_km'].includes(field)) {
         value = value.replace(/[^\d]/g, '');
         if (value === '') return;
       }
@@ -378,8 +436,11 @@ Características: Cámara de reversa, Asientos de cuero, Sunroof`,
           input.checked = !!data.is_featured;
         } else if (field === 'is_import') {
           input.checked = !!data.is_import;
-        } else if (field === 'features') {
-          input.value = (data.features ?? []).join(', ');
+        } else if (field === 'in_stock') {
+          // Sin dato explícito, un producto se asume disponible.
+          input.checked = data.in_stock !== false;
+        } else if (field === 'features' || field === 'variants') {
+          input.value = (data[field] ?? []).join(', ');
         } else if (data[field] != null) {
           input.value = data[field];
         }
@@ -543,7 +604,8 @@ Características: Cámara de reversa, Asientos de cuero, Sunroof`,
     demoData.vertical = currentVertical();
 
     const isVehicles = currentVertical() === 'concesionario';
-    const itemNoun = isVehicles ? 'Vehículo' : 'Inmueble';
+    const isStore = currentVertical() === 'tienda';
+    const itemNoun = isStore ? 'Producto' : isVehicles ? 'Vehículo' : 'Inmueble';
     const items = [];
     const problems = [];
     list.querySelectorAll('.property-item').forEach((node, idx) => {
@@ -552,9 +614,10 @@ Características: Cámara de reversa, Asientos de cuero, Sunroof`,
         const field = input.dataset.field;
         if (field === 'is_featured') p.is_featured = input.checked;
         else if (field === 'is_import') p.is_import = input.checked;
-        else if (field === 'features') {
-          p.features = input.value.split(',').map((s) => s.trim()).filter(Boolean);
-        } else if (['price_usd', 'bedrooms', 'bathrooms', 'parking', 'area_m2', 'year', 'mileage_km'].includes(field)) {
+        else if (field === 'in_stock') p.in_stock = input.checked;
+        else if (field === 'features' || field === 'variants') {
+          p[field] = input.value.split(',').map((s) => s.trim()).filter(Boolean);
+        } else if (['price_usd', 'compare_at_usd', 'bedrooms', 'bathrooms', 'parking', 'area_m2', 'year', 'mileage_km'].includes(field)) {
           p[field] = input.value ? Number(input.value) : null;
         } else {
           p[field] = input.value.trim() || null;
@@ -575,7 +638,8 @@ Características: Cámara de reversa, Asientos de cuero, Sunroof`,
       if (!p.ref_code) missing.push('Ref');
       if (!p.title) missing.push(isVehicles ? 'Título o Marca' : 'Título');
       if (!p.price_usd) missing.push('Precio USD');
-      if (!isVehicles && !p.location) missing.push('Ubicación');
+      // La ubicación solo aplica a inmuebles: un producto no tiene dónde estar.
+      if (!isVehicles && !isStore && !p.location) missing.push('Ubicación');
       if (!p.image_urls.length) missing.push('al menos 1 foto');
       if (missing.length) {
         problems.push(`${itemNoun} ${idx + 1}: falta ${missing.join(', ')}`);

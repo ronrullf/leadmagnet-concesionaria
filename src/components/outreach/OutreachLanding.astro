@@ -1,0 +1,499 @@
+---
+/**
+ * Landing-demo de outreach. Las 10 secciones del blueprint (§4), en orden fijo.
+ *
+ * LEY 0 — doble audiencia: todo lo que hay aquí le habla a los PACIENTES del
+ * prospecto, y todos los CTA apuntan al WhatsApp DE ÉL. La única pieza que le
+ * habla a él es la barra de autoría, que vive fuera de este componente.
+ *
+ * Toda sección sin su dato se omite entera. Una página con huecos se lee como
+ * plantilla, y la plantilla mata el "ese soy yo" del primer segundo.
+ */
+import Placeholder from './Placeholder.astro';
+import { waLink } from '../../lib/whatsapp';
+import type { ProDemo } from '../../lib/pro-types';
+
+interface Props {
+  pro: ProDemo;
+}
+
+const { pro } = Astro.props;
+const c = pro.copy;
+
+/** Un solo destino en toda la página: su WhatsApp. */
+const ctaTexto = c.hero.cta.texto || 'Quiero mi evaluación';
+const ctaMensaje = c.hero.cta.mensaje || 'Hola, vi la página y quiero agendar mi evaluación';
+const ctaHref = waLink(pro.whatsapp_e164, ctaMensaje);
+
+const cierreTexto = c.cierre.cta.texto || ctaTexto;
+const cierreHref = waLink(pro.whatsapp_e164, c.cierre.cta.mensaje || ctaMensaje);
+
+const pruebas = pro.muro_pruebas ?? [];
+const placeholders = c.placeholders.slice(0, 3);
+
+const showFranja =
+  c.franjaPrueba.estrellas != null || c.franjaPrueba.resenas != null || Boolean(c.franjaPrueba.etiqueta);
+const showMuro = pruebas.length > 0;
+const showProblema = Boolean(c.problema.headline || c.problema.parrafo);
+const showComo = c.comoFunciona.pasos.length > 0;
+const showIncluye = c.incluye.items.length > 0;
+// Solo si él ya lo ofrece en público. Sin eso, la sección no existe.
+const showRiesgo = c.riesgo.esPublico && Boolean(c.riesgo.texto);
+const showQuien = Boolean(c.profesional.bio || pro.photo_story_url);
+const showFaq = c.faq.length > 0;
+const showCierre = Boolean(c.cierre.headline);
+
+const franjaPartes: string[] = [];
+if (c.franjaPrueba.estrellas != null) {
+  franjaPartes.push(`★ ${c.franjaPrueba.estrellas.toFixed(1)} en Google`);
+}
+if (c.franjaPrueba.resenas != null) franjaPartes.push(`${c.franjaPrueba.resenas} reseñas`);
+if (c.franjaPrueba.etiqueta) franjaPartes.push(c.franjaPrueba.etiqueta);
+
+const heroEsVideo = c.hero.visual.tipo === 'video' && Boolean(c.hero.visual.src);
+---
+
+{/* ─────────── 1 · Hero ─────────── */}
+<section class="hero">
+  {/* Sin menú, sin links: una landing tiene una sola salida. */}
+  <header class="hero__id">
+    {pro.logo_url && <img class="hero__logo" src={pro.logo_url} alt="" width="44" height="44" />}
+    <span class="hero__negocio">{pro.pro_name}</span>
+  </header>
+
+  {c.hero.headline && <h1 class="hero__h1">{c.hero.headline}</h1>}
+  {c.hero.subheadline && <p class="hero__sub">{c.hero.subheadline}</p>}
+
+  {c.hero.visual.src && (
+    <figure class="hero__visual">
+      {heroEsVideo ? (
+        <video
+          class="hero__media"
+          src={c.hero.visual.src}
+          poster={c.hero.visual.poster || undefined}
+          preload="none"
+          controls
+          playsinline
+          aria-label={c.hero.visual.alt}
+        ></video>
+      ) : (
+        <img
+          class="hero__media"
+          src={c.hero.visual.src}
+          alt={c.hero.visual.alt}
+          width="390"
+          height="300"
+          fetchpriority="high"
+          decoding="async"
+        />
+      )}
+    </figure>
+  )}
+
+  <a class="cta" href={ctaHref} target="_blank" rel="noopener">{ctaTexto}</a>
+
+  {c.hero.badges.length > 0 && (
+    <ul class="badges" role="list">
+      {c.hero.badges.map((b) => (
+        <li class="badge">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="m5 13 4 4L19 7" />
+          </svg>
+          {b}
+        </li>
+      ))}
+    </ul>
+  )}
+</section>
+
+{/* ─────────── 2 · Franja de prueba ─────────── */}
+{showFranja && (
+  <div class="franja">{franjaPartes.join(' · ')}</div>
+)}
+
+{/* ─────────── 3 · Muro de pruebas · la prueba va ARRIBA ─────────── */}
+{showMuro && (
+  <section class="sec muro">
+    <h2 class="sec__h">Mira lo que dicen sus pacientes</h2>
+    {/* Apilado, nunca carrusel: lo que se esconde no se ve. */}
+    <div class="muro__grid">
+      {pruebas.map((p) => (
+        <article class={`prueba prueba--${p.tipo}`}>
+          {p.src && <img class="prueba__img" src={p.src} alt={p.contexto || ''} loading="lazy" decoding="async" />}
+          {p.texto && <p class="prueba__texto">“{p.texto}”</p>}
+          <footer class="prueba__pie">
+            {p.autor && <span class="prueba__autor">{p.autor}</span>}
+            <span class="prueba__fuente">{p.fuente}</span>
+          </footer>
+          {p.contexto && <p class="prueba__ctx">{p.contexto}</p>}
+        </article>
+      ))}
+      {placeholders[0] && <Placeholder texto={placeholders[0]} />}
+    </div>
+  </section>
+)}
+
+{/* ─────────── 4 · El problema ─────────── */}
+{showProblema && (
+  <section class="sec">
+    {c.problema.headline && <h2 class="sec__h">{c.problema.headline}</h2>}
+    {c.problema.parrafo && <p class="parrafo">{c.problema.parrafo}</p>}
+  </section>
+)}
+
+{/* CTA intermedio · se repite cada ~1.5 pantallas */}
+<div class="cta-wrap">
+  <a class="cta" href={ctaHref} target="_blank" rel="noopener">{ctaTexto}</a>
+</div>
+
+{/* ─────────── 5 · Cómo funciona ─────────── */}
+{showComo && (
+  <section class="sec">
+    {c.comoFunciona.headline && <h2 class="sec__h">{c.comoFunciona.headline}</h2>}
+    <ol class="pasos" role="list">
+      {c.comoFunciona.pasos.map((p, i) => (
+        <li class="paso">
+          <span class="paso__n">{i + 1}</span>
+          <div>
+            {p.titulo && <p class="paso__t">{p.titulo}</p>}
+            {p.texto && <p class="paso__x">{p.texto}</p>}
+          </div>
+        </li>
+      ))}
+    </ol>
+  </section>
+)}
+
+{/* ─────────── 6 · Qué incluye ─────────── */}
+{showIncluye && (
+  <section class="sec">
+    {c.incluye.headline && <h2 class="sec__h">{c.incluye.headline}</h2>}
+    <ul class="incluye" role="list">
+      {c.incluye.items.map((it) => (
+        <li class="incluye__i">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="m5 13 4 4L19 7" />
+          </svg>
+          {it}
+        </li>
+      ))}
+    </ul>
+  </section>
+)}
+
+{/* ─────────── 7 · Riesgo cero ─────────── */}
+{showRiesgo && (
+  <section class="sec">
+    <div class="riesgo">
+      {c.riesgo.headline && <p class="riesgo__h">{c.riesgo.headline}</p>}
+      <p class="riesgo__x">{c.riesgo.texto}</p>
+    </div>
+  </section>
+)}
+
+{/* ─────────── 8 · Quién te atiende ─────────── */}
+{showQuien && (
+  <section class="sec quien">
+    <h2 class="sec__h">Quién te atiende</h2>
+    <div class="quien__grid">
+      {pro.photo_story_url ? (
+        <img class="quien__foto" src={pro.photo_story_url} alt={pro.pro_name} loading="lazy" decoding="async" width="120" height="120" />
+      ) : (
+        placeholders[1] && <Placeholder texto={placeholders[1]} />
+      )}
+      <div>
+        <p class="quien__n">{pro.pro_name}</p>
+        {pro.pro_title && <p class="quien__cred">{pro.pro_title}</p>}
+        {c.profesional.bio && <p class="quien__bio">{c.profesional.bio}</p>}
+      </div>
+    </div>
+  </section>
+)}
+
+{/* ─────────── 9 · Preguntas ─────────── */}
+{showFaq && (
+  <section class="sec">
+    <h2 class="sec__h">
+      {c.faq.map((f) => f.pregunta).slice(0, 3).join(' ')}
+    </h2>
+    <div class="faqs">
+      {c.faq.map((f) => (
+        <details class="faq">
+          <summary class="faq__q">{f.pregunta}</summary>
+          <p class="faq__a">{f.respuesta}</p>
+        </details>
+      ))}
+    </div>
+  </section>
+)}
+
+{placeholders[2] && (
+  <section class="sec"><Placeholder texto={placeholders[2]} /></section>
+)}
+
+{/* ─────────── 10 · Cierre · repite el headline del hero ─────────── */}
+{showCierre && (
+  <section class="sec cierre">
+    <h2 class="cierre__h">{c.cierre.headline}</h2>
+    <a class="cta" href={cierreHref} target="_blank" rel="noopener">{cierreTexto}</a>
+  </section>
+)}
+
+{/* CTA persistente. Se eleva cuando aparece la barra de autoría. */}
+<div class="sticky" id="sticky-cta">
+  <a class="cta" href={ctaHref} target="_blank" rel="noopener">{ctaTexto}</a>
+</div>
+
+<script is:inline>
+  (() => {
+    const sticky = document.getElementById('sticky-cta');
+    if (!sticky) return;
+    // No compite con el CTA del hero: aparece cuando el hero salió de vista.
+    const hero = document.querySelector('.hero');
+    function check() {
+      const fuera = hero ? hero.getBoundingClientRect().bottom < 0 : window.scrollY > 400;
+      sticky.classList.toggle('is-in', fuera);
+    }
+    window.addEventListener('scroll', check, { passive: true });
+    check();
+  })();
+</script>
+
+<style>
+  /* Tipografía del sistema: cero descargas, cero CLS. El presupuesto del hero
+     (§8) no aguanta una fuente web. */
+  :global(html) {
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  }
+
+  /* ---------- Hero: cabe en 390×844 sin scroll ---------- */
+  .hero {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(10px, 2.2vh, 18px);
+    padding: clamp(14px, 3vh, 26px) 18px clamp(12px, 2vh, 20px);
+    min-height: 100svh;
+    justify-content: center;
+  }
+  .hero__id { display: flex; align-items: center; gap: 9px; }
+  .hero__logo {
+    width: 40px; height: 40px; border-radius: 9px;
+    object-fit: cover; background: color-mix(in srgb, var(--acento) 12%, transparent);
+  }
+  .hero__negocio {
+    font-size: 15px; font-weight: 700; letter-spacing: -0.01em;
+    color: color-mix(in srgb, var(--texto) 78%, transparent);
+  }
+
+  .hero__h1 {
+    margin: 0;
+    font-size: clamp(29px, 7.4vw, 40px);
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+    font-weight: 800;
+    text-wrap: balance;
+  }
+  .hero__sub {
+    margin: 0;
+    font-size: clamp(15px, 4vw, 17px);
+    line-height: 1.45;
+    color: color-mix(in srgb, var(--texto) 68%, transparent);
+    text-wrap: pretty;
+  }
+
+  .hero__visual { margin: 0; border-radius: 14px; overflow: hidden; }
+  .hero__media {
+    display: block; width: 100%;
+    height: clamp(190px, 34vh, 330px);
+    object-fit: cover;
+    background: color-mix(in srgb, var(--acento) 8%, transparent);
+  }
+
+  /* ---------- CTA: único destino, ancho completo, 52px ---------- */
+  .cta {
+    display: flex; align-items: center; justify-content: center;
+    width: 100%; min-height: 54px;
+    padding: 15px 22px;
+    border-radius: 12px;
+    background: var(--acento);
+    color: var(--acento-tinta);
+    font-size: 17px; font-weight: 700;
+    text-align: center; text-decoration: none;
+    box-shadow: 0 6px 18px color-mix(in srgb, var(--acento) 28%, transparent);
+  }
+  .cta:active { transform: translateY(1px); }
+  .cta:focus-visible { outline: 3px solid var(--acento); outline-offset: 3px; }
+
+  .cta-wrap { padding: 4px 18px 30px; }
+
+  .badges {
+    display: flex; flex-wrap: wrap; justify-content: center;
+    gap: 6px 14px; margin: 0; padding: 0; list-style: none;
+  }
+  .badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 12.5px; font-weight: 600;
+    color: color-mix(in srgb, var(--texto) 62%, transparent);
+  }
+  .badge svg { color: var(--acento); flex-shrink: 0; }
+
+  /* ---------- Franja de prueba ---------- */
+  .franja {
+    padding: 13px 18px;
+    background: color-mix(in srgb, var(--acento) 9%, transparent);
+    border-block: 1px solid color-mix(in srgb, var(--acento) 18%, transparent);
+    text-align: center;
+    font-size: 13.5px; font-weight: 600;
+    color: color-mix(in srgb, var(--texto) 80%, transparent);
+  }
+
+  /* ---------- Secciones ---------- */
+  .sec { padding: clamp(34px, 7vw, 56px) 18px; }
+  .sec__h {
+    margin: 0 0 18px;
+    font-size: clamp(22px, 5.6vw, 29px);
+    line-height: 1.18;
+    letter-spacing: -0.02em;
+    font-weight: 800;
+    text-wrap: balance;
+  }
+  .parrafo {
+    margin: 0; font-size: 16px; line-height: 1.6;
+    color: color-mix(in srgb, var(--texto) 74%, transparent);
+    max-width: 60ch;
+  }
+
+  /* ---------- Muro de pruebas ---------- */
+  .muro__grid { display: grid; gap: 14px; }
+  @media (min-width: 720px) { .muro__grid { grid-template-columns: 1fr 1fr; } }
+
+  .prueba {
+    border: 1px solid color-mix(in srgb, var(--texto) 12%, transparent);
+    border-radius: 12px;
+    padding: 15px;
+    background: color-mix(in srgb, var(--texto) 2.5%, transparent);
+  }
+  .prueba__img {
+    display: block; width: 100%; border-radius: 8px;
+    margin-bottom: 11px; object-fit: cover; max-height: 300px;
+  }
+  .prueba__texto {
+    margin: 0; font-size: 15px; line-height: 1.5;
+  }
+  .prueba__pie {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+    margin-top: 10px;
+  }
+  .prueba__autor { font-size: 13px; font-weight: 700; }
+  .prueba__fuente {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.06em; padding: 3px 7px; border-radius: 999px;
+    background: color-mix(in srgb, var(--acento) 14%, transparent);
+    color: color-mix(in srgb, var(--acento) 88%, var(--texto));
+  }
+  .prueba__ctx {
+    margin: 7px 0 0; font-size: 13px; line-height: 1.45;
+    color: color-mix(in srgb, var(--texto) 58%, transparent);
+  }
+
+  /* ---------- Cómo funciona ---------- */
+  .pasos { display: grid; gap: 16px; margin: 0; padding: 0; list-style: none; }
+  .paso { display: flex; gap: 13px; align-items: flex-start; }
+  .paso__n {
+    flex-shrink: 0;
+    display: grid; place-items: center;
+    width: 32px; height: 32px; border-radius: 999px;
+    background: var(--acento); color: var(--acento-tinta);
+    font-size: 15px; font-weight: 800;
+  }
+  .paso__t { margin: 4px 0 0; font-size: 16px; font-weight: 700; }
+  .paso__x {
+    margin: 4px 0 0; font-size: 15px; line-height: 1.5;
+    color: color-mix(in srgb, var(--texto) 68%, transparent);
+  }
+
+  /* ---------- Qué incluye ---------- */
+  .incluye { display: grid; gap: 11px; margin: 0; padding: 0; list-style: none; }
+  .incluye__i {
+    display: flex; gap: 10px; align-items: flex-start;
+    font-size: 15.5px; line-height: 1.45;
+  }
+  .incluye__i svg { color: var(--acento); flex-shrink: 0; margin-top: 2px; }
+
+  /* ---------- Riesgo cero ---------- */
+  .riesgo {
+    border: 1.5px solid color-mix(in srgb, var(--acento) 32%, transparent);
+    border-radius: 14px;
+    padding: 20px;
+    background: color-mix(in srgb, var(--acento) 6%, transparent);
+  }
+  .riesgo__h { margin: 0 0 8px; font-size: 18px; font-weight: 800; }
+  .riesgo__x { margin: 0; font-size: 15px; line-height: 1.55; }
+
+  /* ---------- Quién te atiende ---------- */
+  .quien__grid { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
+  .quien__foto {
+    width: 108px; height: 108px; border-radius: 14px;
+    object-fit: cover; flex-shrink: 0;
+  }
+  .quien__n { margin: 0; font-size: 18px; font-weight: 800; }
+  .quien__cred {
+    margin: 3px 0 0; font-size: 14px; font-weight: 600;
+    color: color-mix(in srgb, var(--acento) 85%, var(--texto));
+  }
+  .quien__bio {
+    margin: 9px 0 0; font-size: 15px; line-height: 1.55;
+    color: color-mix(in srgb, var(--texto) 70%, transparent);
+  }
+
+  /* ---------- Preguntas ---------- */
+  .faqs { display: grid; }
+  .faq { border-bottom: 1px solid color-mix(in srgb, var(--texto) 12%, transparent); }
+  .faq:first-child { border-top: 1px solid color-mix(in srgb, var(--texto) 12%, transparent); }
+  .faq__q {
+    cursor: pointer; list-style: none;
+    padding: 15px 0; font-size: 16px; font-weight: 700;
+    display: flex; justify-content: space-between; gap: 14px;
+  }
+  .faq__q::-webkit-details-marker { display: none; }
+  .faq__q::after { content: '+'; color: var(--acento); font-weight: 800; }
+  .faq[open] .faq__q::after { content: '−'; }
+  .faq__a {
+    margin: 0; padding: 0 0 16px; font-size: 15px; line-height: 1.6;
+    color: color-mix(in srgb, var(--texto) 70%, transparent);
+  }
+
+  /* ---------- Cierre ---------- */
+  .cierre {
+    text-align: center;
+    /* Deja aire para el CTA fijo y la barra de autoría. */
+    padding-bottom: calc(clamp(34px, 7vw, 56px) + 130px);
+  }
+  .cierre__h {
+    margin: 0 0 22px;
+    font-size: clamp(24px, 6vw, 33px);
+    line-height: 1.14; letter-spacing: -0.02em; font-weight: 800;
+    text-wrap: balance;
+  }
+
+  /* ---------- CTA persistente ---------- */
+  .sticky {
+    position: fixed;
+    inset-inline: 0;
+    /* --ab-h la fija la barra de autoría cuando entra. */
+    bottom: var(--ab-h, 0px);
+    z-index: 70;
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+    background: color-mix(in srgb, var(--fondo) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border-top: 1px solid color-mix(in srgb, var(--texto) 10%, transparent);
+    transform: translateY(120%);
+    transition: transform 0.35s cubic-bezier(0.2, 0, 0, 1), bottom 0.4s cubic-bezier(0.2, 0, 0, 1);
+  }
+  .sticky.is-in { transform: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sticky { transition: none; }
+    .cta:active { transform: none; }
+  }
+</style>

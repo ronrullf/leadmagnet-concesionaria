@@ -1,4 +1,4 @@
-import type { ProCopy } from './copy-schema';
+import type { OutreachCopy, Prueba } from './outreach-schema';
 
 export type Mood = 'clinico' | 'autoridad' | 'calido' | 'editorial';
 
@@ -79,7 +79,18 @@ export interface ProDemo {
   /** Hasta 4 servicios. */
   services: Service[] | null;
 
-  copy: ProCopy;
+  /** El copy de la landing de outreach. Ver outreach-schema.ts. */
+  copy: OutreachCopy;
+
+  /** Vida del link (§7.3). Al vencer, /p/<slug> muestra la página de expirado. */
+  expira: string | null;
+  /** Muro de pruebas. Cada ítem lleva su fuente pública. */
+  muro_pruebas: Prueba[] | null;
+  /** Capa 2: mensaje precargado hacia TU WhatsApp. */
+  autoria_mensaje: string | null;
+  /** Marca del prospecto, extraída de su Instagram. */
+  bg_hex: string | null;
+  text_hex: string | null;
 
   slots: Slot[] | null;
   monthly_capacity: number | null;

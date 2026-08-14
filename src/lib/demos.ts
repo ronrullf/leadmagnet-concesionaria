@@ -1,5 +1,5 @@
 import { supabaseAnon } from './supabase';
-import type { Demo, Property, Vehicle } from './types';
+import type { Demo, Property, Vehicle, Product } from './types';
 import fallbackProperties from '../data/fallback-properties.json';
 
 const hasSupabase = Boolean(
@@ -83,7 +83,25 @@ export async function getVehicles(demoId: string): Promise<Vehicle[]> {
   }
 }
 
-/** Destacado genérico: sirve para inmuebles y vehículos. */
+/** Productos de la tienda. Única fuente: lo cargado en el admin. */
+export async function getProducts(demoId: string): Promise<Product[]> {
+  try {
+    const { data } = await supabaseAnon()
+      .from('products')
+      .select('*')
+      .eq('demo_id', demoId)
+      .order('sort_order', { ascending: true });
+    return ((data as Product[]) ?? []).map((p) => ({
+      ...p,
+      price_usd: Number(p.price_usd),
+      compare_at_usd: p.compare_at_usd == null ? null : Number(p.compare_at_usd),
+    }));
+  } catch {
+    return [];
+  }
+}
+
+/** Destacado genérico: sirve para inmuebles, vehículos y productos. */
 export function featuredProperty<T extends { is_featured: boolean }>(items: T[]): T | undefined {
   return items.find((p) => p.is_featured) ?? items[0];
 }

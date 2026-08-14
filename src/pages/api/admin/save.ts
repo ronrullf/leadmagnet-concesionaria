@@ -16,6 +16,11 @@ const PROPERTY_FIELDS = [
   'features', 'image_urls', 'maps_query', 'is_featured',
 ] as const;
 
+const PRODUCT_FIELDS = [
+  'sort_order', 'ref_code', 'title', 'category', 'price_usd', 'compare_at_usd',
+  'description', 'variants', 'image_urls', 'in_stock', 'is_featured',
+] as const;
+
 const VEHICLE_FIELDS = [
   'sort_order', 'ref_code', 'title', 'brand', 'model', 'year', 'condition',
   'vehicle_type', 'price_usd', 'mileage_km', 'transmission', 'fuel', 'color',
@@ -40,9 +45,13 @@ export const POST: APIRoute = async ({ request }) => {
       : Array.isArray(body.properties) ? body.properties : [];
     const id: string | null = body.id ?? null;
 
-    const vertical = demoInput.vertical === 'concesionario' ? 'concesionario' : 'inmobiliaria';
+    const VERTICALS = ['inmobiliaria', 'concesionario', 'tienda'];
+    const vertical = VERTICALS.includes(demoInput.vertical as string)
+      ? (demoInput.vertical as string)
+      : 'inmobiliaria';
     demoInput.vertical = vertical;
     const isVehicles = vertical === 'concesionario';
+    const isStore = vertical === 'tienda';
 
     // Validaciones mínimas del servidor
     const slug = String(demoInput.slug ?? '');
@@ -72,18 +81,21 @@ export const POST: APIRoute = async ({ request }) => {
       demoId = data.id;
     }
 
-    const fields = isVehicles ? VEHICLE_FIELDS : PROPERTY_FIELDS;
-    const table = isVehicles ? 'vehicles' : 'properties';
-    const noun = isVehicles ? 'Vehículo' : 'Inmueble';
+    const fields = isStore ? PRODUCT_FIELDS : isVehicles ? VEHICLE_FIELDS : PROPERTY_FIELDS;
+    const table = isStore ? 'products' : isVehicles ? 'vehicles' : 'properties';
+    const noun = isStore ? 'Producto' : isVehicles ? 'Vehículo' : 'Inmueble';
     const rows = itemsInput.map((p, i) => ({ ...pick(p, fields), sort_order: i, demo_id: demoId }));
 
     // Nada se descarta en silencio: un ítem incompleto bloquea el guardado.
     const invalidIdx = rows.findIndex((p) => {
       const base = p.ref_code && p.title && p.price_usd && Array.isArray(p.image_urls) && (p.image_urls as string[]).length > 0;
-      return isVehicles ? !base : !(base && p.location);
+      // Solo los inmuebles exigen ubicación; un producto no tiene dónde estar.
+      return isVehicles || isStore ? !base : !(base && p.location);
     });
     if (invalidIdx !== -1) {
-      const req = isVehicles ? 'ref, título, precio y al menos una foto' : 'ref, título, precio, ubicación y al menos una foto';
+      const req = isVehicles || isStore
+        ? 'ref, título, precio y al menos una foto'
+        : 'ref, título, precio, ubicación y al menos una foto';
       return json({ error: `${noun} ${invalidIdx + 1} incompleto: ${req} son obligatorios.` }, 400);
     }
 
@@ -92,7 +104,19 @@ export const POST: APIRoute = async ({ request }) => {
 
     if (rows.length > 0) {
       const { error } = await db.from(table).insert(rows);
-      if (error) return json({ error: `${noun}s: ${error.message}` }, 400);
+      if (error) {
+        // Sin la migración de la vertical, el mensaje crudo de PostgREST no
+        // dice qué hacer. Este sí.
+        const missingTable = /Could not find the table|does not exist/i.test(error.message);
+        return json(
+          {
+            error: missingTable
+              ? `Falta la tabla "${table}" en Supabase. Ejecuta la migración correspondiente en el SQL Editor y vuelve a guardar.`
+              : `${noun}s: ${error.message}`,
+          },
+          400
+        );
+      }
     }
 
     const siteUrl = siteBase(new URL(request.url).origin);

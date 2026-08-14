@@ -217,148 +217,133 @@ Dolor principal: ${pack.main_pain}
 Resultado soñado: ${pack.dream_outcome}`;
 }
 
-const BLOCK_A = `Genera el núcleo persuasivo.
+const BLOCK_A = `Genera el BLOQUE A: hero, franja de prueba y problema.
 
-Primero, internamente, define EL GRAN DOMINÓ: la única creencia que, si este
-lector la acepta, hace innecesario el resto del argumento. No la escribas en la
-salida; construye todo el bloque alrededor de ella.
+LEY 0 — DOBLE AUDIENCIA. Este es el punto que casi todos fallan:
+La página le habla a LOS PACIENTES del profesional. Quien la va a leer es
+EL PROFESIONAL. Jamás le hables a él, jamás menciones "tu negocio", "tu web",
+"tu marca". En el segundo en que la página le vende algo a él, deja de ser un
+regalo y se vuelve un anuncio.
 
-Devuelve exactamente este JSON:
+HEADLINE — la regla más importante
+Es el resultado que quieren SUS PACIENTES, no lo que él hace.
+Método de la cadena "para que": [servicio] → para que [beneficio] → para que
+[beneficio emocional]. El ÚLTIMO eslabón es el headline.
 
+Fórmulas válidas:
+  A. [Resultado] + [tiempo]        → "Tu sonrisa lista en 2 citas"
+  B. [Resultado] sin [dolor]       → "Endereza tus dientes sin brackets metálicos"
+  C. [Resultado] aunque [objeción] → "Recupera tu sonrisa aunque te dé pánico el odontólogo"
+  D. [Cantidad] + [resultado]      → "127 pacientes volvieron a sonreír este año"
+
+PROHIBIDO en el headline:
+  · El nombre del negocio ("Clínica Dental Sonrisa")
+  · Lo que hace ("Servicios odontológicos integrales")
+  · Vaguedad ("Tu mejor versión te espera")
+  · El servicio como sustantivo ("Diseño de sonrisa")
+
+MÁXIMO 12 PALABRAS. Es una validación dura: con 13 se rechaza el guardado.
+
+Sácalo de SUS PROPIOS CAPTIONS. Si él escribió "acá nadie sale con dolor",
+ese es el headline. En \`headlineOrigen\` copia textual la frase suya de la que
+lo sacaste. Si no saliste de un caption, dilo: "no salió de un caption".
+
+SUBHEADLINE — baja el esfuerzo percibido
+"Sin [X], sin [Y], sin [Z]." o "Solo [acción mínima] y nosotros el resto."
+Máximo 25 palabras.
+
+CTA — en primera persona y con el resultado
+\`cta.texto\`: "Quiero mi evaluación gratis" ▸ nunca "Contactar" ni "Más info".
+\`cta.mensaje\`: lo que el paciente le manda por WhatsApp. En primera persona.
+
+BADGES — exactamente 3
+SOLO lo que él ya promete públicamente en su bio o sus captions. Si nunca
+prometió "primera consulta gratis", NO lo pongas: le estarías inventando una
+oferta que no puede sostener mañana.
+
+FRANJA DE PRUEBA — solo números verificables
+\`estrellas\` y \`resenas\` SOLO si aparecen en el input. Si no hay, van en null
+y usas \`etiqueta\` con lo que sí es público: "+3.400 seguidores publicando
+casos desde 2019".
+NUNCA inventes una cifra. Ni "+500 pacientes felices" ni nada que no puedas
+rastrear a algo público.
+
+PROBLEMA — espejo del dolor del PACIENTE
+Máximo 3 líneas. El headline de esta sección no es una etiqueta: no escribas
+"El problema", escribe el dolor ("Sonreír con la mano en la cara ya es costumbre").
+
+Devuelve SOLO este JSON:
 {
   "hero": {
-    "callout": "",       // máx 70 car. El comportamiento fallido CONCRETO que hace hoy. Debe doler.
-    "headline": "",      // máx 65 car. El reencuadre del problema. Rompe el patrón.
-    "subheadline": "",   // máx 160 car. Promesa concreta con marco de tiempo.
-    "cta_label": ""      // máx 32 car. Micro-compromiso. NUNCA "Comprar" ni "Contactar".
+    "headline": "", "headlineOrigen": "", "subheadline": "",
+    "cta": { "texto": "", "mensaje": "" },
+    "badges": ["", "", ""]
   },
-  "qualify": {
-    "yes": ["", "", ""], // 3 ítems, máx 85 car. c/u. Que se reconozca de inmediato.
-    "no": ["", ""]       // 2 ítems, máx 85 car. c/u. A quién NO le sirve. Esto da credibilidad.
-  },
-  "opportunity": {
-    "name": "",          // máx 40 car. Nombre propio del método.
-    "old_way": "",       // máx 180 car. Lo que todos hacen y por qué falla ESTRUCTURALMENTE.
-    "new_way": "",       // máx 180 car. El vehículo distinto.
-    "why_different": ""  // máx 200 car. Por qué NO es "lo mismo pero mejor".
-  }
-}
+  "franjaPrueba": { "estrellas": null, "resenas": null, "etiqueta": "" },
+  "problema": { "headline": "", "parrafo": "" }
+}`;
 
-RECORDATORIO: si "new_way" se puede describir como una mejora de "old_way",
-está mal. Reescríbelo hasta que sea otra categoría de solución.`;
+const BLOCK_B = `Genera el BLOQUE B: cómo funciona, qué incluye, riesgo, quién atiende, preguntas y cierre.
 
-const BLOCK_B = `Ahora el Puente de la Epifanía y los Tres Secretos.
+Mantén LEY 0: todo le habla a SUS PACIENTES, nunca a él.
 
+LA PRUEBA DEL SCAN — cada headline vende solo
+Si alguien borra todo el cuerpo de texto y lee únicamente los headlines, eso
+tiene que leerse como un argumento de venta completo. Nada de etiquetas:
+  ❌ "Cómo funciona"      ✅ "Tu sonrisa lista en 3 pasos, sin que hagas nada"
+  ❌ "Nuestros servicios" ✅ "Todo lo que entra en tu primera cita"
+  ❌ "Sobre nosotros"     ✅ "8 años haciendo carillas en Valencia"
+
+CÓMO FUNCIONA — 3 pasos, máximo 4. JAMÁS 5.
+Cada paso extra sube el esfuerzo percibido. Es validación dura.
+
+QUÉ INCLUYE — apila valor, sin precios
+CERO PRECIOS. No los sabes y él no te los dio.
+
+RIESGO — \`esPublico\` decide si la sección existe
+Si él NO ofrece públicamente una garantía o consulta sin costo, pon
+\`esPublico: false\` y deja los textos vacíos. La sección no se renderiza.
+Inventarle una garantía es venderle un problema.
+
+QUIÉN ATIENDE — \`profesional.bio\`
+Solo credenciales que vengan en el input, textuales. Si no hay credenciales,
+describe lo que es público y verificable (años publicando, ciudad, tipo de
+casos). NUNCA inventes un título, un colegio ni una especialización.
+
+PREGUNTAS — de sus comentarios reales
+Las preguntas salen de lo que la gente le pregunta en los posts. En
+\`origenComentario\` di de dónde salió cada una. Las tres clásicas siempre
+funcionan: ¿duele? ¿cuánto cuesta? ¿cuánto dura?
+En la respuesta de precio NUNCA des una cifra: "en la evaluación sales con el
+presupuesto por escrito".
+
+CIERRE — repite el headline del hero PALABRA POR PALABRA
+Es la última llamada; no es el lugar para un mensaje nuevo.
+
+CONTENIDO PROHIBIDO en todo el bloque:
+  · Prometer curación o diagnóstico en nombre de él
+  · Cifras, garantías o testimonios que no vengan del input
+  · Precios
+
+Usa su vocabulario: {vocabulary}
+
+Devuelve SOLO este JSON:
 {
-  "story": {
-    "backstory": "",   // máx 140 car. Dónde estaba antes.
-    "wall": "",        // máx 140 car. El muro contra el que chocó. Debe ser el MISMO muro del lector.
-    "epiphany": "",    // máx 140 car. Qué descubrió. El giro.
-    "plan": "",        // máx 140 car. Qué construyó con ese descubrimiento.
-    "result": ""       // máx 140 car. A dónde llegó. CON UN NÚMERO ESPECÍFICO.
-  },
-  "secrets": [
-    { "type": "vehicle",  "title": "", "body": "", "proof": "" },
-    { "type": "internal", "title": "", "body": "", "proof": "" },
-    { "type": "external", "title": "", "body": "", "proof": "" }
-  ]
-}
+  "comoFunciona": { "headline": "", "pasos": [{ "titulo": "", "texto": "" }] },
+  "incluye": { "headline": "", "items": ["", "", ""] },
+  "riesgo": { "headline": "", "texto": "", "esPublico": false },
+  "profesional": { "bio": "" },
+  "faq": [{ "pregunta": "", "respuesta": "", "origenComentario": "" }],
+  "cierre": { "headline": "", "cta": { "texto": "", "mensaje": "" } }
+}`;
 
-title: máx 60 car., enunciado como la objeción, no como la respuesta.
-body: máx 280 car.
-proof: máx 120 car. Dato, cifra o mini-caso.
-
-El muro de la historia tiene que ser reconocible para el lector como SU propio
-muro. Si no se ve reflejado, el puente no cruza a ningún lado.`;
-
-const BLOCK_C = `Ahora el Stack y el Costo de No Actuar.
-
-{
-  "offer": {
-    "program_name": "",     // máx 45 car. Nombre propio. Impide comparar precios.
-    "items": [
-      {
-        "title": "",        // máx 55 car.
-        "description": "",  // máx 150 car. Qué recibe y qué le resuelve.
-        "value_label": ""   // máx 30 car. Monetario o cualitativo ("Le ahorra 6 meses").
-      }
-    ],
-    "total_label": "",      // máx 60 car. El ancla de valor total.
-    "price_display": null
-  },
-  "inaction": {
-    "headline": "",         // máx 70 car.
-    "items": ["", "", ""],  // 3 costos CUANTIFICADOS de seguir igual. Máx 130 car. c/u.
-    "close": ""             // máx 150 car. Conecta con la urgencia real de la profesión.
-  },
-  "guarantee": {
-    "title": "",            // máx 50 car.
-    "body": ""              // máx 220 car. Garantía de INTEGRIDAD, no de devolución ni de resultado.
-  }
-}
-
-"offer.items" lleva de 3 a 5 elementos. "price_display" va siempre en null.
-
-Los tres costos de inacción llevan números: dólares perdidos, horas semanales,
-meses de retraso, daño que se vuelve permanente. Un costo sin cifra no ancla nada.
-
-La garantía NUNCA promete un resultado clínico, legal ni financiero.`;
-
-const BLOCK_D = `Ahora la prueba social de muestra y el cierre.
-
-{
-  "proof": {
-    "testimonials": [
-      {
-        "quote": "",     // máx 200 car. SOLO experiencia del proceso, nunca resultado.
-        "author": "",    // Nombre venezolano común y creíble. Nada de "Juan Pérez".
-        "context": ""    // máx 50 car. Ej: "Paciente desde 2023 · Caracas"
-      }
-    ],
-    "metrics": [
-      { "number": "", "label": "" }
-    ]
-  },
-  "faqs": [
-    { "q": "", "a": "" }
-  ],
-  "closing": {
-    "headline": "",        // máx 70 car.
-    "cta_label": ""        // DEBE ser idéntico a hero.cta_label.
-  }
-}
-
-"testimonials" lleva exactamente 2. "metrics" exactamente 3, solo OPERATIVAS
-(ej: {"number":"340","label":"pacientes atendidos"}). "faqs" exactamente 4.
-
-NO generes el campo "credentials". Ese se llena a mano con el input real.
-
-CADA TESTIMONIO NARRA UN MOMENTO ESPECÍFICO, NO UNA IMPRESIÓN GENERAL.
-Menciona algo que solo existe en esta profesión: un paso del procedimiento, un
-documento, un objeto, un lugar de la consulta, algo que el profesional dijo o
-se negó a hacer. Usa su vocabulario: {vocabulary}.
-Nunca el resultado obtenido, solo el proceso vivido.
-
-Están prohibidas las frases genéricas de satisfacción: "me sentí escuchada",
-"me explicó cada paso", "salí sabiendo qué tenía", "nunca me sentí perdida",
-"me sentí acompañada", "con mucha calma y paciencia". Si tu testimonio contiene
-una de ellas, bórralo y escribe otro con un detalle concreto en su lugar.
-
-Las 4 preguntas del FAQ atacan las objeciones de "objeciones típicas" del
-contexto. Nada de "¿dónde quedan?" ni "¿qué horario tienen?".`;
-
-/**
- * Cada bloque recibe el resultado de los anteriores. No es solo por
- * confiabilidad del JSON: hace que la epifanía use el mismo muro que planteó el
- * hero, y que el stack resuelva exactamente los tres secretos.
- */
 export function userPrompt(
-  block: 'A' | 'B' | 'C' | 'D',
+  block: 'A' | 'B',
   context: string,
   previous: Record<string, unknown>,
   pack?: ProfessionPack
 ): string {
-  const body = { A: BLOCK_A, B: BLOCK_B, C: BLOCK_C, D: BLOCK_D }[block].replace(
+  const body = { A: BLOCK_A, B: BLOCK_B }[block].replace(
     '{vocabulary}',
     pack?.vocabulary.join(', ') ?? 'el vocabulario propio de su oficio'
   );

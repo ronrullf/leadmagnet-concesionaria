@@ -1,0 +1,53 @@
+---
+import type { Product } from '../lib/types';
+
+interface Props {
+  products: Product[];
+}
+
+const { products } = Astro.props;
+
+const categories = [...new Set(products.map((p) => p.category).filter(Boolean))].sort() as string[];
+
+const priceRanges = [
+  { value: '10', label: 'Hasta $10' },
+  { value: '25', label: 'Hasta $25' },
+  { value: '50', label: 'Hasta $50' },
+  { value: '100', label: 'Hasta $100' },
+  { value: '1000000', label: 'Más de $100' },
+];
+---
+
+<form id="search-bar" class="mx-auto -mt-6 max-w-[1200px] px-4 sm:px-6" aria-label="Filtrar productos">
+  <div class="grid grid-cols-1 gap-3 rounded-[8px] border border-line bg-paper p-3 sm:grid-cols-3 sm:p-4">
+    <label class="flex flex-col gap-1">
+      <span class="text-[0.75rem] font-medium uppercase tracking-wide text-ink-soft">Categoría</span>
+      <select name="category" data-attr="category" data-mode="eq" class="min-h-[44px] rounded-[6px] border border-line bg-paper px-2 py-2 text-base sm:min-h-0 sm:text-sm">
+        <option value="">Todas</option>
+        {categories.map((c) => <option value={c}>{c}</option>)}
+      </select>
+    </label>
+
+    <label class="flex flex-col gap-1">
+      <span class="text-[0.75rem] font-medium uppercase tracking-wide text-ink-soft">Precio</span>
+      <select name="price_max" data-attr="price" data-mode="max" class="min-h-[44px] rounded-[6px] border border-line bg-paper px-2 py-2 text-base sm:min-h-0 sm:text-sm">
+        <option value="">Cualquiera</option>
+        {priceRanges.map((r) => <option value={r.value}>{r.label}</option>)}
+      </select>
+    </label>
+
+    <label class="flex flex-col gap-1">
+      <span class="text-[0.75rem] font-medium uppercase tracking-wide text-ink-soft">Disponibilidad</span>
+      <select name="stock" data-attr="stock" data-mode="eq" class="min-h-[44px] rounded-[6px] border border-line bg-paper px-2 py-2 text-base sm:min-h-0 sm:text-sm">
+        <option value="">Todos</option>
+        <option value="si">En existencia</option>
+      </select>
+    </label>
+
+    <button
+      type="button"
+      id="search-reset"
+      class="min-h-[44px] rounded-[6px] border border-line px-3 py-2 text-sm font-medium text-ink-soft hover:text-ink sm:col-span-3 sm:min-h-0"
+    >Limpiar filtros</button>
+  </div>
+</form>

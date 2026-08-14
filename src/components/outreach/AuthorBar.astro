@@ -1,0 +1,101 @@
+---
+/**
+ * Capa 2 — la barra de autoría. Es lo único de la página que le habla al
+ * PROSPECTO; todo lo demás le habla a sus pacientes.
+ *
+ * Es deliberadamente ajena al diseño de él: fondo oscuro, naranja TiendaPana,
+ * pegada abajo. Si se mimetiza con su marca, se vuelve invisible y la página
+ * deja de convertir. No lleva logo grande, ni pitch, ni lista de servicios:
+ * una línea y un enlace.
+ *
+ * Aparece solo después de que él pasó el hero. Antes del wow no se vende nada.
+ */
+import { waLink } from '../../lib/whatsapp';
+
+interface Props {
+  /** Nombre del negocio del prospecto, para la línea de autoría. */
+  negocio: string;
+  /** Mensaje precargado hacia el WhatsApp de TiendaPana. */
+  mensaje: string;
+}
+
+const { negocio, mensaje } = Astro.props;
+
+const tpPhone = import.meta.env.TIENDAPANA_WHATSAPP || '';
+const href = waLink(tpPhone, mensaje);
+---
+
+<aside class="ab" id="author-bar" data-author-bar>
+  <p class="ab__txt">
+    Hice esta página para <strong>{negocio}</strong>.
+  </p>
+  <a class="ab__cta" href={href} target="_blank" rel="noopener">
+    ¿La activamos con tu dominio? →
+  </a>
+</aside>
+
+<script is:inline>
+  (() => {
+    const bar = document.getElementById('author-bar');
+    if (!bar) return;
+
+    // Se muestra pasado el 60% de la primera pantalla, nunca antes.
+    const umbral = window.innerHeight * 0.6;
+    let visible = false;
+
+    function check() {
+      if (visible || window.scrollY < umbral) return;
+      visible = true;
+      bar.classList.add('is-in');
+      // El CTA persistente se apoya en esta variable para subirse encima.
+      document.documentElement.style.setProperty('--ab-h', `${bar.offsetHeight}px`);
+      window.removeEventListener('scroll', check);
+    }
+
+    window.addEventListener('scroll', check, { passive: true });
+    check();
+  })();
+</script>
+
+<style>
+  .ab {
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 80;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 4px 10px;
+    padding: 11px 16px calc(11px + env(safe-area-inset-bottom));
+    /* Ajena a la marca de él: oscuro fijo, no hereda sus tokens. */
+    background: #12161a;
+    color: #fff;
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    font-size: 13px;
+    line-height: 1.35;
+    text-align: center;
+    box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.22);
+
+    transform: translateY(100%);
+    transition: transform 0.4s cubic-bezier(0.2, 0, 0, 1);
+  }
+  .ab.is-in { transform: none; }
+
+  .ab__txt { margin: 0; color: rgba(255, 255, 255, 0.82); }
+  .ab__txt strong { color: #fff; font-weight: 600; }
+
+  .ab__cta {
+    color: #ff6b35;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .ab__cta:hover { text-decoration: underline; }
+  .ab__cta:focus-visible { outline: 2px solid #ff6b35; outline-offset: 3px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ab { transition: none; }
+  }
+</style>

@@ -12,9 +12,11 @@ import { waLink, demoPopupMessage } from '../lib/whatsapp';
 interface Props {
   /** Referencia para saber desde qué demo escribieron (slug). Opcional. */
   ref?: string;
+  /** Texto del enlace final. En tiendas dice "mi propia tienda online". */
+  ctaLabel?: string;
 }
 
-const { ref } = Astro.props;
+const { ref, ctaLabel = 'Quiero mi propio sitio web' } = Astro.props;
 const tpPhone = import.meta.env.TIENDAPANA_WHATSAPP || '';
 const wa = waLink(tpPhone, demoPopupMessage(ref));
 ---
@@ -41,7 +43,7 @@ const wa = waLink(tpPhone, demoPopupMessage(ref));
 
     <button type="button" class="dp__cta" data-close>Ver la demo</button>
     <a class="dp__wa" href={wa} target="_blank" rel="noopener" data-close>
-      Quiero mi propio sitio web
+      {ctaLabel}
     </a>
   </div>
 </div>

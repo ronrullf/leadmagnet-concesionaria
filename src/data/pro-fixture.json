@@ -1,232 +1,163 @@
 {
-  "id": "dev-fixture-pro",
+  "id": "dev-fixture",
   "slug": "dra-mariana-rojas",
-  "created_at": "2026-07-21T00:00:00.000Z",
-  "pro_name": "Dra. Mariana Rojas",
-  "pro_title": "Dermatóloga · Caracas",
+  "created_at": "2026-01-01T00:00:00Z",
+  "pro_name": "Clínica Ejemplo",
+  "pro_title": "Odontología · Valencia",
   "profession_key": "dermatologia",
-  "city": "Caracas",
-  "instagram_handle": "dramarianarojas",
-  "followers": 9400,
-  "photo_hero_url": null,
-  "photo_story_url": null,
+  "city": "Valencia",
+  "instagram_handle": "clinicaejemplo",
+  "followers": 3400,
+  "photo_hero_url": "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=900&q=70",
+  "photo_story_url": "https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=400&q=70",
   "logo_url": null,
   "mood": "clinico",
-  "accent_hex": null,
+  "accent_hex": "#0E6B7A",
+  "bg_hex": "#FFFFFF",
+  "text_hex": "#14181D",
   "whatsapp_e164": "584141234567",
   "booking_url": null,
+  "expira": "2026-08-18",
+  "autoria_mensaje": "Hola, vi la página que hiciste para Clínica Ejemplo y quiero saber más",
+  "cta_mode": "directo",
+  "cta_form_title": null,
+  "cta_question_label": null,
+  "address": null,
+  "maps_query": null,
+  "trust_line": null,
+  "services": null,
+  "before_after": null,
+  "slots": null,
+  "monthly_capacity": null,
+  "slots_remaining": null,
+  "is_active": true,
+  "copy_source": "mixto",
+  "notes": "Fixture de desarrollo. Negocio ficticio: nada aquí se atribuye a una clínica real.",
   "copy": {
     "hero": {
-      "callout": "Llevas 3 años cambiando de crema cada vez que sale un TikTok.",
-      "headline": "No es la crema. Es que nadie te ha dicho qué tienes.",
-      "subheadline": "En una consulta de 40 minutos sales con el nombre de lo que tienes por escrito y una rutina de tres pasos que sí puedes cumplir.",
-      "cta_label": "Ver cupos de esta semana"
-    },
-    "qualify": {
-      "yes": [
-        "Ya gastaste más de 200 dólares en productos que abandonaste a la mitad",
-        "Te maquillas distinto desde hace meses para tapar una zona específica",
-        "Cada vez que te preguntan qué te pasa en la cara, cambias el tema"
-      ],
-      "no": [
-        "Buscas que te recete algo por WhatsApp sin verte la piel",
-        "Quieres resultados de foto para el sábado que viene"
+      "headline": "Tu sonrisa lista en 2 citas",
+      "headlineOrigen": "De su caption: 'acá nadie sale con dolor'",
+      "subheadline": "Sin anticipo, sin exámenes previos, sin esperar semanas.",
+      "visual": {
+        "tipo": "imagen",
+        "src": "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=900&q=70",
+        "alt": "Resultado de un caso publicado en su feed",
+        "poster": ""
+      },
+      "cta": {
+        "texto": "Quiero mi evaluación",
+        "mensaje": "Hola, vi la página y quiero agendar mi evaluación"
+      },
+      "badges": [
+        "Primera evaluación sin costo",
+        "Presupuesto por escrito",
+        "Respuesta el mismo día"
       ]
     },
-    "story": {
-      "backstory": "Pasé seis años en consulta pública viendo 40 pacientes al día, doce minutos cada uno.",
-      "wall": "Los mismos rostros volvían a los ocho meses, peor. La receta funcionaba; el diagnóstico estaba incompleto.",
-      "epiphany": "El problema no era el tratamiento. Era que nadie tenía tiempo de preguntar qué había cambiado en su vida ese año.",
-      "plan": "Armé una consulta de 40 minutos con historia completa, foto de control y un plan escrito de tres pasos.",
-      "result": "De 340 pacientes en dos años, 8 de cada 10 siguen en control al año."
+    "franjaPrueba": {
+      "estrellas": 4.9,
+      "resenas": 213,
+      "etiqueta": "8 años en Valencia"
     },
-    "opportunity": {
-      "name": "Consulta de Diagnóstico Primero",
-      "old_way": "Probar productos hasta que uno pegue. Falla porque una mancha por sol, una por hormonas y una por medicamento se ven casi iguales y ninguna crema sirve para las tres.",
-      "new_way": "Empezar por saber cuál de las tres tienes. El tratamiento es la consecuencia del diagnóstico, no un experimento.",
-      "why_different": "No es una crema mejor ni una marca más cara. Es dejar de comprar a ciegas. La pregunta deja de ser qué me pongo y pasa a ser qué tengo."
+    "problema": {
+      "headline": "Sonreír con la mano en la cara ya es costumbre",
+      "parrafo": "Te tapas la boca en las fotos y evitas reírte fuerte. No es vanidad: llevas años posponiendo algo que se resuelve en dos citas."
     },
-    "secrets": [
-      {
-        "type": "vehicle",
-        "title": "Ya fui a un dermatólogo y me mandó algo que no sirvió",
-        "body": "En doce minutos de consulta no se levanta una historia. Sin saber qué medicamentos tomas, cuánto sol te da manejando y qué cambió en tu ciclo este año, cualquier receta es una apuesta razonable. Con 40 minutos deja de ser una apuesta.",
-        "proof": "El 60% de las manchas que veo llegan con un diagnóstico previo distinto al correcto."
-      },
-      {
-        "type": "internal",
-        "title": "Yo no soy constante, siempre abandono las rutinas",
-        "body": "Las rutinas de doce pasos las abandona todo el mundo, no eres tú. Por eso salgo con tres pasos y un solo activo nuevo por mes. Si a la segunda semana no lo estás haciendo, cambiamos el plan, no te regaño.",
-        "proof": "8 de cada 10 pacientes siguen en control al año."
-      },
-      {
-        "type": "external",
-        "title": "No tengo tiempo ni presupuesto para andar en consultas",
-        "body": "Es una consulta, no un abono. Sales con el plan escrito y el control es a los tres meses. Entre medio respondo dudas por WhatsApp sin cobrar consulta nueva, porque la mitad de las dudas se responden en dos líneas.",
-        "proof": "Respuesta a dudas de control en menos de 24 horas."
-      }
-    ],
-    "offer": {
-      "program_name": "Protocolo Piel Clara 360",
-      "items": [
+    "comoFunciona": {
+      "headline": "Tu sonrisa lista en 3 pasos, sin que hagas nada",
+      "pasos": [
         {
-          "title": "Consulta de diagnóstico de 40 minutos",
-          "description": "Historia completa, revisión con luz de Wood y el nombre de lo que tienes, por escrito, antes de que salgas del consultorio.",
-          "value_label": "El paso que falta"
+          "titulo": "Evaluación sin costo",
+          "texto": "Vemos tu caso y te decimos qué se puede hacer."
         },
         {
-          "title": "Plan de tres pasos en una hoja",
-          "description": "Qué te pones, a qué hora y por cuánto tiempo. Con nombres de productos que se consiguen en Caracas y su precio aproximado.",
-          "value_label": "Le ahorra 6 meses"
+          "titulo": "Plan por escrito",
+          "texto": "Sales con el presupuesto cerrado, sin sorpresas."
         },
         {
-          "title": "Foto de control estandarizada",
-          "description": "Misma luz, misma distancia, cada tres meses. Es la única forma de saber si algo funcionó, porque el espejo diario miente.",
-          "value_label": "Evidencia, no impresión"
-        },
-        {
-          "title": "Dudas por WhatsApp entre controles",
-          "description": "Si algo te irrita o no consigues un producto, escribes. No necesitas pagar una consulta nueva para preguntar si es normal.",
-          "value_label": "Respuesta en 24 h"
-        }
-      ],
-      "total_label": "Un diagnóstico correcto vale más que diez cremas",
-      "price_display": null
-    },
-    "proof": {
-      "credentials": [],
-      "testimonials": [
-        {
-          "quote": "Salí sabiendo exactamente qué tenía. Nadie me lo había explicado con esa calma, y llevaba cuatro años preguntando.",
-          "author": "Andreína Belisario",
-          "context": "Paciente desde 2023 · Caracas"
-        },
-        {
-          "quote": "Me dio tres pasos en una hoja. Por primera vez entendí para qué servía cada cosa que me estaba poniendo en la cara.",
-          "author": "Génesis Marcano",
-          "context": "Paciente desde 2024 · Los Palos Grandes"
-        }
-      ],
-      "metrics": [
-        {
-          "number": "340",
-          "label": "pacientes atendidos"
-        },
-        {
-          "number": "9",
-          "label": "años en consulta"
-        },
-        {
-          "number": "24 h",
-          "label": "respuesta a dudas de control"
+          "titulo": "Dos citas",
+          "texto": "Se hace el trabajo y te vas con el resultado."
         }
       ]
     },
-    "inaction": {
-      "headline": "Lo caro no es la consulta. Es el año que viene igual.",
+    "incluye": {
+      "headline": "Todo esto entra en tu primera cita",
       "items": [
-        "Entre 15 y 40 dólares al mes en productos que abandonas a la mitad: 360 dólares al año comprando a ciegas.",
-        "Una mancha post-inflamatoria tratada tarde tarda de 12 a 18 meses en aclarar, contra 3 o 4 si se agarra a tiempo.",
-        "El tejido cicatricial se fija de forma permanente en pocos meses. Después ya no se trata, se disimula."
-      ],
-      "close": "La piel no espera a que tengas tiempo. Cada mes que pasa el mismo problema cuesta un tratamiento más largo y más caro."
+        "Revisión completa",
+        "Fotografías del caso",
+        "Simulación del resultado",
+        "Presupuesto por escrito"
+      ]
     },
-    "guarantee": {
-      "title": "Lo que sí le prometo",
-      "body": "No le prometo la piel de un filtro de Instagram. Le prometo que va a salir sabiendo qué tiene, cuánto tarda y cuánto cuesta, y que si algo no aplica en su caso se lo voy a decir aunque signifique que no vuelva."
+    "riesgo": {
+      "headline": "Si no te convence el plan, no pagas nada",
+      "texto": "La evaluación es sin costo y sin compromiso.",
+      "esPublico": true
     },
-    "faqs": [
+    "profesional": {
+      "bio": "Odontóloga con 8 años de práctica en Valencia, publicando sus casos desde 2019."
+    },
+    "faq": [
       {
-        "q": "Ya probé de todo y nada me sirvió. ¿Por qué esto sería distinto?",
-        "a": "Porque probablemente nunca partió de un diagnóstico. Una mancha solar, una hormonal y una por medicamento se ven casi iguales y responden a cosas distintas. Si acertó de casualidad, funcionó. Si no, gastó."
+        "pregunta": "¿Duele?",
+        "respuesta": "Se trabaja con anestesia local y la molestia posterior es leve.",
+        "origenComentario": "Pregunta recurrente en sus posts"
       },
       {
-        "q": "¿Me va a dejar marcas o la piel más delgada?",
-        "a": "Los activos fuertes se indican por tiempo definido y con control por foto. Si su piel reacciona mal, cambiamos antes de que deje marca. Ese es justamente el punto de que haya control y no solo receta."
+        "pregunta": "¿Cuánto dura el tratamiento?",
+        "respuesta": "Las carillas se hacen en dos sesiones separadas por dos semanas.",
+        "origenComentario": "Pregunta frecuente en DM"
       },
       {
-        "q": "No tengo tiempo para una rutina de doce pasos.",
-        "a": "Yo tampoco. Salgo con tres pasos y un solo activo nuevo por mes. Si a la segunda semana no lo está haciendo, el plan estaba mal hecho y lo ajustamos."
-      },
-      {
-        "q": "¿Se puede resolver por WhatsApp sin ir a consulta?",
-        "a": "Las dudas de control sí. El diagnóstico no. Recetar sin ver la piel es exactamente lo que la tiene donde está hoy."
+        "pregunta": "¿Cuánto cuesta?",
+        "respuesta": "Depende del caso. En la evaluación sales con el presupuesto por escrito.",
+        "origenComentario": "La pregunta más repetida en comentarios"
       }
     ],
-    "closing": {
-      "headline": "Empiece por saber qué tiene. Lo demás viene solo.",
-      "cta_label": "Ver cupos de esta semana"
-    }
+    "cierre": {
+      "headline": "Tu sonrisa lista en 2 citas",
+      "cta": {
+        "texto": "Quiero mi evaluación",
+        "mensaje": "Hola, vi la página y quiero agendar mi evaluación"
+      }
+    },
+    "placeholders": [
+      "[Aquí van tus reseñas reales de Google]",
+      "[Tu logo en alta va acá]"
+    ]
   },
-  "slots": [
+  "muro_pruebas": [
     {
-      "day": "JUE 24",
-      "time": "9:00 AM",
-      "status": "taken"
+      "tipo": "comentario",
+      "fuente": "instagram",
+      "src": "",
+      "autor": "@ana_r",
+      "texto": "Quedé feliz, me explicaron todo antes de empezar.",
+      "contexto": "Comentario en el post del 12 de marzo"
     },
     {
-      "day": "JUE 24",
-      "time": "11:00 AM",
-      "status": "open",
-      "remaining": 2
+      "tipo": "comentario",
+      "fuente": "instagram",
+      "src": "",
+      "autor": "@karla.m",
+      "texto": "Llegué muerta de miedo y salí riéndome.",
+      "contexto": "Comentario en el reel de carillas"
     },
     {
-      "day": "VIE 25",
-      "time": "8:00 AM",
-      "status": "open",
-      "remaining": 1
+      "tipo": "resena",
+      "fuente": "google",
+      "src": "",
+      "autor": "J. Pérez",
+      "texto": "Puntuales y muy claros con el presupuesto.",
+      "contexto": "Reseña de Google, 5 estrellas"
     },
     {
-      "day": "VIE 25",
-      "time": "2:00 PM",
-      "status": "taken"
-    },
-    {
-      "day": "LUN 28",
-      "time": "10:00 AM",
-      "status": "open",
-      "remaining": 1
-    }
-  ],
-  "monthly_capacity": 15,
-  "slots_remaining": 4,
-  "is_active": true,
-  "copy_source": "manual",
-  "notes": "Fixture de desarrollo. No es una persona real.",
-  "cta_mode": "formulario",
-  "cta_form_title": "Cuénteme brevemente",
-  "cta_question_label": "¿Qué desea saber?",
-  "address": "Centro Médico Docente La Trinidad, Torre B, Piso 4, Consultorio 4-C",
-  "maps_query": "Centro Médico Docente La Trinidad, Caracas",
-  "trust_line": "+8 años transformando sonrisas · Materiales importados · Caracas",
-  "services": [
-    {
-      "label": "Carillas",
-      "icon": "diente"
-    },
-    {
-      "label": "Ortodoncia",
-      "icon": "alineador"
-    },
-    {
-      "label": "Diseño de sonrisa",
-      "icon": "sonrisa"
-    },
-    {
-      "label": "Blanqueamiento",
-      "icon": "brillo"
-    }
-  ],
-  "before_after": [
-    {
-      "before": "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?w=800&q=70",
-      "after": "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=800&q=70",
-      "label": "Carillas en 2 sesiones"
-    },
-    {
-      "before": "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=800&q=70",
-      "after": "https://images.unsplash.com/photo-1609840114035-3c981b782dfe?w=800&q=70",
-      "label": "Ortodoncia · 14 meses"
+      "tipo": "foto",
+      "fuente": "instagram",
+      "src": "https://images.unsplash.com/photo-1609840114035-3c981b782dfe?w=700&q=70",
+      "autor": "",
+      "texto": "",
+      "contexto": "Caso publicado en su feed"
     }
   ]
 }

@@ -22,7 +22,9 @@ export function videoCallMessage(agencyName: string, title: string, refCode: str
 }
 
 export function genericContactMessage(agencyName: string, vertical: string = 'inmobiliaria'): string {
-  const noun = vertical === 'concesionario' ? 'vehículos' : 'inmuebles';
+  const noun =
+    vertical === 'concesionario' ? 'vehículos' :
+    vertical === 'tienda' ? 'productos' : 'inmuebles';
   return `Hola ${agencyName}, vi su página web y me gustaría más información sobre sus ${noun} disponibles.`;
 }
 
@@ -84,6 +86,30 @@ export function proSlotMessage(proName: string, day: string, time: string): stri
   return (
     `Hola ${proName}, vi su página y quiero agendar el ${day} a las ${time}.\n` +
     `¿Sigue disponible?`
+  );
+}
+
+/** Mensajes del nicho tienda online. El pedido llega listo para responder. */
+
+export function orderMessage(
+  storeName: string,
+  title: string,
+  refCode: string,
+  priceUsd: number,
+  variant?: string | null
+): string {
+  const talla = variant ? `\nPresentación: ${variant}` : '';
+  return (
+    `Hola ${storeName}, quiero pedir "${title}" (Ref. ${refCode}).${talla}\n` +
+    `Precio: $${new Intl.NumberFormat('es-VE').format(priceUsd)}\n` +
+    `¿Sigue disponible? ¿Cómo hago el pago y el envío?`
+  );
+}
+
+export function productInfoMessage(storeName: string, title: string, refCode: string): string {
+  return (
+    `Hola ${storeName}, vi "${title}" (Ref. ${refCode}) en su catálogo.\n` +
+    `¿Me da más información?`
   );
 }
 

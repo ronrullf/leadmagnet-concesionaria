@@ -6,7 +6,7 @@
  * segundos de lectura y atrapa lo único que de verdad no puede salir a la
  * calle: una afirmación de resultado atribuida a un profesional real.
  */
-import type { ProCopy } from './copy-schema';
+import type { OutreachCopy } from './outreach-schema';
 
 export type LintSeverity = 'error' | 'warn';
 
@@ -86,55 +86,46 @@ interface Field {
   isTestimonial?: boolean;
 }
 
-function collect(copy: ProCopy): Field[] {
+/**
+ * Recorre todas las ranuras de texto del copy de outreach.
+ *
+ * En este modelo NO hay testimonios generados: el muro se llena a mano con
+ * pruebas de fuente pública. Por eso `isTestimonial` no se marca en ningún
+ * campo — la IA nunca escribe una cita atribuida a un paciente.
+ */
+function collect(copy: OutreachCopy): Field[] {
   const f: Field[] = [];
-  const add = (path: string, value: string, isTestimonial = false) => {
-    if (value) f.push({ path, value, isTestimonial });
+  const add = (path: string, value: string) => {
+    if (value) f.push({ path, value });
   };
 
-  add('hero.callout', copy.hero.callout);
   add('hero.headline', copy.hero.headline);
   add('hero.subheadline', copy.hero.subheadline);
-  add('hero.cta_label', copy.hero.cta_label);
-  copy.qualify.yes.forEach((v, i) => add(`qualify.yes[${i}]`, v));
-  copy.qualify.no.forEach((v, i) => add(`qualify.no[${i}]`, v));
-  (['backstory', 'wall', 'epiphany', 'plan', 'result'] as const).forEach((k) =>
-    add(`story.${k}`, copy.story[k])
-  );
-  (['name', 'old_way', 'new_way', 'why_different'] as const).forEach((k) =>
-    add(`opportunity.${k}`, copy.opportunity[k])
-  );
-  copy.secrets.forEach((s, i) => {
-    add(`secrets[${i}].title`, s.title);
-    add(`secrets[${i}].body`, s.body);
-    add(`secrets[${i}].proof`, s.proof);
+  add('hero.cta.texto', copy.hero.cta.texto);
+  copy.hero.badges.forEach((v, i) => add(`hero.badges[${i}]`, v));
+  add('franjaPrueba.etiqueta', copy.franjaPrueba.etiqueta);
+  add('problema.headline', copy.problema.headline);
+  add('problema.parrafo', copy.problema.parrafo);
+  add('comoFunciona.headline', copy.comoFunciona.headline);
+  copy.comoFunciona.pasos.forEach((p, i) => {
+    add(`comoFunciona.pasos[${i}].titulo`, p.titulo);
+    add(`comoFunciona.pasos[${i}].texto`, p.texto);
   });
-  add('offer.program_name', copy.offer.program_name);
-  add('offer.total_label', copy.offer.total_label);
-  copy.offer.items.forEach((it, i) => {
-    add(`offer.items[${i}].title`, it.title);
-    add(`offer.items[${i}].description`, it.description);
-    add(`offer.items[${i}].value_label`, it.value_label);
+  add('incluye.headline', copy.incluye.headline);
+  copy.incluye.items.forEach((v, i) => add(`incluye.items[${i}]`, v));
+  add('riesgo.headline', copy.riesgo.headline);
+  add('riesgo.texto', copy.riesgo.texto);
+  add('profesional.bio', copy.profesional.bio);
+  copy.faq.forEach((q, i) => {
+    add(`faq[${i}].pregunta`, q.pregunta);
+    add(`faq[${i}].respuesta`, q.respuesta);
   });
-  copy.proof.testimonials.forEach((t, i) => {
-    add(`proof.testimonials[${i}].quote`, t.quote, true);
-    add(`proof.testimonials[${i}].author`, t.author);
-  });
-  add('inaction.headline', copy.inaction.headline);
-  copy.inaction.items.forEach((v, i) => add(`inaction.items[${i}]`, v));
-  add('inaction.close', copy.inaction.close);
-  add('guarantee.title', copy.guarantee.title);
-  add('guarantee.body', copy.guarantee.body);
-  copy.faqs.forEach((q, i) => {
-    add(`faqs[${i}].q`, q.q);
-    add(`faqs[${i}].a`, q.a);
-  });
-  add('closing.headline', copy.closing.headline);
-  add('closing.cta_label', copy.closing.cta_label);
+  add('cierre.headline', copy.cierre.headline);
+  add('cierre.cta.texto', copy.cierre.cta.texto);
   return f;
 }
 
-export function lintCopy(copy: ProCopy): LintFinding[] {
+export function lintCopy(copy: OutreachCopy): LintFinding[] {
   const findings: LintFinding[] = [];
 
   for (const field of collect(copy)) {
@@ -184,41 +175,68 @@ export function lintCopy(copy: ProCopy): LintFinding[] {
     }
   }
 
-  // Dos testimonios con el mismo autor delatan plantilla.
-  const authors = copy.proof.testimonials.map((t) => t.author.toLowerCase().trim()).filter(Boolean);
-  if (authors.length === 2 && authors[0] === authors[1]) {
+  // El headline no puede pasar de 12 palabras: es validación dura al guardar,
+  // y detectarlo aquí ahorra un viaje al servidor.
+  const palabrasHeadline = copy.hero.headline.trim().split(/\s+/).filter(Boolean).length;
+  if (palabrasHeadline > 12) {
     findings.push({
-      severity: 'warn',
-      path: 'proof.testimonials',
-      rule: 'autor-repetido',
-      match: authors[0],
-      message: 'Los dos testimonios llevan el mismo nombre.',
+      severity: 'error',
+      path: 'hero.headline',
+      rule: 'headline-largo',
+      match: copy.hero.headline,
+      message: `El headline tiene ${palabrasHeadline} palabras; el máximo son 12.`,
     });
   }
 
-  // La IA nunca llena credentials: son afirmaciones verificables sobre alguien real.
-  if (copy.proof.credentials.length > 0) {
+  // Exactamente 3 badges, y solo lo que él ya promete en público.
+  if (copy.hero.badges.length && copy.hero.badges.length !== 3) {
     findings.push({
       severity: 'error',
-      path: 'proof.credentials',
-      rule: 'credencial-generada',
-      match: copy.proof.credentials[0],
-      message: 'Las credenciales solo se llenan a mano con el input real.',
+      path: 'hero.badges',
+      rule: 'badges-incompletos',
+      match: String(copy.hero.badges.length),
+      message: `Hay ${copy.hero.badges.length} badges; deben ser exactamente 3.`,
+    });
+  }
+
+  // Más de 4 pasos sube el esfuerzo percibido y rompe la sección.
+  if (copy.comoFunciona.pasos.length > 4) {
+    findings.push({
+      severity: 'error',
+      path: 'comoFunciona.pasos',
+      rule: 'pasos-de-mas',
+      match: String(copy.comoFunciona.pasos.length),
+      message: `Hay ${copy.comoFunciona.pasos.length} pasos; el máximo son 4.`,
+    });
+  }
+
+  // El cierre repite el headline del hero palabra por palabra.
+  if (
+    copy.hero.headline &&
+    copy.cierre.headline &&
+    copy.hero.headline.trim() !== copy.cierre.headline.trim()
+  ) {
+    findings.push({
+      severity: 'warn',
+      path: 'cierre.headline',
+      rule: 'cierre-distinto',
+      match: copy.cierre.headline,
+      message: `El cierre debería repetir el headline del hero ("${copy.hero.headline}").`,
     });
   }
 
   // El CTA tiene que ser idéntico en toda la página.
   if (
-    copy.hero.cta_label &&
-    copy.closing.cta_label &&
-    copy.hero.cta_label !== copy.closing.cta_label
+    copy.hero.cta.texto &&
+    copy.cierre.cta.texto &&
+    copy.hero.cta.texto !== copy.cierre.cta.texto
   ) {
     findings.push({
       severity: 'warn',
-      path: 'closing.cta_label',
+      path: 'cierre.cta.texto',
       rule: 'cta-inconsistente',
-      match: copy.closing.cta_label,
-      message: `El CTA del cierre no coincide con el del hero ("${copy.hero.cta_label}").`,
+      match: copy.cierre.cta.texto,
+      message: `El CTA del cierre no coincide con el del hero ("${copy.hero.cta.texto}").`,
     });
   }
 

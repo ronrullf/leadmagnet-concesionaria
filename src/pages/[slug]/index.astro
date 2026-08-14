@@ -5,8 +5,10 @@ import SearchBar from '../../components/SearchBar.astro';
 import VehicleSearchBar from '../../components/VehicleSearchBar.astro';
 import PropertyCard from '../../components/PropertyCard.astro';
 import VehicleCard from '../../components/VehicleCard.astro';
+import ProductSearchBar from '../../components/ProductSearchBar.astro';
+import ProductCard from '../../components/ProductCard.astro';
 import TrustSection from '../../components/TrustSection.astro';
-import { getDemoBySlug, getProperties, getVehicles, featuredProperty } from '../../lib/demos';
+import { getDemoBySlug, getProperties, getVehicles, getProducts, featuredProperty } from '../../lib/demos';
 import { getBcvRate } from '../../lib/bcv';
 import { verticalConfig } from '../../lib/vertical';
 import { notFoundResponse } from '../../lib/not-found';
@@ -19,10 +21,11 @@ if (!demo) {
 }
 
 const isVehicles = demo.vertical === 'concesionario';
+const isStore = demo.vertical === 'tienda';
 const vc = verticalConfig(demo.vertical);
 
 const [items, bcv] = await Promise.all([
-  isVehicles ? getVehicles(demo.id) : getProperties(demo.id),
+  isStore ? getProducts(demo.id) : isVehicles ? getVehicles(demo.id) : getProperties(demo.id),
   getBcvRate(),
 ]);
 
@@ -38,17 +41,27 @@ const featured = featuredProperty(items);
 
   {items.length > 0 ? (
     <>
-      {isVehicles ? (
+      {isStore ? (
+        <ProductSearchBar products={items as any} />
+      ) : isVehicles ? (
         <VehicleSearchBar vehicles={items as any} />
       ) : (
         <SearchBar properties={items as any} />
       )}
 
-      <section id="catalogo" class="mx-auto max-w-[1200px] px-6 py-14">
-        <h2 class="display-tight mb-8 font-display text-[1.9375rem] font-bold">{vc.catalogTitle}</h2>
+      <section id="catalogo" class="mx-auto max-w-[1200px] px-4 py-10 sm:px-6 sm:py-14">
+        <h2 class="display-tight mb-6 font-display text-[1.5625rem] font-bold sm:mb-8 sm:text-[1.9375rem]">{vc.catalogTitle}</h2>
 
-        <div id="property-grid" class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {isVehicles
+        {/* La tienda va a dos columnas en móvil: un producto por fila obliga a
+            scrollear el catálogo entero para ver cuatro cosas. */}
+        <div id="property-grid" class={isStore
+          ? 'grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4'
+          : 'grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'}>
+          {isStore
+            ? (items as any[]).map((p, i) => (
+                <ProductCard product={p} slug={demo.slug} bcv={bcv} stagger={(i % 2) * 40} />
+              ))
+            : isVehicles
             ? (items as any[]).map((v, i) => (
                 <VehicleCard vehicle={v} slug={demo.slug} bcv={bcv} stagger={(i % 3) * 40} />
               ))
@@ -58,12 +71,12 @@ const featured = featuredProperty(items);
         </div>
 
         <p id="search-empty" class="hidden py-16 text-center text-ink-soft">
-          {isVehicles ? 'Ningún vehículo coincide con esos filtros.' : 'Ningún inmueble coincide con esos filtros.'}
+          {isStore ? 'Ningún producto coincide con esos filtros.' : isVehicles ? 'Ningún vehículo coincide con esos filtros.' : 'Ningún inmueble coincide con esos filtros.'}
         </p>
       </section>
     </>
   ) : (
-    <section id="catalogo" class="mx-auto max-w-[1200px] px-6 py-20 text-center">
+    <section id="catalogo" class="mx-auto max-w-[1200px] px-4 py-16 text-center sm:px-6 sm:py-20">
       <p class="font-display text-[1.25rem] font-semibold">Estamos actualizando nuestro catálogo.</p>
       <p class="mt-2 text-ink-soft">{vc.emptyMessage}</p>
     </section>

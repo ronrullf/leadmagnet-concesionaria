@@ -6,7 +6,7 @@ import WhatsAppFloat from '../components/WhatsAppFloat.astro';
 import ClosingBar from '../components/ClosingBar.astro';
 import DemoPopup from '../components/DemoPopup.astro';
 import { accentInk } from '../lib/format';
-import { verticalConfig } from '../lib/vertical';
+import { verticalConfig, demoPopupLabel } from '../lib/vertical';
 import { siteBase } from '../lib/site';
 import type { Demo } from '../lib/types';
 
@@ -58,7 +58,7 @@ const desc = description || vc.ogDescription;
     <Footer demo={demo} />
     <WhatsAppFloat demo={demo} />
     {showClosingBar && <ClosingBar demo={demo} />}
-    <DemoPopup ref={demo.slug} />
+    <DemoPopup ref={demo.slug} ctaLabel={demoPopupLabel(demo.vertical)} />
 
     <script is:inline define:vars={{ slug: demo.slug, path }}>
       // Tracking fire-and-forget. La cookie tp_admin la filtra el servidor.

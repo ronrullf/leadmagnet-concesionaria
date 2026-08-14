@@ -1,9 +1,9 @@
 ---
-import type { Demo, Property, Vehicle } from '../../lib/types';
+import type { Demo, Property, Vehicle, Product } from '../../lib/types';
 
 interface Props {
   demo?: Demo | null;
-  items?: (Property | Vehicle)[];
+  items?: (Property | Vehicle | Product)[];
 }
 
 const { demo = null, items = [] } = Astro.props;
@@ -31,6 +31,7 @@ const ACCENT_SWATCHES = [
         <select name="vertical" disabled={isEditing} class="rounded-[6px] border border-line px-3 py-2.5 disabled:bg-paper-alt disabled:text-ink-soft sm:py-2">
           <option value="inmobiliaria">Inmobiliaria</option>
           <option value="concesionario">Concesionario</option>
+          <option value="tienda">Tienda online (Instagram)</option>
         </select>
         {isEditing && <span class="text-[0.75rem] text-ink-soft">No se puede cambiar después de creado.</span>}
       </label>
@@ -343,6 +344,57 @@ const ACCENT_SWATCHES = [
         class="flex min-h-[96px] cursor-pointer flex-wrap items-center gap-2 rounded-[6px] border-2 border-dashed border-line bg-paper p-4 text-sm text-ink-soft"
       >
         <span data-drop-hint>Toque para elegir fotos del vehículo desde su galería (máx 6)</span>
+        <div data-previews class="flex flex-wrap gap-2"></div>
+      </div>
+      <input type="file" data-file-input accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.avif" multiple class="hidden" />
+      <p data-upload-status class="mt-1 text-[0.75rem] text-ink-soft"></p>
+    </div>
+  </div>
+</template>
+
+{/* Plantilla de un producto del repetidor (tiendas online) */}
+<template id="product-template">
+  <div class="property-item rounded-[8px] border border-line bg-paper-alt p-4" data-kind="product">
+    <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+      <p class="text-sm font-bold">Producto <span data-num></span></p>
+      <div class="flex flex-wrap items-center gap-3">
+        <button type="button" data-paste class="rounded-[6px] border border-line bg-paper px-3 py-2 text-[0.75rem] font-semibold">Pegar datos</button>
+        <label class="flex items-center gap-1.5 text-[0.75rem] font-medium">
+          <input type="radio" name="featured_radio" data-field="is_featured" />
+          Destacado
+        </label>
+        <button type="button" data-remove class="text-[0.75rem] font-medium text-red-700 underline">Eliminar</button>
+      </div>
+    </div>
+
+    <div data-paste-fallback class="mb-3 hidden">
+      <textarea data-paste-area rows="6" placeholder="Pega aquí los datos con el formato copiado…" class="w-full rounded-[6px] border border-line px-3 py-2.5 text-sm sm:py-2"></textarea>
+      <button type="button" data-paste-apply class="mt-1 rounded-[6px] bg-ink px-3 py-2 text-[0.75rem] font-semibold text-white">Aplicar datos</button>
+    </div>
+
+    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <input data-field="ref_code" placeholder="Ref / SKU (ej: P-001) *" class="num rounded-[6px] border border-line px-3 py-2.5 text-sm sm:py-2" />
+      <input data-field="title" placeholder="Nombre del producto *" class="rounded-[6px] border border-line px-3 py-2.5 text-sm sm:py-2" />
+      <input data-field="category" placeholder="Categoría (ej: Blusas)" class="rounded-[6px] border border-line px-3 py-2.5 text-sm sm:py-2" />
+      <div class="grid grid-cols-2 gap-2">
+        <input data-field="price_usd" type="number" min="0" step="0.01" placeholder="Precio USD *" class="num rounded-[6px] border border-line px-3 py-2.5 text-sm sm:py-2" />
+        <input data-field="compare_at_usd" type="number" min="0" step="0.01" placeholder="Antes (tachado)" class="num rounded-[6px] border border-line px-3 py-2.5 text-sm sm:py-2" />
+      </div>
+      <textarea data-field="description" rows="2" placeholder="Descripción" class="rounded-[6px] border border-line px-3 py-2.5 text-sm sm:col-span-2 sm:py-2"></textarea>
+      <input data-field="variants" placeholder="Tallas o colores separados por coma (S, M, L)" class="rounded-[6px] border border-line px-3 py-2.5 text-sm sm:col-span-2 sm:py-2" />
+      <label class="flex items-center gap-2 rounded-[6px] border border-dashed border-line bg-paper px-3 py-2 text-sm font-medium sm:col-span-2">
+        <input type="checkbox" data-field="in_stock" checked class="h-4 w-4" />
+        En existencia
+      </label>
+    </div>
+
+    {/* Uploader */}
+    <div class="mt-3">
+      <div
+        data-dropzone
+        class="flex min-h-[96px] cursor-pointer flex-wrap items-center gap-2 rounded-[6px] border-2 border-dashed border-line bg-paper p-4 text-sm text-ink-soft"
+      >
+        <span data-drop-hint>Toque para elegir fotos del producto desde su galería (máx 6)</span>
         <div data-previews class="flex flex-wrap gap-2"></div>
       </div>
       <input type="file" data-file-input accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.avif" multiple class="hidden" />

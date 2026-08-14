@@ -1,0 +1,35 @@
+---
+/**
+ * Rótulo de bloque vacío. Suma en vez de restar: le muestra el hueco exacto y
+ * le da una razón concreta para escribirte que no es "quiero comprar".
+ *
+ * Máximo 3 en toda la página (§7.2). Más y se lee incompleta, no personalizada.
+ */
+interface Props {
+  texto: string;
+}
+
+const { texto } = Astro.props;
+---
+
+<div class="ph">
+  <span class="ph__tag">{texto}</span>
+</div>
+
+<style>
+  .ph {
+    display: grid;
+    place-items: center;
+    min-height: 96px;
+    padding: 18px;
+    border: 1.5px dashed color-mix(in srgb, var(--acento) 45%, #c9c9c9);
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--acento) 4%, transparent);
+  }
+  .ph__tag {
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    color: color-mix(in srgb, var(--acento) 70%, var(--texto));
+  }
+</style>

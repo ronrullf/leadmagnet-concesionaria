@@ -1,0 +1,116 @@
+---
+/**
+ * Bloque de pedido de la tienda. El pedido sale por WhatsApp con el producto,
+ * la referencia, el precio y —si el producto tiene variantes— la talla o color
+ * que el visitante eligió. La tienda recibe un pedido listo, no un "hola".
+ */
+import { waLink, orderMessage, productInfoMessage } from '../lib/whatsapp';
+import type { Demo, Product } from '../lib/types';
+
+interface Props {
+  demo: Demo;
+  product: Product;
+}
+
+const { demo, product } = Astro.props;
+
+const variants = product.variants ?? [];
+const hasVariants = variants.length > 0;
+
+// Sin variantes el enlace ya está armado en el servidor; con variantes el
+// cliente lo reescribe al elegir. El href base siempre funciona.
+const orderHref = waLink(
+  demo.whatsapp_e164,
+  orderMessage(demo.agency_name, product.title, product.ref_code, product.price_usd, variants[0] ?? null)
+);
+const infoHref = waLink(
+  demo.whatsapp_e164,
+  productInfoMessage(demo.agency_name, product.title, product.ref_code)
+);
+---
+
+<div class="flex flex-col gap-4" data-order-block>
+  {hasVariants && (
+    <div class="flex flex-col gap-2">
+      <span class="num text-[0.75rem] uppercase tracking-[0.1em] text-ink-soft">Elija una opción</span>
+      <div class="flex flex-wrap gap-2" role="group">
+        {variants.map((v, i) => (
+          <button
+            type="button"
+            data-variant={v}
+            class={`variant-btn min-h-[44px] rounded-[6px] border px-4 py-2 text-sm font-medium ${i === 0 ? 'border-accent bg-accent text-accent-ink' : 'border-line bg-paper'}`}
+          >{v}</button>
+        ))}
+      </div>
+    </div>
+  )}
+
+  {product.in_stock ? (
+    <a
+      href={orderHref}
+      data-order-link
+      target="_blank"
+      rel="noopener"
+      class="flex min-h-[52px] items-center justify-center gap-2 rounded-[6px] bg-accent px-5 py-3.5 text-center text-base font-semibold text-accent-ink"
+    >
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M17.5 14.4c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.14-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.37-.27.3-1.04 1.02-1.04 2.5 0 1.47 1.07 2.9 1.22 3.1.15.2 2.11 3.22 5.1 4.51.71.31 1.27.49 1.7.63.72.23 1.37.2 1.88.12.58-.09 1.76-.72 2.01-1.41.25-.7.25-1.29.17-1.41-.07-.13-.27-.2-.57-.35Z" />
+        <path d="M12 2a10 10 0 0 0-8.65 15.02L2.05 21.6a.5.5 0 0 0 .62.61l4.68-1.27A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.18-1.14l-.3-.18-2.77.75.74-2.7-.2-.31A8.2 8.2 0 1 1 12 20.2Z" />
+      </svg>
+      Pedir por WhatsApp
+    </a>
+  ) : (
+    <div class="rounded-[6px] border border-line bg-paper-alt px-5 py-4 text-center text-sm font-medium text-ink-soft">
+      Agotado por ahora
+    </div>
+  )}
+
+  <a
+    href={infoHref}
+    target="_blank"
+    rel="noopener"
+    class="flex min-h-[48px] items-center justify-center rounded-[6px] border-2 border-accent px-5 py-3 text-center text-sm font-semibold text-accent"
+  >Preguntar por este producto</a>
+</div>
+
+{hasVariants && (
+  <script
+    is:inline
+    define:vars={{
+      phone: demo.whatsapp_e164,
+      storeName: demo.agency_name,
+      title: product.title,
+      ref: product.ref_code,
+      price: product.price_usd,
+    }}
+  >
+    (() => {
+      const block = document.querySelector('[data-order-block]');
+      const link = block?.querySelector('[data-order-link]');
+      if (!block || !link) return;
+
+      const fmt = new Intl.NumberFormat('es-VE');
+
+      function rebuild(variant) {
+        const text =
+          `Hola ${storeName}, quiero pedir "${title}" (Ref. ${ref}).\n` +
+          `Presentación: ${variant}\n` +
+          `Precio: $${fmt.format(price)}\n` +
+          `¿Sigue disponible? ¿Cómo hago el pago y el envío?`;
+        link.href = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+      }
+
+      block.querySelectorAll('[data-variant]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          block.querySelectorAll('[data-variant]').forEach((b) => {
+            b.classList.remove('border-accent', 'bg-accent', 'text-accent-ink');
+            b.classList.add('border-line', 'bg-paper');
+          });
+          btn.classList.add('border-accent', 'bg-accent', 'text-accent-ink');
+          btn.classList.remove('border-line', 'bg-paper');
+          rebuild(btn.dataset.variant);
+        });
+      });
+    })();
+  </script>
+)}

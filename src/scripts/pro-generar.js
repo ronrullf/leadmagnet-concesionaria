@@ -93,10 +93,8 @@ const label = document.getElementById('progress-label');
 const steps = document.getElementById('progress-steps');
 
 const BLOCKS = [
-  { key: 'A', name: 'Núcleo (hero, calificación, oportunidad)' },
-  { key: 'B', name: 'Narrativa (historia y secretos)' },
-  { key: 'C', name: 'Oferta (stack, costo, garantía)' },
-  { key: 'D', name: 'Prueba (testimonios, FAQ, cierre)' },
+  { key: 'A', name: 'Hero, prueba y problema' },
+  { key: 'B', name: 'Pasos, oferta, preguntas y cierre' },
 ];
 
 /**

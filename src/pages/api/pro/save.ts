@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { supabaseAdmin } from '../../../lib/supabase';
-import { coerceCopy } from '../../../lib/copy-schema';
+import { coerceOutreachCopy, coercePruebas, validateOutreach } from '../../../lib/outreach-schema';
 import { MOODS } from '../../../lib/pro-types';
 import { normalizeHex } from '../../../lib/color';
 
@@ -32,6 +32,27 @@ export const POST: APIRoute = async ({ request }) => {
 
   const mood = MOODS.includes(body.mood as never) ? (body.mood as string) : 'clinico';
 
+  const outreachCopy = coerceOutreachCopy(body.copy);
+  const pruebas = coercePruebas(body.muro_pruebas);
+
+  /*
+   * Las validaciones del §8 corren aquí, no al renderizar: una landing ya
+   * enviada nunca se cae por una regla nueva. `forzar` existe para poder
+   * guardar borradores a medio armar; al activar se vuelve a exigir todo.
+   */
+  const forzar = body.forzar === true || body.is_active === false;
+  const problemas = validateOutreach({
+    copy: outreachCopy,
+    pruebas,
+    whatsapp,
+    nombreNegocio: str(body.pro_name),
+    expira: str(body.expira) || null,
+    autoriaMensaje: str(body.autoria_mensaje),
+  });
+  if (problemas.length && !forzar) {
+    return json({ error: 'La landing no cumple el estándar de outreach.', problemas }, 400);
+  }
+
   const record = {
     slug,
     pro_name: str(body.pro_name),
@@ -54,7 +75,12 @@ export const POST: APIRoute = async ({ request }) => {
     maps_query: str(body.maps_query) || null,
     trust_line: str(body.trust_line) || null,
     services: normalizeServices(body.services),
-    copy: coerceCopy(body.copy),
+    copy: outreachCopy,
+    expira: str(body.expira) || null,
+    muro_pruebas: pruebas,
+    autoria_mensaje: str(body.autoria_mensaje) || null,
+    bg_hex: normalizeHex(str(body.bg_hex)) || null,
+    text_hex: normalizeHex(str(body.text_hex)) || null,
     slots: normalizeSlots(body.slots),
     before_after: normalizeBeforeAfter(body.before_after),
     monthly_capacity: int(body.monthly_capacity),
@@ -81,6 +107,7 @@ export const POST: APIRoute = async ({ request }) => {
       'before_after', 'cta_mode', 'cta_form_title',
       'cta_question_label', 'address', 'maps_query',
       'trust_line', 'services',
+      'expira', 'muro_pruebas', 'autoria_mensaje', 'bg_hex', 'text_hex',
     ] as const;
 
     let attempt: Record<string, unknown> = { ...record };
@@ -98,7 +125,7 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     if (error) return json({ error: error.message }, 500);
-    return json({ ok: true, slug: data?.slug ?? slug }, 200);
+    return json({ ok: true, slug: data?.slug ?? slug, problemas }, 200);
   } catch (e) {
     return json({ error: (e as Error).message }, 500);
   }

@@ -1,0 +1,50 @@
+---
+/**
+ * Página de link vencido. Es urgencia real y honesta: la demo existió, tenía
+ * fecha, y se acabó. No promete nada ni intenta vender aquí.
+ */
+const wa = `https://wa.me/${import.meta.env.TIENDAPANA_WHATSAPP ?? ''}?text=${encodeURIComponent(
+  'Hola, vi una página que hiciste y quiero que la actives de nuevo'
+)}`;
+---
+
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Esta demo expiró</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <style is:global>
+      *, *::before, *::after { box-sizing: border-box; }
+      body {
+        margin: 0; min-height: 100svh;
+        display: grid; place-items: center; padding: 24px;
+        background: #fbfaf8; color: #12161a;
+        font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      }
+      .card { max-width: 380px; text-align: center; }
+      .logo {
+        width: 52px; height: 52px; margin: 0 auto 22px;
+        display: grid; place-items: center;
+        border-radius: 14px; background: #ff6b35;
+        color: #fff; font-size: 24px; font-weight: 800;
+      }
+      h1 { margin: 0 0 10px; font-size: 25px; letter-spacing: -0.02em; }
+      p { margin: 0 0 26px; color: #4a5560; line-height: 1.55; }
+      a {
+        display: inline-flex; align-items: center; justify-content: center;
+        min-height: 50px; padding: 14px 26px;
+        border-radius: 10px; background: #12161a; color: #fff;
+        font-weight: 700; text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div class="logo">T</div>
+      <h1>Esta demo expiró</h1>
+      <p>La página estuvo en línea unos días y ya se dio de baja. Si la quieres de vuelta, escríbeme y la activo.</p>
+      <a href={wa}>Escribirme por WhatsApp</a>
+    </div>
+  </body>
+</html>

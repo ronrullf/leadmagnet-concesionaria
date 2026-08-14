@@ -1,0 +1,66 @@
+---
+import PriceBcv from './PriceBcv.astro';
+import type { Product, BcvRate } from '../lib/types';
+
+interface Props {
+  product: Product;
+  slug: string;
+  bcv: BcvRate;
+  stagger?: number;
+}
+
+const { product: p, slug, bcv, stagger = 0 } = Astro.props;
+
+const onSale = p.compare_at_usd != null && p.compare_at_usd > p.price_usd;
+const discount = onSale
+  ? Math.round((1 - p.price_usd / (p.compare_at_usd as number)) * 100)
+  : 0;
+---
+
+<a
+  href={`/${slug}/producto/${p.ref_code}`}
+  class="property-card rise group block overflow-hidden rounded-[8px] border border-line bg-paper"
+  data-property
+  data-category={p.category ?? ''}
+  data-price={p.price_usd}
+  data-stock={p.in_stock ? 'si' : 'no'}
+  data-stagger={stagger}
+>
+  <div class="relative aspect-square overflow-hidden">
+    <img
+      src={p.image_urls[0]}
+      alt={p.title}
+      loading="lazy"
+      class={`card-img h-full w-full object-cover ${p.in_stock ? '' : 'opacity-60'}`}
+    />
+    {onSale && (
+      <span class="num absolute left-2 top-2 rounded-[4px] bg-accent px-2 py-1 text-[0.7rem] font-semibold text-accent-ink">
+        −{discount}%
+      </span>
+    )}
+    {!p.in_stock && (
+      <span class="num absolute inset-x-0 bottom-0 bg-ink/85 py-1.5 text-center text-[0.7rem] uppercase tracking-[0.12em] text-white">
+        Agotado
+      </span>
+    )}
+  </div>
+
+  <div class="flex flex-col gap-2 p-3 sm:p-4">
+    {p.category && (
+      <span class="num text-[0.7rem] uppercase tracking-[0.1em] text-ink-soft">{p.category}</span>
+    )}
+    <h3 class="line-clamp-2 font-display text-[0.95rem] font-semibold leading-snug sm:text-[1.125rem]">
+      {p.title}
+    </h3>
+
+    {onSale && (
+      <span class="num text-[0.8rem] text-ink-soft line-through">
+        ${new Intl.NumberFormat('es-VE').format(p.compare_at_usd as number)}
+      </span>
+    )}
+
+    <div class="border-t border-line pt-2.5">
+      <PriceBcv priceUsd={p.price_usd} bcv={bcv} size="sm" />
+    </div>
+  </div>
+</a>
