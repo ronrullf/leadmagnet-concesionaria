@@ -451,6 +451,7 @@ const FUENTES = [['instagram', 'Instagram'], ['google', 'Google'], ['doctoralia'
 
 function selectEl(attr, opciones, valor) {
   const sel = document.createElement('select');
+  sel.className = 'pf__input';
   sel.setAttribute(attr, '');
   for (const [v, label] of opciones) {
     const o = document.createElement('option');
@@ -465,65 +466,115 @@ function selectEl(attr, opciones, valor) {
 
 function addPruebaRow(p = {}) {
   const row = document.createElement('div');
-  row.className = 'ba-row';
+  row.className = 'prueba-card';
   row.setAttribute('data-prueba-row', '');
 
-  const top = document.createElement('div');
-  top.className = 'prueba-top';
-  top.append(
-    selectEl('data-p-tipo', TIPOS, p.tipo || 'comentario'),
-    selectEl('data-p-fuente', FUENTES, p.fuente || 'instagram')
-  );
+  // --- Cabecera: número + eliminar ---
+  const head = document.createElement('div');
+  head.className = 'prueba-card__head';
+  const num = document.createElement('span');
+  num.className = 'prueba-card__n';
+  num.setAttribute('data-prueba-num', '');
+  head.appendChild(num);
+
   const del = document.createElement('button');
   del.type = 'button';
-  del.className = 'ba-row__del';
+  del.className = 'prueba-card__del';
   del.textContent = 'Eliminar';
   del.addEventListener('click', () => { row.remove(); syncMuro(); scheduleAutosave(); });
-  top.appendChild(del);
+  head.appendChild(del);
 
-  const mkInput = (attr, ph, val, tag = 'input') => {
+  /** Campo con etiqueta visible. El placeholder solo no basta: al escribir
+   *  desaparece y ya no se sabe qué pedía cada casilla. */
+  const campo = (labelText, ayuda, control) => {
+    const wrap = document.createElement('label');
+    wrap.className = 'pf';
+    const lab = document.createElement('span');
+    lab.className = 'pf__label';
+    lab.textContent = labelText;
+    wrap.appendChild(lab);
+    wrap.appendChild(control);
+    if (ayuda) {
+      const h = document.createElement('span');
+      h.className = 'pf__hint';
+      h.textContent = ayuda;
+      wrap.appendChild(h);
+    }
+    return wrap;
+  };
+
+  const mk = (attr, ph, val, tag = 'input') => {
     const el = document.createElement(tag);
     el.setAttribute(attr, '');
+    el.className = 'pf__input';
     el.placeholder = ph;
     el.value = val || '';
-    if (tag === 'textarea') el.rows = 2;
+    if (tag === 'textarea') el.rows = 3;
     el.addEventListener('input', scheduleAutosave);
     return el;
   };
 
-  const texto = mkInput('data-p-texto', 'Texto textual del comentario o reseña', p.texto, 'textarea');
-  const autor = mkInput('data-p-autor', 'Autor como aparece público (@ana_r)', p.autor);
-  const ctx = mkInput('data-p-contexto', 'Contexto de una línea: quién, qué problema, qué pasó', p.contexto);
+  // --- Tipo y fuente ---
+  const fila = document.createElement('div');
+  fila.className = 'prueba-card__row';
+  fila.append(
+    campo('Tipo de prueba', null, selectEl('data-p-tipo', TIPOS, p.tipo || 'comentario')),
+    campo('Fuente pública', 'Sin fuente no entra', selectEl('data-p-fuente', FUENTES, p.fuente || 'instagram'))
+  );
 
-  // Captura de pantalla o foto del resultado.
+  const texto = campo(
+    'Texto textual',
+    'Cópialo tal cual del comentario o la reseña. No lo reescribas.',
+    mk('data-p-texto', 'Quedé feliz, me explicaron todo antes de empezar.', p.texto, 'textarea')
+  );
+  const autor = campo(
+    'Autor',
+    'Como aparece en público: @ana_r o "J. Pérez"',
+    mk('data-p-autor', '@ana_r', p.autor)
+  );
+  const ctx = campo(
+    'Contexto',
+    'Una línea: quién, qué problema tenía, qué pasó.',
+    mk('data-p-contexto', 'Comentario en el post del 12 de marzo', p.contexto)
+  );
+
+  // --- Captura o foto ---
   const img = document.createElement('div');
-  img.className = 'imgfield';
+  img.className = 'imgfield prueba-card__img';
   img.setAttribute('data-imgfield', '');
   img.innerHTML =
-    '<span class="imgfield__label">Captura / foto (opcional si hay texto)</span>' +
+    '<span class="imgfield__label">Captura o foto <em>(opcional si ya hay texto)</em></span>' +
     `<input type="hidden" data-p-src value="${p.src ? String(p.src).replace(/"/g, '&quot;') : ''}" />` +
     '<div class="imgfield__preview" data-preview></div>' +
     '<div class="imgfield__row">' +
-      '<label class="imgfield__btn">Subir<input type="file" accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.avif" hidden data-file /></label>' +
+      '<label class="imgfield__btn">Subir imagen<input type="file" accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.avif" hidden data-file /></label>' +
       '<button type="button" class="imgfield__clear" data-clear>Quitar</button>' +
     '</div>' +
     '<span class="imgfield__status" data-status></span>';
   wireImageField(img, img.querySelector('[data-p-src]'));
 
-  row.append(top, texto, autor, ctx, img);
+  row.append(head, fila, texto, autor, ctx, img);
   muroList.appendChild(row);
   syncMuro();
 }
+
 
 const muroAddBtn = document.getElementById('muro-add');
 const muroCount = document.getElementById('muro-count');
 
 function syncMuro() {
-  const n = document.querySelectorAll('[data-prueba-row]').length;
-  if (muroCount) {
-    muroCount.textContent = `${n} de ${MIN_PRUEBAS} mínimas`;
-    muroCount.classList.toggle('over', n < MIN_PRUEBAS);
-  }
+  const filas = document.querySelectorAll('[data-prueba-row]');
+  filas.forEach((f, i) => {
+    const n = f.querySelector('[data-prueba-num]');
+    if (n) n.textContent = `Prueba ${i + 1}`;
+  });
+  if (!muroCount) return;
+  const faltan = MIN_PRUEBAS - filas.length;
+  muroCount.textContent =
+    faltan > 0
+      ? `${filas.length} de ${MIN_PRUEBAS} · faltan ${faltan}`
+      : `${filas.length} pruebas ✓`;
+  muroCount.classList.toggle('over', faltan > 0);
 }
 
 initialMuro.forEach((p) => addPruebaRow(p));
