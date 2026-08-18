@@ -444,7 +444,7 @@ document.querySelectorAll('[data-imgfield]').forEach((root) => {
    ============================================================ */
 const muroList = document.getElementById('muro-list');
 const initialMuro = JSON.parse(document.getElementById('muro-data').textContent || '[]');
-const MIN_PRUEBAS = 4;
+const MIN_PRUEBAS = 0;
 
 const TIPOS = [['comentario', 'Comentario de Instagram'], ['resena', 'Reseña'], ['foto', 'Foto de resultado']];
 const FUENTES = [['instagram', 'Instagram'], ['google', 'Google'], ['doctoralia', 'Doctoralia'], ['otra', 'Otra']];
@@ -569,17 +569,11 @@ function syncMuro() {
     if (n) n.textContent = `Prueba ${i + 1}`;
   });
   if (!muroCount) return;
-  const faltan = MIN_PRUEBAS - filas.length;
-  muroCount.textContent =
-    faltan > 0
-      ? `${filas.length} de ${MIN_PRUEBAS} · faltan ${faltan}`
-      : `${filas.length} pruebas ✓`;
-  muroCount.classList.toggle('over', faltan > 0);
+  muroCount.textContent = `${filas.length} prueba(s) (opcional)`;
+  muroCount.classList.remove('over');
 }
 
 initialMuro.forEach((p) => addPruebaRow(p));
-// Arranca con las cuatro ranuras mínimas para que el estándar sea alcanzable.
-while (document.querySelectorAll('[data-prueba-row]').length < MIN_PRUEBAS) addPruebaRow();
 muroAddBtn?.addEventListener('click', () => addPruebaRow());
 
 /** Solo pruebas con fuente y con algo que mostrar. */

@@ -5,3 +5,6 @@ dist/
 .env
 .env.*
 !.env.example
+start-server.mjs
+*.log
+

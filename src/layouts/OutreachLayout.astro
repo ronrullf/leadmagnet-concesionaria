@@ -47,8 +47,9 @@ const rootStyle = [
 ].join(';');
 
 const autoriaMensaje =
-  pro.autoria_mensaje ||
-  `Hola, vi la página que hiciste para ${pro.pro_name} y quiero saber más`;
+  pro.autoria_mensaje !== null && pro.autoria_mensaje !== undefined
+    ? pro.autoria_mensaje.trim()
+    : `Hola, vi la página que hiciste para ${pro.pro_name} y quiero saber más`;
 ---
 
 <html lang="es" style={rootStyle}>
@@ -84,18 +85,56 @@ const autoriaMensaje =
       h1, h2, h3, p, ul, ol, figure { margin: 0; }
       a { color: inherit; }
       :focus-visible { outline: 3px solid var(--acento); outline-offset: 3px; }
+
+      /* ── Keyframes base ───────────────────────────────── */
+      @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(22px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+      }
+      @keyframes scaleIn {
+        from { opacity: 0; transform: scale(0.96); }
+        to   { opacity: 1; transform: scale(1); }
+      }
+      @keyframes ctaPulse {
+        0%, 100% { box-shadow: 0 6px 18px color-mix(in srgb, var(--acento) 28%, transparent); }
+        50%       { box-shadow: 0 10px 32px color-mix(in srgb, var(--acento) 46%, transparent); }
+      }
+      @keyframes shimmer {
+        0%   { background-position: -200% center; }
+        100% { background-position:  200% center; }
+      }
+
+      /* ── Scroll-reveal: secciones arrancan invisible ──── */
+      .reveal {
+        opacity: 0;
+        transform: translateY(28px);
+        transition: opacity 0.65s cubic-bezier(0.2,0,0,1),
+                    transform 0.65s cubic-bezier(0.2,0,0,1);
+      }
+      .reveal.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      /* Stagger para hijos directos con delay escalonado */
+      .stagger > * { transition-delay: calc(var(--i, 0) * 75ms); }
+
       @media (prefers-reduced-motion: reduce) {
         *, *::before, *::after {
           animation-duration: 0.01ms !important;
           transition-duration: 0.01ms !important;
         }
+        .reveal { opacity: 1; transform: none; }
       }
     </style>
   </head>
   <body>
     <slot />
 
-    <AuthorBar negocio={pro.pro_name} mensaje={autoriaMensaje} />
+    {autoriaMensaje && <AuthorBar negocio={pro.pro_name} mensaje={autoriaMensaje} />}
 
     <script is:inline define:vars={{ slug: pro.slug, path }}>
       // Tracking fire-and-forget. Sin librerías: es un fetch y nada más.
@@ -113,6 +152,24 @@ const autoriaMensaje =
           fetch('/api/track-pro', { method: 'POST', body: payload, keepalive: true });
         }
       } catch {}
+    </script>
+    <script is:inline>
+      // Scroll-reveal: dispara .visible cuando el elemento entra en viewport.
+      // Un observer para toda la página, sin librerías.
+      (() => {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            for (const e of entries) {
+              if (e.isIntersecting) {
+                e.target.classList.add('visible');
+                observer.unobserve(e.target);
+              }
+            }
+          },
+          { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
+        );
+        document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
+      })();
     </script>
   </body>
 </html>

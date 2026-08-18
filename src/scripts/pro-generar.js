@@ -238,6 +238,9 @@ async function saveDraft() {
     city: i.city, instagram_handle: i.instagram_handle, followers: i.followers,
     whatsapp_e164: form.elements['whatsapp_e164'].value,
     mood: form.elements['mood'].value,
+    accent_hex: (form.elements['accent_hex']?.value || '').trim() || null,
+    bg_hex: (form.elements['bg_hex']?.value || '').trim() || null,
+    text_hex: (form.elements['text_hex']?.value || '').trim() || null,
     copy: generated.copy, copy_source: 'ia', is_active: false,
     notes: 'Generado con IA. Falta revisión, fotos y cupos.',
   };

@@ -55,19 +55,88 @@ const c = pro.copy;
       {/* Meta */}
       <details open class="sec">
         <summary class="sec__h">Identidad y contacto</summary>
-        <div class="sec__b grid gap-3 sm:grid-cols-2">
-          <label class="f"><span>Nombre</span><input data-meta="pro_name" value={pro.pro_name} /></label>
-          <label class="f"><span>Título</span><input data-meta="pro_title" value={pro.pro_title} /></label>
-          <label class="f"><span>Ciudad</span><input data-meta="city" value={pro.city ?? ''} /></label>
-          <label class="f"><span>Instagram</span><input data-meta="instagram_handle" value={pro.instagram_handle ?? ''} /></label>
-          <label class="f"><span>WhatsApp E.164</span><input class="num" data-meta="whatsapp_e164" value={pro.whatsapp_e164} /></label>
-          <label class="f"><span>Seguidores</span><input type="number" data-meta="followers" value={pro.followers ?? ''} /></label>
-          <label class="f"><span>Mood</span>
-            <select data-meta="mood">{MOODS.map((m) => <option value={m} selected={m === pro.mood}>{m}</option>)}</select>
-          </label>
-          <label class="f"><span>Acento (de su Instagram)</span><input class="num" data-meta="accent_hex" value={pro.accent_hex ?? ''} placeholder="#0E6B7A" /></label>
-          <label class="f"><span>Fondo (opcional)</span><input class="num" data-meta="bg_hex" value={pro.bg_hex ?? ''} placeholder="#FFFFFF" /></label>
-          <label class="f"><span>Texto (opcional)</span><input class="num" data-meta="text_hex" value={pro.text_hex ?? ''} placeholder="#14181D" /></label>
+        <div class="sec__b grid gap-3">
+          <div class="grid gap-3 sm:grid-cols-2">
+            <label class="f"><span>Nombre</span><input data-meta="pro_name" value={pro.pro_name} /></label>
+            <label class="f"><span>Título</span><input data-meta="pro_title" value={pro.pro_title} /></label>
+            <label class="f"><span>Ciudad</span><input data-meta="city" value={pro.city ?? ''} /></label>
+            <label class="f"><span>Instagram</span><input data-meta="instagram_handle" value={pro.instagram_handle ?? ''} /></label>
+            <label class="f"><span>WhatsApp E.164</span><input class="num" data-meta="whatsapp_e164" value={pro.whatsapp_e164} /></label>
+            <label class="f"><span>Seguidores</span><input type="number" data-meta="followers" value={pro.followers ?? ''} /></label>
+            <label class="f"><span>Mood</span>
+              <select data-meta="mood">{MOODS.map((m) => <option value={m} selected={m === pro.mood}>{m}</option>)}</select>
+            </label>
+          </div>
+
+          {/* ── Color de marca ── */}
+          <div class="color-section">
+            <p class="color-section__title">Color de marca</p>
+
+            <div class="color-row">
+              <span class="color-row__label">Acento (botón CTA)</span>
+              <div class="color-pair">
+                <input type="color" id="picker-accent" value={pro.accent_hex ?? '#1F6FEB'} class="color-swatch" />
+                <input type="text" data-meta="accent_hex" id="hex-accent" value={pro.accent_hex ?? ''} placeholder="#1F6FEB" class="hex-input num" maxlength="7" />
+              </div>
+            </div>
+
+            <div class="color-row">
+              <span class="color-row__label">Fondo (opcional)</span>
+              <div class="color-pair">
+                <input type="color" id="picker-bg" value={pro.bg_hex ?? '#FFFFFF'} class="color-swatch" />
+                <input type="text" data-meta="bg_hex" id="hex-bg" value={pro.bg_hex ?? ''} placeholder="#FFFFFF" class="hex-input num" maxlength="7" />
+              </div>
+            </div>
+
+            <div class="color-row">
+              <span class="color-row__label">Texto (opcional)</span>
+              <div class="color-pair">
+                <input type="color" id="picker-text" value={pro.text_hex ?? '#14181D'} class="color-swatch" />
+                <input type="text" data-meta="text_hex" id="hex-text" value={pro.text_hex ?? ''} placeholder="#14181D" class="hex-input num" maxlength="7" />
+              </div>
+            </div>
+
+            {/* Paletas predefinidas */}
+            <p class="palette-label">Paletas rápidas</p>
+            <div class="palette-grid" id="color-palettes">
+              <button type="button" class="palette" data-accent="#1F6FEB" data-bg="#FFFFFF" data-text="#14181D" title="Clínico azul">
+                <span class="palette__dot" style="background:#1F6FEB"></span>
+                <span class="palette__dot" style="background:#FFFFFF;border:1px solid #ddd"></span>
+                <span class="palette__name">Clínico</span>
+              </button>
+              <button type="button" class="palette" data-accent="#0E8A6E" data-bg="#F4FAF8" data-text="#0D2D25" title="Bienestar verde">
+                <span class="palette__dot" style="background:#0E8A6E"></span>
+                <span class="palette__dot" style="background:#F4FAF8;border:1px solid #ddd"></span>
+                <span class="palette__name">Wellness</span>
+              </button>
+              <button type="button" class="palette" data-accent="#9B1DCA" data-bg="#FAF5FF" data-text="#2D0A3D" title="Premium violeta">
+                <span class="palette__dot" style="background:#9B1DCA"></span>
+                <span class="palette__dot" style="background:#FAF5FF;border:1px solid #ddd"></span>
+                <span class="palette__name">Premium</span>
+              </button>
+              <button type="button" class="palette" data-accent="#D97706" data-bg="#FFFBF0" data-text="#1C1200" title="Dorado cálido">
+                <span class="palette__dot" style="background:#D97706"></span>
+                <span class="palette__dot" style="background:#FFFBF0;border:1px solid #ddd"></span>
+                <span class="palette__name">Dorado</span>
+              </button>
+              <button type="button" class="palette" data-accent="#E5484D" data-bg="#FFF5F5" data-text="#1A0A0A" title="Urgente rojo">
+                <span class="palette__dot" style="background:#E5484D"></span>
+                <span class="palette__dot" style="background:#FFF5F5;border:1px solid #ddd"></span>
+                <span class="palette__name">Urgente</span>
+              </button>
+              <button type="button" class="palette" data-accent="#12161A" data-bg="#FFFFFF" data-text="#12161A" title="Minimalista negro">
+                <span class="palette__dot" style="background:#12161A"></span>
+                <span class="palette__dot" style="background:#FFFFFF;border:1px solid #ddd"></span>
+                <span class="palette__name">Minimal</span>
+              </button>
+            </div>
+
+            {/* Mini preview del CTA */}
+          <div class="cta-preview-wrap">
+            <span class="cta-preview-label">Vista previa del botón (haz clic para editar texto)</span>
+            <div id="cta-preview" class="cta-preview" contenteditable="true" spellcheck="false" title="Haz clic aquí para cambiar el texto del botón">Quiero mi evaluación</div>
+          </div>
+          </div>
         </div>
       </details>
 
@@ -78,7 +147,7 @@ const c = pro.copy;
           <label class="f"><span>El link expira el (máx 14 días)</span>
             <input type="date" data-meta="expira" value={expira} />
           </label>
-          <label class="f"><span>Mensaje de la barra de autoría (va a TU WhatsApp)</span>
+          <label class="f"><span>Mensaje de la barra de autoría (opcional — va a TU WhatsApp)</span>
             <textarea data-meta="autoria_mensaje" rows="2" placeholder={`Hola, vi la página que hiciste para ${pro.pro_name} y quiero saber más`}>{pro.autoria_mensaje ?? ''}</textarea>
           </label>
           <p class="text-[0.75rem] text-ink-soft">
@@ -389,7 +458,206 @@ const c = pro.copy;
       font-size: 12px; padding: 7px 12px; border: 1px solid #F0C0C0; color: #B02020;
       border-radius: 4px; background: #fff; cursor: pointer; white-space: nowrap;
     }
+
+    /* ──── Color de marca ────────────────────────── */
+    .color-section {
+      border: 1px solid #E8E8E8;
+      border-radius: 8px;
+      padding: 14px;
+      background: #FAFAFA;
+      display: grid;
+      gap: 10px;
+      margin-top: 4px;
+    }
+    .color-section__title {
+      font-size: 13px; font-weight: 700; color: #12161A; margin: 0;
+    }
+    .color-row {
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    }
+    .color-row__label {
+      font-size: 12px; font-weight: 500; color: #555; min-width: 140px;
+    }
+    .color-pair { display: flex; align-items: center; gap: 6px; }
+    .color-swatch {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 38px; height: 38px;
+      border: 2px solid #DDD;
+      border-radius: 8px;
+      padding: 2px;
+      cursor: pointer;
+      background: none;
+      flex-shrink: 0;
+      transition: border-color 0.2s;
+    }
+    .color-swatch:hover { border-color: #999; }
+    .color-swatch::-webkit-color-swatch-wrapper { padding: 0; }
+    .color-swatch::-webkit-color-swatch { border: none; border-radius: 5px; }
+    .hex-input {
+      width: 96px;
+      border: 1px solid #DDD; border-radius: 6px;
+      padding: 8px 10px; font: inherit; font-size: 13px;
+      background: #fff;
+      transition: border-color 0.2s;
+    }
+    .hex-input:focus-visible { outline: 2px solid #F97316; outline-offset: 1px; }
+
+    /* Paletas */
+    .palette-label { font-size: 11.5px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; }
+    .palette-grid {
+      display: flex; flex-wrap: wrap; gap: 6px;
+    }
+    .palette {
+      display: flex; align-items: center; gap: 5px;
+      padding: 5px 10px 5px 6px;
+      border: 1.5px solid #E2E2E2; border-radius: 8px;
+      background: #fff; cursor: pointer;
+      font-size: 12px; font-weight: 600; color: #333;
+      transition: border-color 0.18s, box-shadow 0.18s, transform 0.18s;
+    }
+    .palette:hover {
+      border-color: #999;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+      transform: translateY(-1px);
+    }
+    .palette.active {
+      border-color: #F97316;
+      box-shadow: 0 0 0 2px rgba(249,115,22,0.25);
+    }
+    .palette__dot {
+      width: 16px; height: 16px; border-radius: 50%;
+      flex-shrink: 0; display: block;
+    }
+    .palette__name { line-height: 1; }
+
+    /* CTA preview */
+    .cta-preview-wrap {
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    }
+    .cta-preview-label { font-size: 11.5px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.05em; }
+    .cta-preview {
+      padding: 12px 22px;
+      border-radius: 10px;
+      font-size: 15px; font-weight: 700;
+      text-align: center;
+      cursor: text;
+      transition: background 0.25s, color 0.25s, box-shadow 0.25s, outline 0.2s;
+      background: #1F6FEB; color: #fff;
+      box-shadow: 0 4px 14px rgba(31,111,235,0.28);
+      user-select: text;
+      min-width: 180px;
+    }
+    .cta-preview[contenteditable="true"]:focus {
+      outline: 2px dashed rgba(255, 255, 255, 0.85) !important;
+      outline-offset: -4px;
+    }
   </style>
+
+  <script is:inline>
+    (() => {
+      // \u2500\u2500 Helpers \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+      function inkOn(hex) {
+        // luminancia WCAG — elige blanco o negro encima del acento
+        const s = hex.replace('#','');
+        if (s.length !== 6) return '#FFFFFF';
+        const [r,g,b] = [0,2,4].map(i => parseInt(s.slice(i,i+2),16));
+        const lum = v => { const c=v/255; return c<=0.03928 ? c/12.92 : Math.pow((c+0.055)/1.055,2.4); };
+        const L = 0.2126*lum(r) + 0.7152*lum(g) + 0.0722*lum(b);
+        const wC = (1.05)/(L+0.05), bC = (L+0.05)/(0.05);
+        return wC >= bC ? '#FFFFFF' : '#12161A';
+      }
+
+      function updatePreview(accentHex) {
+        const preview = document.getElementById('cta-preview');
+        if (!preview) return;
+        const bg = accentHex && /^#[0-9a-fA-F]{6}$/.test(accentHex) ? accentHex : '#1F6FEB';
+        preview.style.background = bg;
+        preview.style.color = inkOn(bg);
+        preview.style.boxShadow = `0 4px 14px ${bg}55`;
+      }
+
+      // \u2500\u2500 Sync picker \u2194 text \u2194 preview \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+      const pairs = [
+        { picker: 'picker-accent', hex: 'hex-accent', isAccent: true },
+        { picker: 'picker-bg',     hex: 'hex-bg',     isAccent: false },
+        { picker: 'picker-text',   hex: 'hex-text',   isAccent: false },
+      ];
+
+      pairs.forEach(({ picker, hex, isAccent }) => {
+        const p = document.getElementById(picker);
+        const h = document.getElementById(hex);
+        if (!p || !h) return;
+
+        // picker \u2192 text
+        p.addEventListener('input', () => {
+          h.value = p.value.toUpperCase();
+          if (isAccent) updatePreview(p.value);
+        });
+        // text \u2192 picker
+        h.addEventListener('input', () => {
+          const v = h.value.trim();
+          if (/^#[0-9a-fA-F]{6}$/.test(v)) {
+            p.value = v;
+            if (isAccent) updatePreview(v);
+          }
+        });
+      });
+
+      // \u2500\u2500 Paletas \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+      document.querySelectorAll('.palette').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const accent = btn.dataset.accent;
+          const bg     = btn.dataset.bg;
+          const text   = btn.dataset.text;
+
+          const setVal = (pickerId, hexId, val) => {
+            const p = document.getElementById(pickerId);
+            const h = document.getElementById(hexId);
+            if (p) p.value = val;
+            if (h) h.value = val.toUpperCase();
+          };
+          setVal('picker-accent', 'hex-accent', accent);
+          setVal('picker-bg',     'hex-bg',     bg);
+          setVal('picker-text',   'hex-text',   text);
+          updatePreview(accent);
+
+          document.querySelectorAll('.palette').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+        });
+      });
+
+      // Inicializar el preview con el valor actual
+      const ctaInput = document.querySelector('[data-slot="hero.cta.texto"]') || document.querySelector('input[data-slot*="cta.texto"]');
+      const preview = document.getElementById('cta-preview');
+      const initialAccent = document.getElementById('hex-accent')?.value;
+
+      if (ctaInput && preview && ctaInput.value.trim()) {
+        preview.textContent = ctaInput.value.trim();
+      }
+
+      // Sync editable preview -> input
+      if (preview) {
+        preview.addEventListener('input', () => {
+          const txt = preview.textContent.trim();
+          if (ctaInput) {
+            ctaInput.value = txt;
+            ctaInput.dispatchEvent(new Event('input', { bubbles: true }));
+          }
+        });
+      }
+      // Sync input -> editable preview
+      if (ctaInput && preview) {
+        ctaInput.addEventListener('input', () => {
+          if (document.activeElement !== preview) {
+            preview.textContent = ctaInput.value || 'Quiero mi evaluación';
+          }
+        });
+      }
+
+      updatePreview(initialAccent || '#1F6FEB');
+    })();
+  </script>
 
   <script>
     import '../../../../scripts/pro-editor.js';

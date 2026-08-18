@@ -263,14 +263,13 @@ export function validateOutreach(input: OutreachInput): string[] {
     errors.push(`"Cómo funciona" tiene ${c.comoFunciona.pasos.length} pasos. El máximo son 4.`);
   }
 
-  if (pruebas.length < 4) {
-    errors.push(`El muro de pruebas necesita al menos 4 (hay ${pruebas.length}).`);
-  }
-  const sinFuente = pruebas.findIndex((p) => !p.fuente || (!p.texto && !p.src));
-  if (sinFuente !== -1) {
-    errors.push(
-      `La prueba ${sinFuente + 1} no tiene fuente ni contenido. Sin origen público no entra: sería un testimonio inventado.`
-    );
+  if (pruebas.length > 0) {
+    const sinFuente = pruebas.findIndex((p) => !p.fuente || (!p.texto && !p.src));
+    if (sinFuente !== -1) {
+      errors.push(
+        `La prueba ${sinFuente + 1} no tiene fuente ni contenido. Sin origen público no entra: sería un testimonio inventado.`
+      );
+    }
   }
 
   if (!expira) {
@@ -281,10 +280,6 @@ export function validateOutreach(input: OutreachInput): string[] {
     else if (dias > MAX_DIAS_EXPIRACION) {
       errors.push(`La expiración está a ${dias} días. El máximo son ${MAX_DIAS_EXPIRACION}.`);
     }
-  }
-
-  if (!autoriaMensaje.trim()) {
-    errors.push('Falta el mensaje de la barra de autoría: es lo que convierte al prospecto.');
   }
 
   return errors;
