@@ -13,7 +13,7 @@
   "text_hex": "#1C1200",
   "price_usd": 3850,
   "guarantee_info": "1 Año de garantía escrita + Servicio técnico especializado en Venezuela",
-  "photo_hero_url": "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80",
+  "photo_hero_url": "/planta-generador-ejemplo.png",
   "logo_url": null,
   "photo_story_url": null,
   "specs": [
@@ -26,7 +26,7 @@
     "hero": {
       "headline": "Nunca más a oscuras. Autonomía eléctrica total para tu hogar o negocio.",
       "subheadline": "Respaldo automático e ininterrumpido en menos de 10 segundos tras un apagón.",
-      "visual": { "tipo": "imagen", "src": "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80", "alt": "Planta Eléctrica 12kW" },
+      "visual": { "tipo": "imagen", "src": "/planta-generador-ejemplo.png", "alt": "Planta Eléctrica Generac 12kW Insonorizada" },
       "cta": { "texto": "Consultar Disponibilidad y Precio", "mensaje": "Hola, vi la página de la Planta Generac 12kW y quiero consultar disponibilidad" },
       "badges": ["Garantía Escrita 1 Año", "Envíos e Instalación Nacional", "Soporte Técnico 24/7"]
     },
