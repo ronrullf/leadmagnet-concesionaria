@@ -1,0 +1,38 @@
+{
+  "key": "plantas-electricas",
+  "label": "Generadores y Plantas Eléctricas",
+  "default_mood": "electric",
+  "main_pain": "sufrir cortes de luz inesperados, perder inventario o comida refrigerada, quedar a oscuras sin energía para el hogar o negocio",
+  "dream_outcome": "autonomía eléctrica instantánea e ininterrumpida ante cualquier fallo eléctrico en Venezuela",
+  "urgency_lever": "los apagones no avisan y los precios de los equipos suben con la demanda durante emergencias",
+  "failing_behaviors": [
+    "esperar a que ocurra un gran apagón para buscar una solución de emergencia",
+    "comprar plantas usadas sin garantía ni repuestos disponibles en el país",
+    "usar extensiones improvisadas que dañan los electrodomésticos"
+  ],
+  "typical_objections": [
+    "no sé qué capacidad en kVA/kW necesita mi casa o negocio",
+    "temo que consuma mucha gasolina o gas y sea ruidosa",
+    "no sé si incluye transferencia automática (ATS) o instalación"
+  ],
+  "vocabulary": [
+    "planta eléctrica",
+    "generador",
+    "kW",
+    "kVA",
+    "dual fuel",
+    "gasolina",
+    "gas",
+    "ATS",
+    "transferencia automática",
+    "arranque eléctrico",
+    "autonomía",
+    "respaldo"
+  ],
+  "default_specs": [
+    { "title": "Potencia Máxima", "value": "12 kW / 15 kVA", "icon": "rayo", "description": "Energía suficiente para encender 3 aires acondicionados y toda la casa" },
+    { "title": "Combustible Dual", "value": "Gasolina / Gas LP", "icon": "motor", "description": "Funciona con gasolina o gas para mayor versatilidad en emergencias" },
+    { "title": "Encendido Eléctrico", "value": "Automático con ATS", "icon": "llave", "description": "Arranca automáticamente cuando se corta la luz eléctrica" },
+    { "title": "Nivel de Ruido", "value": "Insonorizada (68 dB)", "icon": "ruido", "description": "Cabina silenciadora ultrasuave apta para zonas residenciales" }
+  ]
+}

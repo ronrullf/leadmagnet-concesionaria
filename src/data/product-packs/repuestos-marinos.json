@@ -1,0 +1,38 @@
+{
+  "key": "repuestos-marinos",
+  "label": "Repuestos Marinos y Motores de Lanchas",
+  "default_mood": "marino",
+  "main_pain": "quedar varado en marina o mar abierto por falta de repuestos originales o demoras de importación",
+  "dream_outcome": "recibir repuestos marinos 100% originales con entrega inmediata en marina o muelle en Venezuela",
+  "urgency_lever": "un fin de semana de navegación perdido no se recupera y dejar el motor parado causa oxidación",
+  "failing_behaviors": [
+    "comprar repuestos genéricos de dudosa procedencia que dañan el motor fuera de borda",
+    "esperar semanas por importaciones individuales mientras la embarcación queda inoperativa",
+    "usar aceites o lubricantes inadecuados para ambiente marino salino"
+  ],
+  "typical_objections": [
+    "¿de verdad son repuestos genuinos de marca (Yamaha, Mercury, Volvo Penta)?",
+    "¿tienen entrega el mismo día en marinas de Tucacas, Mochima o La Guaira?",
+    "¿qué garantía tienen los componentes mecánicos/eléctricos marinos?"
+  ],
+  "vocabulary": [
+    "repuestos marinos",
+    "motor fuera de borda",
+    "propela",
+    "hélice",
+    "bomba de agua",
+    "impeller",
+    "aceite 2T/4T marino",
+    "Yamaha",
+    "Mercury",
+    "Volvo Penta",
+    "marina",
+    "embarcación"
+  ],
+  "default_specs": [
+    { "title": "Calidad Original", "value": "100% Genuine OEM", "icon": "escudo", "description": "Repuestos certificados directos del fabricante" },
+    { "title": "Despacho Inmediato", "value": "En 24h a Marinas", "icon": "camion", "description": "Entregas directas en Higuerote, Tucacas, La Guaira y Puerto La Cruz" },
+    { "title": "Resistencia Marina", "value": "Grado Anticorrosivo", "icon": "motor", "description": "Tratamiento térmico especial para agua salada" },
+    { "title": "Garantía de Calce", "value": "Por Número de Parte", "icon": "llave", "description": "Verificación técnica previa con el serial de tu motor" }
+  ]
+}

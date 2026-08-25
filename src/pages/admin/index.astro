@@ -57,6 +57,24 @@ const dateFmt = new Intl.DateTimeFormat('es-VE', { day: '2-digit', month: 'short
 ---
 
 <AdminLayout title="Demos">
+  {/* Navegación de Pestañas Admin */}
+  <div class="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-line pb-4">
+    <div class="flex flex-wrap items-center gap-2">
+      <a href="/admin" class="rounded-[6px] bg-ink px-3 py-1.5 text-xs font-semibold text-white">
+        🏠 Inmobiliarias & Autos
+      </a>
+      <a href="/admin/pro" class="rounded-[6px] border border-line px-3 py-1.5 text-xs font-semibold text-ink-soft hover:bg-paper-alt">
+        🩺 Profesionales
+      </a>
+      <a href="/admin/producto" class="rounded-[6px] border border-line px-3 py-1.5 text-xs font-semibold text-ink-soft hover:bg-paper-alt">
+        ⚡ Productos & Servicios
+      </a>
+    </div>
+    <div class="flex flex-wrap items-center gap-2">
+      <a href="/admin/generar" class="rounded-[4px] bg-ink px-3 py-1.5 text-xs font-semibold text-white">+ Inmobiliaria / Concesionario</a>
+    </div>
+  </div>
+
   <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
     <h1 class="text-[1.5625rem] font-bold">Demos</h1>
     <a href="/admin/pro" class="inline-flex items-center gap-2 rounded-[4px] bg-ink px-4 py-2 text-sm font-semibold text-white hover:opacity-90">

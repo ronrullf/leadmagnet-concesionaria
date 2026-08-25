@@ -1,0 +1,36 @@
+{
+  "key": "paneles-solares",
+  "label": "Paneles Solares y Sistemas Fotovoltaicos",
+  "default_mood": "solar",
+  "main_pain": "depender 100% de la red eléctrica nacional y pagar facturas altas sin garantía de continuidad de servicio",
+  "dream_outcome": "generar tu propia energía solar limpia, 100% independiente de la red y sin gastos continuos de combustible",
+  "urgency_lever": "cada día soleado sin paneles es dinero y tranquilidad perdida frente a la inestabilidad eléctrica",
+  "failing_behaviors": [
+    "gastar sumas constantes en combustible para generadores ruidosos",
+    "comprar kits solares económicos de baja eficiencia que no soportan la carga real",
+    "contratar instalaciones sin cálculo técnico de cargas ni protección eléctrica"
+  ],
+  "typical_objections": [
+    "no sé si la energía solar alcanza para encender mis aires acondicionados",
+    "me preocupa la vida útil de los paneles y baterías",
+    "parece una inversión costosa para instalar"
+  ],
+  "vocabulary": [
+    "panel solar",
+    "sistema fotovoltaico",
+    "inversor solar",
+    "batería de litio",
+    "LiFePO4",
+    "energía limpia",
+    "independencia energética",
+    "vatios",
+    "monocristalino",
+    "instalación llave en mano"
+  ],
+  "default_specs": [
+    { "title": "Paneles Monocristalinos", "value": "550W Tier 1", "icon": "sol", "description": "Máxima eficiencia de conversión fotovoltaica del mercado" },
+    { "title": "Batería de Litio", "value": "LiFePO4 5.1 kWh", "icon": "bateria", "description": "Más de 6.000 ciclos de carga útiles (15 años de vida útil)" },
+    { "title": "Inversor Inteligente", "value": "5 kW Híbrido", "icon": "rayo", "description": "Gestiona solar, baterías y red eléctrica automáticamente" },
+    { "title": "Garantía de Paneles", "value": "25 Años", "icon": "escudo", "description": "Respaldo directo del fabricante con servicio técnico en Venezuela" }
+  ]
+}

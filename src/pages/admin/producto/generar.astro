@@ -1,0 +1,288 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { listProductPacks } from '../../../lib/product-packs';
+import { PRODUCT_MOODS } from '../../../lib/product-types';
+import { siteBase } from '../../../lib/site';
+
+const packs = listProductPacks();
+const siteUrl = siteBase(Astro.url.origin);
+---
+
+<AdminLayout title="Generar Producto con IA">
+  <div class="mb-6 flex items-center justify-between">
+    <div>
+      <h1 class="text-[1.5625rem] font-bold">Generar Landing de Producto / Servicio</h1>
+      <p class="text-xs text-ink-soft">Generadores, plantas eléctricas, inversores, paneles solares, repuestos marinos y equipos de alto valor.</p>
+    </div>
+    <a href="/admin/producto" class="text-sm underline">← Volver</a>
+  </div>
+
+  {/* ============ Pegar datos ============ */}
+  <div class="mb-5 max-w-[820px] rounded-[8px] border border-line bg-paper-alt p-4">
+    <div class="flex flex-wrap items-center gap-3">
+      <button type="button" id="copy-format" class="rounded-[6px] border border-line bg-paper px-3 py-2.5 text-[0.8rem] font-semibold">📋 Copiar formato</button>
+      <button type="button" id="toggle-paste" class="rounded-[6px] border border-line bg-paper px-3 py-2.5 text-[0.8rem] font-semibold">📥 Pegar datos</button>
+      <p class="text-[0.75rem] text-ink-soft">Copia el formato, rellénalo con los datos del producto o empresa y pégalo aquí.</p>
+    </div>
+    <div id="paste-box" class="mt-3 hidden">
+      <textarea id="paste-area" rows="8" placeholder="Pega aquí los datos con el formato copiado…" class="fld num"></textarea>
+      <button type="button" id="paste-apply" class="mt-2 rounded-[6px] bg-ink px-4 py-2.5 text-[0.8rem] font-semibold text-white">Aplicar datos al formulario</button>
+      <span id="paste-status" class="ml-2 text-[0.75rem] text-ink-soft"></span>
+    </div>
+  </div>
+
+  <form id="gen-form" class="grid gap-5 rounded-[8px] border border-line bg-paper p-4 sm:p-6 max-w-[820px]">
+    <div class="grid gap-4 sm:grid-cols-2">
+      <label class="grid gap-1 text-sm">
+        <span class="font-medium">Nombre del Producto / Servicio <span class="text-red-600">*</span></span>
+        <input name="product_name" required placeholder="Planta Eléctrica Generac 12kW Dual Fuel" class="fld" />
+      </label>
+      <label class="grid gap-1 text-sm">
+        <span class="font-medium">Nombre de la Empresa / Vendedor <span class="text-red-600">*</span></span>
+        <input name="business_name" required placeholder="ElectroSol Venezuela" class="fld" />
+      </label>
+      <label class="grid gap-1 text-sm">
+        <span class="font-medium">Categoría / Nicho <span class="text-red-600">*</span></span>
+        <select name="niche_key" class="fld">
+          {packs.map((p) => <option value={p.key}>{p.label}</option>)}
+          <option value="generico">Otro Producto / Servicio</option>
+        </select>
+      </label>
+      <label class="grid gap-1 text-sm">
+        <span class="font-medium">Ciudad / Cobertura</span>
+        <input name="city" placeholder="Caracas / Envíos Nacionales" class="fld" />
+      </label>
+      <label class="grid gap-1 text-sm">
+        <span class="font-medium">Precio Referencial ($ USD)</span>
+        <input name="price_usd" type="number" step="0.01" placeholder="3850" class="fld num" />
+      </label>
+      <label class="grid gap-1 text-sm">
+        <span class="font-medium">WhatsApp E.164 (para pedidos) <span class="text-red-600">*</span></span>
+        <input name="whatsapp_e164" required placeholder="584141234567" class="fld num" />
+      </label>
+      <label class="grid gap-1 text-sm">
+        <span class="font-medium">Instagram (sin @)</span>
+        <input name="instagram_handle" placeholder="electrosolve" class="fld" />
+      </label>
+      <label class="grid gap-1 text-sm">
+        <span class="font-medium">Estilo / Mood</span>
+        <select name="mood" class="fld">
+          {PRODUCT_MOODS.map((m) => <option value={m}>{m}</option>)}
+        </select>
+      </label>
+    </div>
+
+    {/* ── Color de marca ── */}
+    <div class="color-section">
+      <p class="color-section__title">Color de marca <span style="font-weight:400;color:#888">(opcional — puedes cambiarlo en el editor)</span></p>
+      <div class="color-rows">
+        <div class="color-row">
+          <span class="color-row__label">Acento (botón CTA)</span>
+          <div class="color-pair">
+            <input type="color" id="picker-accent" value="#D97706" class="color-swatch" />
+            <input type="text" name="accent_hex" id="hex-accent" value="" placeholder="#D97706" class="fld hex-input num" maxlength="7" style="width:110px" />
+          </div>
+        </div>
+        <div class="color-row">
+          <span class="color-row__label">Fondo (opcional)</span>
+          <div class="color-pair">
+            <input type="color" id="picker-bg" value="#FFFBF0" class="color-swatch" />
+            <input type="text" name="bg_hex" id="hex-bg" value="" placeholder="#FFFBF0" class="fld hex-input num" maxlength="7" style="width:110px" />
+          </div>
+        </div>
+        <div class="color-row">
+          <span class="color-row__label">Texto (opcional)</span>
+          <div class="color-pair">
+            <input type="color" id="picker-text" value="#1C1200" class="color-swatch" />
+            <input type="text" name="text_hex" id="hex-text" value="" placeholder="#1C1200" class="fld hex-input num" maxlength="7" style="width:110px" />
+          </div>
+        </div>
+      </div>
+
+      <p class="palette-label">Paletas temáticas rápidas</p>
+      <div class="palette-grid">
+        <button type="button" class="palette" data-accent="#D97706" data-bg="#FFFBF0" data-text="#1C1200">
+          <span class="palette__dot" style="background:#D97706"></span>
+          <span class="palette__dot" style="background:#FFFBF0;border:1px solid #ddd"></span>
+          <span class="palette__name">⚡ Eléctrico / Dorado</span>
+        </button>
+        <button type="button" class="palette" data-accent="#0E8A6E" data-bg="#F4FAF8" data-text="#0D2D25">
+          <span class="palette__dot" style="background:#0E8A6E"></span>
+          <span class="palette__dot" style="background:#F4FAF8;border:1px solid #ddd"></span>
+          <span class="palette__name">☀️ Solar Verde</span>
+        </button>
+        <button type="button" class="palette" data-accent="#1F6FEB" data-bg="#FFFFFF" data-text="#14181D">
+          <span class="palette__dot" style="background:#1F6FEB"></span>
+          <span class="palette__dot" style="background:#FFFFFF;border:1px solid #ddd"></span>
+          <span class="palette__name">🏭 Industrial Azul</span>
+        </button>
+        <button type="button" class="palette" data-accent="#0284C7" data-bg="#F0F9FF" data-text="#0C4A6E">
+          <span class="palette__dot" style="background:#0284C7"></span>
+          <span class="palette__dot" style="background:#F0F9FF;border:1px solid #ddd"></span>
+          <span class="palette__name">⚓ Marino Ocean</span>
+        </button>
+        <button type="button" class="palette" data-accent="#E5484D" data-bg="#FFF5F5" data-text="#1A0A0A">
+          <span class="palette__dot" style="background:#E5484D"></span>
+          <span class="palette__dot" style="background:#FFF5F5;border:1px solid #ddd"></span>
+          <span class="palette__name">🔥 Tech Rojo</span>
+        </button>
+        <button type="button" class="palette" data-accent="#12161A" data-bg="#FFFFFF" data-text="#12161A">
+          <span class="palette__dot" style="background:#12161A"></span>
+          <span class="palette__dot" style="background:#FFFFFF;border:1px solid #ddd"></span>
+          <span class="palette__name">⬛ Premium Negro</span>
+        </button>
+      </div>
+
+      <div class="cta-preview-wrap">
+        <span class="cta-preview-label">Vista previa del botón (haz clic para editar texto)</span>
+        <div id="cta-preview" class="cta-preview" contenteditable="true" spellcheck="false" title="Haz clic para editar el texto del botón">Consultar Disponibilidad</div>
+      </div>
+    </div>
+
+    <label class="grid gap-1 text-sm">
+      <span class="font-medium">Detalles / Bio de la empresa o producto <span class="text-red-600">*</span></span>
+      <textarea name="instagram_bio" required rows="2" placeholder="Empresa especializada en generadores insonorizados, instalación y garantía en Venezuela..." class="fld"></textarea>
+    </label>
+
+    <div class="grid gap-4 sm:grid-cols-2">
+      <label class="grid gap-1 text-sm">
+        <span class="font-medium">Qué venden / Características principales</span>
+        <textarea name="what_they_sell" rows="2" placeholder="Plantas a gas/gasolina de 12kW con arranque automático ATS..." class="fld"></textarea>
+      </label>
+      <label class="grid gap-1 text-sm">
+        <span class="font-medium">Garantía y Soporte</span>
+        <textarea name="guarantee_info" rows="2" placeholder="1 año de garantía escrita + taller de repuestos en Caracas..." class="fld"></textarea>
+      </label>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-3">
+      <button type="submit" id="gen-btn" class="w-full rounded-[6px] bg-[#F97316] px-5 py-3.5 text-base font-semibold text-white hover:bg-[#EA580C] sm:w-auto sm:py-2.5 sm:text-sm">
+        Generar Copy de Producto
+      </button>
+      <span id="gen-status" class="text-sm text-ink-soft"></span>
+    </div>
+
+    {/* Overlay de Progreso */}
+    <div id="progress" class="fixed inset-0 z-[80] hidden place-items-center bg-ink/70 p-5 backdrop-blur-sm">
+      <div class="w-full max-w-[420px] rounded-[14px] bg-paper p-6 shadow-2xl">
+        <div class="mb-4 flex items-center gap-3">
+          <span class="relative flex h-10 w-10 shrink-0 items-center justify-center">
+            <span class="absolute inset-0 animate-ping rounded-full bg-[#F97316]/30"></span>
+            <span class="relative flex h-10 w-10 items-center justify-center rounded-full bg-[#F97316] text-lg font-bold text-white">⚡</span>
+          </span>
+          <div class="min-w-0">
+            <p class="font-bold leading-tight">Construyendo Landing de Producto</p>
+            <p id="progress-label" class="truncate text-[0.8rem] text-ink-soft">Preparando…</p>
+          </div>
+          <span id="progress-pct" class="num ml-auto text-[1.25rem] font-bold text-[#F97316]">0%</span>
+        </div>
+
+        <div class="h-4 w-full overflow-hidden rounded-full bg-paper-alt ring-1 ring-line">
+          <div id="progress-bar" class="h-full w-0 rounded-full bg-[#F97316] transition-all duration-500"></div>
+        </div>
+
+        <ul id="progress-steps" class="mt-4 grid gap-1.5 text-[0.8rem] text-ink-soft"></ul>
+      </div>
+    </div>
+  </form>
+
+  <div id="report" class="mt-6 hidden max-w-[820px] rounded-[8px] border border-line bg-paper p-6"></div>
+
+  <script type="application/json" id="site-url" set:html={JSON.stringify(siteUrl)}></script>
+
+  <style>
+    .fld { border: 1px solid #DDD; border-radius: 6px; padding: 11px 12px; font: inherit; width: 100%; background: #fff; }
+    .fld:focus-visible { outline: 2px solid #F97316; outline-offset: 1px; }
+
+    .color-section {
+      border: 1px solid #E8E8E8; border-radius: 8px;
+      padding: 14px; background: #FAFAFA;
+      display: grid; gap: 10px;
+    }
+    .color-section__title { font-size: 13px; font-weight: 700; color: #12161A; margin: 0; }
+    .color-rows { display: grid; gap: 8px; }
+    .color-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .color-row__label { font-size: 12px; font-weight: 500; color: #555; min-width: 140px; }
+    .color-pair { display: flex; align-items: center; gap: 6px; }
+    .color-swatch {
+      -webkit-appearance: none; appearance: none;
+      width: 38px; height: 38px; border: 2px solid #DDD; border-radius: 8px;
+      padding: 2px; cursor: pointer; background: none; flex-shrink: 0;
+    }
+    .color-swatch::-webkit-color-swatch-wrapper { padding: 0; }
+    .color-swatch::-webkit-color-swatch { border: none; border-radius: 5px; }
+    .hex-input { width: 110px !important; }
+    .palette-label { font-size: 11.5px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; }
+    .palette-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+    .palette {
+      display: flex; align-items: center; gap: 5px;
+      padding: 5px 10px 5px 6px;
+      border: 1.5px solid #E2E2E2; border-radius: 8px;
+      background: #fff; cursor: pointer;
+      font-size: 12px; font-weight: 600; color: #333;
+      transition: border-color 0.18s, box-shadow 0.18s, transform 0.18s;
+    }
+    .palette:hover { border-color: #999; box-shadow: 0 2px 8px rgba(0,0,0,0.10); transform: translateY(-1px); }
+    .palette.active { border-color: #F97316; box-shadow: 0 0 0 2px rgba(249,115,22,0.25); }
+    .palette__dot { width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; display: block; }
+    .palette__name { line-height: 1; }
+    .cta-preview-wrap { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .cta-preview-label { font-size: 11.5px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.05em; }
+    .cta-preview {
+      padding: 12px 22px; border-radius: 10px;
+      font-size: 15px; font-weight: 700;
+      transition: background 0.25s, color 0.25s, box-shadow 0.25s;
+      background: #D97706; color: #fff;
+      box-shadow: 0 4px 14px rgba(217,119,6,0.28);
+      cursor: text; min-width: 180px; text-align: center;
+    }
+    .cta-preview[contenteditable="true"]:focus {
+      outline: 2px dashed rgba(255,255,255,0.85) !important;
+      outline-offset: -4px;
+    }
+  </style>
+
+  <script is:inline>
+    (() => {
+      function inkOn(hex) {
+        const s = hex.replace('#','');
+        if (s.length !== 6) return '#FFFFFF';
+        const [r,g,b] = [0,2,4].map(i => parseInt(s.slice(i,i+2),16));
+        const lum = v => { const c=v/255; return c<=0.03928 ? c/12.92 : Math.pow((c+0.055)/1.055,2.4); };
+        const L = 0.2126*lum(r)+0.7152*lum(g)+0.0722*lum(b);
+        return (1.05/(L+0.05)) >= ((L+0.05)/0.05) ? '#FFFFFF' : '#12161A';
+      }
+      function updatePreview(hex) {
+        const el = document.getElementById('cta-preview');
+        if (!el) return;
+        const bg = hex && /^#[0-9a-fA-F]{6}$/.test(hex) ? hex : '#D97706';
+        el.style.background = bg;
+        el.style.color = inkOn(bg);
+        el.style.boxShadow = `0 4px 14px ${bg}55`;
+      }
+      [['picker-accent','hex-accent',true],['picker-bg','hex-bg',false],['picker-text','hex-text',false]]
+        .forEach(([pickId, hexId, isAccent]) => {
+          const p = document.getElementById(pickId);
+          const h = document.getElementById(hexId);
+          if (!p || !h) return;
+          p.addEventListener('input', () => { h.value = p.value.toUpperCase(); if (isAccent) updatePreview(p.value); });
+          h.addEventListener('input', () => { if (/^#[0-9a-fA-F]{6}$/.test(h.value)) { p.value = h.value; if (isAccent) updatePreview(h.value); } });
+        });
+      document.querySelectorAll('.palette').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const set = (pId, hId, v) => { const p=document.getElementById(pId),h=document.getElementById(hId); if(p)p.value=v; if(h)h.value=v.toUpperCase(); };
+          set('picker-accent','hex-accent', btn.dataset.accent);
+          set('picker-bg','hex-bg', btn.dataset.bg);
+          set('picker-text','hex-text', btn.dataset.text);
+          updatePreview(btn.dataset.accent);
+          document.querySelectorAll('.palette').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+        });
+      });
+    })();
+  </script>
+
+  <script>
+    import '../../../scripts/product-generar.js';
+  </script>
+</AdminLayout>

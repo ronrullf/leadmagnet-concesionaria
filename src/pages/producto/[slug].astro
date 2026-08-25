@@ -1,0 +1,64 @@
+---
+/**
+ * Landing-demo de producto/servicio. Única página pública del módulo.
+ */
+import OutreachLayout from '../../layouts/OutreachLayout.astro';
+import ProductLanding from '../../components/outreach/ProductLanding.astro';
+import { getProductBySlug } from '../../lib/product';
+import { isExpired } from '../../lib/outreach-schema';
+import { notFoundResponse } from '../../lib/not-found';
+import { isAuthed } from '../../lib/auth';
+import type { ProDemo } from '../../lib/pro-types';
+
+const { slug } = Astro.params;
+
+const admin = isAuthed(Astro);
+const product = slug ? await getProductBySlug(slug, admin) : null;
+if (!product) return notFoundResponse();
+
+if (!admin && isExpired(product.expira ?? null)) {
+  return Astro.redirect('/expirado', 302);
+}
+
+const isDraft = admin && !product.is_active;
+const vencido = admin && isExpired(product.expira ?? null);
+
+// Adapter para OutreachLayout
+const layoutProAdapter: ProDemo = {
+  slug: product.slug,
+  pro_name: product.business_name,
+  pro_title: product.product_name,
+  profession_key: product.niche_key,
+  whatsapp_e164: product.whatsapp_e164,
+  logo_url: product.logo_url,
+  accent_hex: product.accent_hex,
+  bg_hex: product.bg_hex,
+  text_hex: product.text_hex,
+  autoria_mensaje: product.autoria_mensaje,
+  copy: product.copy,
+  expira: product.expira,
+  muro_pruebas: product.muro_pruebas,
+};
+---
+
+<OutreachLayout pro={layoutProAdapter} path={`/producto/${product.slug}`}>
+  {(isDraft || vencido) && (
+    <div class="aviso">
+      {isDraft && 'Borrador · solo visible para ti. Actívalo en el panel.'}
+      {isDraft && vencido && ' · '}
+      {vencido && 'Link vencido · el prospecto ya vería la página de expirado.'}
+    </div>
+  )}
+
+  <ProductLanding product={product} />
+</OutreachLayout>
+
+<style>
+  .aviso {
+    position: sticky; top: 0; z-index: 60;
+    padding: 8px 16px;
+    background: #fef3c7; color: #92400e;
+    border-bottom: 1px solid #fcd34d;
+    font-size: 13px; font-weight: 600; text-align: center;
+  }
+</style>

@@ -1,0 +1,84 @@
+{
+  "slug": "planta-generac-12kw",
+  "product_name": "Planta Eléctrica Generac Dual Fuel 12kW",
+  "business_name": "ElectroSol Venezuela",
+  "niche_key": "plantas-electricas",
+  "city": "Caracas",
+  "instagram_handle": "electrosolve",
+  "followers": 14200,
+  "whatsapp_e164": "584141234567",
+  "mood": "electric",
+  "accent_hex": "#D97706",
+  "bg_hex": "#FFFBF0",
+  "text_hex": "#1C1200",
+  "price_usd": 3850,
+  "guarantee_info": "1 Año de garantía escrita + Servicio técnico especializado en Venezuela",
+  "photo_hero_url": "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80",
+  "logo_url": null,
+  "photo_story_url": null,
+  "specs": [
+    { "title": "Potencia Máxima", "value": "12 kW / 15 kVA", "icon": "rayo", "description": "Energía suficiente para encender 3 aires acondicionados y toda la casa" },
+    { "title": "Combustible Dual", "value": "Gasolina / Gas LP", "icon": "motor", "description": "Funciona con gasolina o gas para mayor versatilidad en emergencias" },
+    { "title": "Encendido Eléctrico", "value": "Automático con ATS", "icon": "llave", "description": "Arranca automáticamente cuando se corta la luz eléctrica" },
+    { "title": "Nivel de Ruido", "value": "Insonorizada (68 dB)", "icon": "ruido", "description": "Cabina silenciadora ultrasuave apta para zonas residenciales" }
+  ],
+  "copy": {
+    "hero": {
+      "headline": "Nunca más a oscuras. Autonomía eléctrica total para tu hogar o negocio.",
+      "subheadline": "Respaldo automático e ininterrumpido en menos de 10 segundos tras un apagón.",
+      "visual": { "tipo": "imagen", "src": "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80", "alt": "Planta Eléctrica 12kW" },
+      "cta": { "texto": "Consultar Disponibilidad y Precio", "mensaje": "Hola, vi la página de la Planta Generac 12kW y quiero consultar disponibilidad" },
+      "badges": ["Garantía Escrita 1 Año", "Envíos e Instalación Nacional", "Soporte Técnico 24/7"]
+    },
+    "franjaPrueba": {
+      "estrellas": 4.9,
+      "resenas": 128,
+      "etiqueta": "+450 plantas instaladas en toda Venezuela desde 2018"
+    },
+    "problema": {
+      "headline": "Un apagón de varias horas no solo te deja sin luz: paraliza tu vida y arriesga tus equipos.",
+      "parrafo": "Cortes eléctricos inesperados dañan electrodomésticos costosos, descomponen comida refrigerada y paralizan tus ventas o tu trabajo desde casa."
+    },
+    "comoFunciona": {
+      "headline": "Tu tranquilidad eléctrica garantizada en 3 sencillos pasos",
+      "pasos": [
+        { "titulo": "1. Asesoría de Capacidad", "texto": "Calculamos la carga exacta de tus equipos sin costo para recomendarte la potencia precisa." },
+        { "titulo": "2. Entrega e Instalación", "texto": "Nuestro equipo técnico traslada la planta y realiza la conexión segura con tablero de transferencia." },
+        { "titulo": "3. Autonomía Total", "texto": "La planta detecta los cortes de luz y arranca automáticamente sin que tengas que mover un dedo." }
+      ]
+    },
+    "incluye": {
+      "headline": "Todo lo que necesitas para tu tranquilidad energética",
+      "items": [
+        "Planta eléctrica Generac 12kW Dual Fuel",
+        "Tablero de transferencia automática (ATS)",
+        "Aceite sintético inicial de motor",
+        "Manual técnico de operación en español",
+        "Puesta en marcha e inducción de uso"
+      ]
+    },
+    "riesgo": {
+      "headline": "Garantía de Respaldo Real en Venezuela",
+      "texto": "1 año de garantía total por escrito y disponibilidad permanente de repuestos originales y filtros en nuestro taller de servicio.",
+      "esPublico": true
+    },
+    "profesional": {
+      "bio": "ElectroSol Venezuela — Especialistas en soluciones de energía continua, generadores insonorizados y sistemas solares con más de 8 años en el mercado venezolano."
+    },
+    "faq": [
+      { "pregunta": "¿Soporta encender aires acondicionados?", "respuesta": "Sí, el modelo de 12kW soporta hasta 3 aires acondicionados de 18.000 BTU simultáneamente junto con neveras e iluminación.", "origenComentario": "" },
+      { "pregunta": "¿Hacen envíos al interior del país?", "respuesta": "Realizamos envíos asegurados e instalaciones técnicas en Valencia, Maracay, Barquisimeto, Lechería y toda Venezuela.", "origenComentario": "" }
+    ],
+    "cierre": {
+      "headline": "Protege tu hogar y tu negocio del próximo apagón hoy mismo.",
+      "cta": { "texto": "Consultar Disponibilidad y Precio", "mensaje": "Hola, vi la página de la Planta Generac 12kW y quiero consultar disponibilidad" }
+    },
+    "placeholders": []
+  },
+  "expira": "2026-12-31",
+  "muro_pruebas": [
+    { "tipo": "resena", "fuente": "google", "src": "", "autor": "Carlos Mendoza", "texto": "Excelente equipo. Cuando se fue la luz 14 horas en Valencia la planta funcionó impecable con 2 aires y la nevera.", "contexto": "Instalación en residencia privada" }
+  ],
+  "autoria_mensaje": "Hola, vi la página que hicieron para ElectroSol y quiero consultar sobre landings de productos",
+  "is_active": true
+}

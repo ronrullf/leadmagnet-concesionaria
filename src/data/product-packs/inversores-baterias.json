@@ -1,0 +1,34 @@
+{
+  "key": "inversores-baterias",
+  "label": "Inversores de Voltaje y Baterías de Respaldo",
+  "default_mood": "electric",
+  "main_pain": "sufrir bajones y apagones momentáneos que reinician servidores, computadoras, neveras y routers de internet",
+  "dream_outcome": "conmutación instantánea en 0 milisegundos cuando la luz se va, manteniendo todo encendido sin hacer ruido",
+  "urgency_lever": "los bajones de voltaje destruyen los equipos electrónicos costosos en segundos",
+  "failing_behaviors": [
+    "usar protectores de voltaje sencillos que no respaldan la carga durante un corte",
+    "encender generadores a gasolina para respaldar solo un router y computadoras",
+    "comprar baterías de ácido que se dañan a los pocos meses"
+  ],
+  "typical_objections": [
+    "¿cuántas horas me dura la batería cuando se vaya la luz?",
+    "¿hace ruido o necesita mantenimiento como las plantas a gasolina?",
+    "¿es seguro tenerlo dentro del apartamento u oficina?"
+  ],
+  "vocabulary": [
+    "inversor de voltaje",
+    "onda senoidal pura",
+    "batería de litio",
+    "UPS residencial",
+    "respaldo de energía",
+    "cero ruido",
+    "protección contra sobrevoltaje",
+    "conmutación instantánea"
+  ],
+  "default_specs": [
+    { "title": "Inversor Cargador", "value": "3.5 kW Onda Pura", "icon": "rayo", "description": "Genera electricidad limpia sin riesgo para equipos sensibles" },
+    { "title": "Batería de Litio", "value": "24V 200Ah (4.8kWh)", "icon": "bateria", "description": "Brinda de 8 a 12 horas de energía para cargas esenciales" },
+    { "title": "Tiempo de Transferencia", "value": "10 ms (Instantáneo)", "icon": "llave", "description": "Ni siquiera se apaga la computadora ni el router cuando se va la luz" },
+    { "title": "Operación Silenciosa", "value": "0 dB (Cero ruido)", "icon": "ruido", "description": "Ideal para apartamentos, habitaciones y oficinas" }
+  ]
+}

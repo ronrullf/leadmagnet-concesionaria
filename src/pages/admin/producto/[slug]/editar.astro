@@ -1,0 +1,312 @@
+---
+import AdminLayout from '../../../../layouts/AdminLayout.astro';
+import { getProductBySlug } from '../../../../lib/product';
+import { notFoundResponse } from '../../../../lib/not-found';
+import { PRODUCT_MOODS } from '../../../../lib/product-types';
+import { defaultExpiry } from '../../../../lib/product-schema';
+import { siteBase } from '../../../../lib/site';
+
+const { slug } = Astro.params;
+const product = slug ? await getProductBySlug(slug, true) : null;
+if (!product) return notFoundResponse();
+
+const siteUrl = siteBase(Astro.url.origin);
+const previewUrl = `${siteUrl}/producto/${product.slug}?v=1`;
+const expira = product.expira ?? defaultExpiry();
+
+const slotLimits: Record<string, string> = {
+  'hero.headline': 'Máx 14 palabras',
+  'hero.subheadline': 'Sin listas de características',
+  'problema.parrafo': 'Máx 3 líneas',
+  'profesional.bio': 'Respaldo verificado',
+};
+---
+
+<AdminLayout title={`Editar · ${product.product_name}`}>
+  {/* Cabecera */}
+  <div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-line pb-3">
+    <div class="flex items-center gap-2">
+      <a href="/admin/producto" class="text-xs text-ink-soft hover:underline">← Productos</a>
+      <span class="text-xs text-ink-soft">/</span>
+      <h1 class="text-base font-bold truncate max-w-[280px] sm:max-w-[400px]">{product.product_name}</h1>
+      <span class="num text-xs text-ink-soft">({product.slug})</span>
+    </div>
+    <div class="flex items-center gap-2">
+      <span id="save-indicator" class="text-xs text-ink-soft">Guardado</span>
+      <a href={previewUrl} target="_blank" rel="noopener" class="rounded-[4px] border border-line px-2.5 py-1 text-xs font-semibold hover:bg-paper-alt">Abrir ↗</a>
+      <button type="button" id="btn-save" class="rounded-[4px] bg-[#F97316] px-4 py-1.5 text-xs font-semibold text-white hover:bg-[#EA580C]">Guardar cambios</button>
+    </div>
+  </div>
+
+  {/* Alertas */}
+  <div id="save-alert" class="problemas mb-4"></div>
+
+  {/* Split screen: Izquierda campos · Derecha preview en vivo */}
+  <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,440px)]">
+    {/* Columna izquierda: campos */}
+    <div class="grid gap-3">
+      {/* Meta */}
+      <details open class="sec">
+        <summary class="sec__h">Identidad del Producto y Vendedor</summary>
+        <div class="sec__b grid gap-3">
+          <div class="grid gap-3 sm:grid-cols-2">
+            <label class="f"><span>Producto</span><input data-meta="product_name" value={product.product_name} /></label>
+            <label class="f"><span>Empresa / Marca</span><input data-meta="business_name" value={product.business_name} /></label>
+            <label class="f"><span>Ciudad / Cobertura</span><input data-meta="city" value={product.city ?? ''} /></label>
+            <label class="f"><span>Precio Referencial ($ USD)</span><input type="number" step="0.01" data-meta="price_usd" value={product.price_usd ?? ''} /></label>
+            <label class="f"><span>Garantía Info</span><input data-meta="guarantee_info" value={product.guarantee_info ?? ''} /></label>
+            <label class="f"><span>WhatsApp E.164</span><input class="num" data-meta="whatsapp_e164" value={product.whatsapp_e164} /></label>
+            <label class="f"><span>Instagram</span><input data-meta="instagram_handle" value={product.instagram_handle ?? ''} /></label>
+            <label class="f"><span>Mood / Estilo</span>
+              <select data-meta="mood">{PRODUCT_MOODS.map((m) => <option value={m} selected={m === product.mood}>{m}</option>)}</select>
+            </label>
+          </div>
+
+          {/* ── Color de marca ── */}
+          <div class="color-section">
+            <p class="color-section__title">Color de marca</p>
+
+            <div class="color-row">
+              <span class="color-row__label">Acento (botón CTA)</span>
+              <div class="color-pair">
+                <input type="color" id="picker-accent" value={product.accent_hex ?? '#D97706'} class="color-swatch" />
+                <input type="text" data-meta="accent_hex" id="hex-accent" value={product.accent_hex ?? ''} placeholder="#D97706" class="hex-input num" maxlength="7" />
+              </div>
+            </div>
+
+            <div class="color-row">
+              <span class="color-row__label">Fondo (opcional)</span>
+              <div class="color-pair">
+                <input type="color" id="picker-bg" value={product.bg_hex ?? '#FFFBF0'} class="color-swatch" />
+                <input type="text" data-meta="bg_hex" id="hex-bg" value={product.bg_hex ?? ''} placeholder="#FFFBF0" class="hex-input num" maxlength="7" />
+              </div>
+            </div>
+
+            <div class="color-row">
+              <span class="color-row__label">Texto (opcional)</span>
+              <div class="color-pair">
+                <input type="color" id="picker-text" value={product.text_hex ?? '#1C1200'} class="color-swatch" />
+                <input type="text" data-meta="text_hex" id="hex-text" value={product.text_hex ?? ''} placeholder="#1C1200" class="hex-input num" maxlength="7" />
+              </div>
+            </div>
+
+            <p class="palette-label">Paletas temáticas rápidas</p>
+            <div class="palette-grid" id="color-palettes">
+              <button type="button" class="palette" data-accent="#D97706" data-bg="#FFFBF0" data-text="#1C1200">
+                <span class="palette__dot" style="background:#D97706"></span>
+                <span class="palette__dot" style="background:#FFFBF0;border:1px solid #ddd"></span>
+                <span class="palette__name">⚡ Eléctrico</span>
+              </button>
+              <button type="button" class="palette" data-accent="#0E8A6E" data-bg="#F4FAF8" data-text="#0D2D25">
+                <span class="palette__dot" style="background:#0E8A6E"></span>
+                <span class="palette__dot" style="background:#F4FAF8;border:1px solid #ddd"></span>
+                <span class="palette__name">☀️ Solar</span>
+              </button>
+              <button type="button" class="palette" data-accent="#1F6FEB" data-bg="#FFFFFF" data-text="#14181D">
+                <span class="palette__dot" style="background:#1F6FEB"></span>
+                <span class="palette__dot" style="background:#FFFFFF;border:1px solid #ddd"></span>
+                <span class="palette__name">🏭 Industrial</span>
+              </button>
+              <button type="button" class="palette" data-accent="#0284C7" data-bg="#F0F9FF" data-text="#0C4A6E">
+                <span class="palette__dot" style="background:#0284C7"></span>
+                <span class="palette__dot" style="background:#F0F9FF;border:1px solid #ddd"></span>
+                <span class="palette__name">⚓ Marino</span>
+              </button>
+              <button type="button" class="palette" data-accent="#E5484D" data-bg="#FFF5F5" data-text="#1A0A0A">
+                <span class="palette__dot" style="background:#E5484D"></span>
+                <span class="palette__dot" style="background:#FFF5F5;border:1px solid #ddd"></span>
+                <span class="palette__name">🔥 Tech</span>
+              </button>
+              <button type="button" class="palette" data-accent="#12161A" data-bg="#FFFFFF" data-text="#12161A">
+                <span class="palette__dot" style="background:#12161A"></span>
+                <span class="palette__dot" style="background:#FFFFFF;border:1px solid #ddd"></span>
+                <span class="palette__name">⬛ Premium</span>
+              </button>
+            </div>
+
+            <div class="cta-preview-wrap">
+              <span class="cta-preview-label">Vista previa del botón (haz clic para editar texto)</span>
+              <div id="cta-preview" class="cta-preview" contenteditable="true" spellcheck="false" title="Haz clic aquí para cambiar el texto del botón">Consultar Disponibilidad</div>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      {/* Capa 2 y vida del link */}
+      <details open class="sec">
+        <summary class="sec__h">Entrega — vida del link y barra de autoría</summary>
+        <div class="sec__b grid gap-3">
+          <label class="f"><span>El link expira el (máx 14 días)</span>
+            <input type="date" data-meta="expira" value={expira} />
+          </label>
+          <label class="f"><span>Mensaje de la barra de autoría (opcional — va a TU WhatsApp)</span>
+            <textarea data-meta="autoria_mensaje" rows="2" placeholder={`Hola, vi la página que hiciste para ${product.business_name} y quiero saber más`}>{product.autoria_mensaje ?? ''}</textarea>
+          </label>
+        </div>
+      </details>
+
+      {/* Imágenes */}
+      <details open class="sec">
+        <summary class="sec__h">Imágenes del Producto</summary>
+        <div class="sec__b grid gap-4">
+          <div class="imgfield" data-imgfield>
+            <span class="imgfield__label">Imagen Principal del Producto (Hero)</span>
+            <input type="hidden" data-meta="photo_hero_url" value={product.photo_hero_url ?? ''} />
+            <div class="imgfield__preview" data-preview>
+              {product.photo_hero_url && <img src={product.photo_hero_url} alt="" />}
+            </div>
+            <div class="imgfield__row">
+              <label class="imgfield__btn">Subir foto hero<input type="file" accept="image/*" hidden data-file /></label>
+              <button type="button" class="imgfield__clear" data-clear hidden={!product.photo_hero_url}>Quitar</button>
+            </div>
+            <span class="imgfield__status" data-status></span>
+          </div>
+        </div>
+      </details>
+
+      {/* Ranuras de copy (Hero, Problema, etc.) */}
+      <div id="slots-container" class="grid gap-3"></div>
+
+      {/* Testimonios u homologaciones (opcional) */}
+      <details open class="sec">
+        <summary class="sec__h">Clientes / Fotos de Instalación (Opcional)</summary>
+        <div class="sec__b grid gap-4">
+          <div class="flex items-center justify-between gap-3">
+            <span id="muro-count">0 pruebas</span>
+            <button type="button" id="muro-add" class="rounded-[6px] border border-line bg-paper-alt px-3 py-1.5 text-xs font-semibold">+ Agregar prueba / foto</button>
+          </div>
+          <div id="muro-list" class="grid gap-4"></div>
+        </div>
+      </details>
+    </div>
+
+    {/* Columna derecha: preview en vivo */}
+    <div class="hidden lg:block">
+      <div class="sticky top-4 overflow-hidden rounded-[14px] border border-line bg-black shadow-2xl">
+        <div class="flex items-center justify-between border-b border-white/10 bg-[#1e1e1e] px-4 py-2 text-xs text-white/70">
+          <span class="font-mono">preview · /producto/{product.slug}</span>
+          <button type="button" id="btn-reload-iframe" class="hover:text-white">↻ Recargar</button>
+        </div>
+        <iframe id="preview-iframe" src={previewUrl} class="h-[calc(100vh-80px)] w-full border-0 bg-white"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <script type="application/json" id="copy-data" set:html={JSON.stringify(product.copy)}></script>
+  <script type="application/json" id="muro-data" set:html={JSON.stringify(product.muro_pruebas ?? [])}></script>
+  <script type="application/json" id="specs-data" set:html={JSON.stringify(product.specs ?? [])}></script>
+  <script type="application/json" id="slot-limits" set:html={JSON.stringify(slotLimits)}></script>
+  <script is:inline set:html={`window.__PRODUCT_SLUG__ = "${product.slug}";`}></script>
+
+  <style is:global>
+    .sec { border: 1px solid #E2E2E2; border-radius: 8px; background: #fff; }
+    .sec__h { cursor: pointer; padding: 16px; font-weight: 600; font-size: 15px; min-height: 52px; display: flex; align-items: center; }
+    .sec__b { padding: 0 16px 16px; }
+    .f { display: grid; gap: 4px; font-size: 13px; }
+    .f > span { font-weight: 500; }
+    .f input, .f select, .f textarea { border: 1px solid #DDD; border-radius: 6px; padding: 11px 12px; font: inherit; width: 100%; background: #fff; }
+    .f input:focus-visible, .f textarea:focus-visible { outline: 2px solid #F97316; outline-offset: 1px; }
+
+    .color-section { border: 1px solid #E8E8E8; border-radius: 8px; padding: 14px; background: #FAFAFA; display: grid; gap: 10px; margin-top: 4px; }
+    .color-section__title { font-size: 13px; font-weight: 700; color: #12161A; margin: 0; }
+    .color-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .color-row__label { font-size: 12px; font-weight: 500; color: #555; min-width: 140px; }
+    .color-pair { display: flex; align-items: center; gap: 6px; }
+    .color-swatch { -webkit-appearance: none; appearance: none; width: 38px; height: 38px; border: 2px solid #DDD; border-radius: 8px; padding: 2px; cursor: pointer; background: none; flex-shrink: 0; }
+    .color-swatch::-webkit-color-swatch-wrapper { padding: 0; }
+    .color-swatch::-webkit-color-swatch { border: none; border-radius: 5px; }
+    .hex-input { width: 96px; border: 1px solid #DDD; border-radius: 6px; padding: 8px 10px; font: inherit; font-size: 13px; background: #fff; }
+
+    .palette-label { font-size: 11.5px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; }
+    .palette-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+    .palette { display: flex; align-items: center; gap: 5px; padding: 5px 10px 5px 6px; border: 1.5px solid #E2E2E2; border-radius: 8px; background: #fff; cursor: pointer; font-size: 12px; font-weight: 600; color: #333; }
+    .palette:hover { border-color: #999; transform: translateY(-1px); }
+    .palette.active { border-color: #F97316; box-shadow: 0 0 0 2px rgba(249,115,22,0.25); }
+    .palette__dot { width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; display: block; }
+    .cta-preview-wrap { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .cta-preview-label { font-size: 11.5px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.05em; }
+    .cta-preview { padding: 12px 22px; border-radius: 10px; font-size: 15px; font-weight: 700; text-align: center; cursor: text; background: #D97706; color: #fff; box-shadow: 0 4px 14px rgba(217,119,6,0.28); min-width: 180px; }
+    .cta-preview[contenteditable="true"]:focus { outline: 2px dashed rgba(255,255,255,0.85) !important; outline-offset: -4px; }
+
+    .imgfield { display: grid; gap: 6px; }
+    .imgfield__label { font-size: 12px; font-weight: 500; color: #444; }
+    .imgfield__preview { aspect-ratio: 4 / 3; border: 1px dashed #CCC; border-radius: 6px; background: #FAFAFA; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .imgfield__preview img { width: 100%; height: 100%; object-fit: cover; }
+    .imgfield__row { display: flex; gap: 6px; align-items: center; }
+    .imgfield__btn { cursor: pointer; font-size: 14px; font-weight: 600; padding: 11px 16px; border-radius: 6px; background: #F97316; color: #fff; text-align: center; flex: 1; }
+    .imgfield__clear { font-size: 14px; padding: 11px 14px; border: 1px solid #DDD; border-radius: 6px; background: #fff; cursor: pointer; color: #666; }
+    .imgfield__clear[hidden] { display: none; }
+    .imgfield__status { font-size: 11px; color: #888; min-height: 14px; }
+
+    .problemas { display: none; }
+    .problemas:not(:empty) { display: block; border-radius: 8px; padding: 12px 14px; font-size: 13px; line-height: 1.5; background: #FEF3C7; border: 1px solid #FCD34D; color: #92400E; }
+    .problemas--ok { background: #ECFDF5 !important; border-color: #A7F3D0 !important; color: #065F46 !important; }
+  </style>
+
+  <script is:inline>
+    (() => {
+      function inkOn(hex) {
+        const s = hex.replace('#','');
+        if (s.length !== 6) return '#FFFFFF';
+        const [r,g,b] = [0,2,4].map(i => parseInt(s.slice(i,i+2),16));
+        const lum = v => { const c=v/255; return c<=0.03928 ? c/12.92 : Math.pow((c+0.055)/1.055,2.4); };
+        const L = 0.2126*lum(r)+0.7152*lum(g)+0.0722*lum(b);
+        return (1.05/(L+0.05)) >= ((L+0.05)/0.05) ? '#FFFFFF' : '#12161A';
+      }
+      function updatePreview(hex) {
+        const el = document.getElementById('cta-preview');
+        if (!el) return;
+        const bg = hex && /^#[0-9a-fA-F]{6}$/.test(hex) ? hex : '#D97706';
+        el.style.background = bg;
+        el.style.color = inkOn(bg);
+        el.style.boxShadow = `0 4px 14px ${bg}55`;
+      }
+      [['picker-accent','hex-accent',true],['picker-bg','hex-bg',false],['picker-text','hex-text',false]]
+        .forEach(([pickId, hexId, isAccent]) => {
+          const p = document.getElementById(pickId);
+          const h = document.getElementById(hexId);
+          if (!p || !h) return;
+          p.addEventListener('input', () => { h.value = p.value.toUpperCase(); if (isAccent) updatePreview(p.value); });
+          h.addEventListener('input', () => { if (/^#[0-9a-fA-F]{6}$/.test(h.value)) { p.value = h.value; if (isAccent) updatePreview(h.value); } });
+        });
+      document.querySelectorAll('.palette').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const set = (pId, hId, v) => { const p=document.getElementById(pId),h=document.getElementById(hId); if(p)p.value=v; if(h)h.value=v.toUpperCase(); };
+          set('picker-accent','hex-accent', btn.dataset.accent);
+          set('picker-bg','hex-bg', btn.dataset.bg);
+          set('picker-text','hex-text', btn.dataset.text);
+          updatePreview(btn.dataset.accent);
+          document.querySelectorAll('.palette').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+        });
+      });
+      const ctaInput = document.querySelector('[data-slot="hero.cta.texto"]') || document.querySelector('input[data-slot*="cta.texto"]');
+      const preview = document.getElementById('cta-preview');
+      const initialAccent = document.getElementById('hex-accent')?.value;
+      if (ctaInput && preview && ctaInput.value.trim()) {
+        preview.textContent = ctaInput.value.trim();
+      }
+      if (preview) {
+        preview.addEventListener('input', () => {
+          const txt = preview.textContent.trim();
+          if (ctaInput) {
+            ctaInput.value = txt;
+            ctaInput.dispatchEvent(new Event('input', { bubbles: true }));
+          }
+        });
+      }
+      if (ctaInput && preview) {
+        ctaInput.addEventListener('input', () => {
+          if (document.activeElement !== preview) {
+            preview.textContent = ctaInput.value || 'Consultar Disponibilidad';
+          }
+        });
+      }
+      updatePreview(initialAccent || '#D97706');
+    })();
+  </script>
+
+  <script>
+    import '../../../../scripts/product-editor.js';
+  </script>
+</AdminLayout>

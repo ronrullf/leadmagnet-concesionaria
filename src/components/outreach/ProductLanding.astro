@@ -1,0 +1,451 @@
+---
+/**
+ * Landing de Producto / Servicio.
+ *
+ * Mismo esquema persuasivo de alta conversión (Russell Brunson + Alex Hormozi),
+ * pero enfocado en productos físicos y servicios técnicos (generadores, plantas eléctricas,
+ * inversores, paneles solares, repuestos marinos, etc.).
+ */
+import Placeholder from './Placeholder.astro';
+import { waLink } from '../../lib/whatsapp';
+import type { ProductDemo } from '../../lib/product-types';
+
+interface Props {
+  product: ProductDemo;
+}
+
+const { product } = Astro.props;
+const c = product.copy;
+
+const ctaTexto = c.hero.cta.texto || 'Consultar Disponibilidad';
+const ctaMensaje = c.hero.cta.mensaje || `Hola, vi la página de ${product.product_name} y quiero más información`;
+const ctaHref = waLink(product.whatsapp_e164, ctaMensaje);
+
+const cierreTexto = c.cierre.cta.texto || ctaTexto;
+const cierreHref = waLink(product.whatsapp_e164, c.cierre.cta.mensaje || ctaMensaje);
+
+const pruebas = product.muro_pruebas ?? [];
+const placeholders = c.placeholders.slice(0, 3);
+const specs = product.specs ?? [];
+
+const showFranja =
+  c.franjaPrueba.estrellas != null || c.franjaPrueba.resenas != null || Boolean(c.franjaPrueba.etiqueta);
+const showMuro = pruebas.length > 0;
+const showSpecs = specs.length > 0;
+const showProblema = Boolean(c.problema.headline || c.problema.parrafo);
+const showComo = c.comoFunciona.pasos.length > 0;
+const showIncluye = c.incluye.items.length > 0;
+const showRiesgo = c.riesgo.esPublico && Boolean(c.riesgo.texto);
+const showQuien = Boolean(c.profesional.bio || product.photo_story_url);
+const showFaq = c.faq.length > 0;
+const showCierre = Boolean(c.cierre.headline);
+
+const franjaPartes: string[] = [];
+if (c.franjaPrueba.estrellas != null) {
+  franjaPartes.push(`★ ${c.franjaPrueba.estrellas.toFixed(1)} en Reseñas`);
+}
+if (c.franjaPrueba.resenas != null) franjaPartes.push(`${c.franjaPrueba.resenas} clientes satisfechos`);
+if (c.franjaPrueba.etiqueta) franjaPartes.push(c.franjaPrueba.etiqueta);
+
+const heroEsVideo = c.hero.visual.tipo === 'video' && Boolean(c.hero.visual.src);
+---
+
+{/* ─────────── 1 · Hero ─────────── */}
+<section class="hero">
+  <header class="hero__id hero__anim-id">
+    {product.logo_url && <img class="hero__logo" src={product.logo_url} alt="" width="44" height="44" />}
+    <div>
+      <span class="hero__negocio">{product.business_name}</span>
+      {product.city && <span class="hero__city"> · {product.city}</span>}
+    </div>
+  </header>
+
+  <h1 class="hero__h1 hero__anim-h1">{c.hero.headline || product.product_name}</h1>
+  {c.hero.subheadline && <p class="hero__sub hero__anim-sub">{c.hero.subheadline}</p>}
+
+  {product.price_usd && (
+    <div class="price-tag hero__anim-sub">
+      <span class="price-tag__label">Precio Referencial</span>
+      <span class="price-tag__amount">${product.price_usd.toLocaleString('en-US')}</span>
+    </div>
+  )}
+
+  {c.hero.visual.src && (
+    <figure class="hero__visual hero__anim-visual">
+      {heroEsVideo ? (
+        <video
+          class="hero__media"
+          src={c.hero.visual.src}
+          poster={c.hero.visual.poster || undefined}
+          preload="none"
+          controls
+          playsinline
+          aria-label={c.hero.visual.alt}
+        ></video>
+      ) : (
+        <img
+          class="hero__media"
+          src={c.hero.visual.src}
+          alt={c.hero.visual.alt || product.product_name}
+          width="480"
+          height="320"
+          fetchpriority="high"
+          decoding="async"
+        />
+      )}
+    </figure>
+  )}
+
+  <a class="cta hero__anim-cta" href={ctaHref} target="_blank" rel="noopener">{ctaTexto}</a>
+
+  {c.hero.badges.length > 0 && (
+    <ul class="badges hero__anim-badges" role="list">
+      {c.hero.badges.map((b) => (
+        <li class="badge">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="m5 13 4 4L19 7" />
+          </svg>
+          {b}
+        </li>
+      ))}
+    </ul>
+  )}
+</section>
+
+{/* ─────────── 2 · Franja de prueba ─────────── */}
+{showFranja && (
+  <div class="franja reveal">{franjaPartes.join(' · ')}</div>
+)}
+
+{/* ─────────── 2B · Ficha Técnica / Especificaciones Destacadas ─────────── */}
+{showSpecs && (
+  <section class="sec reveal specs-sec">
+    <h2 class="sec__h">Especificaciones Destacadas</h2>
+    <div class="specs__grid stagger">
+      {specs.map((s, i) => (
+        <div class="spec-card" style={`--i:${i}`}>
+          <div class="spec-card__icon">
+            {s.icon === 'rayo' && <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>}
+            {s.icon === 'sol' && <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>}
+            {s.icon === 'bateria' && <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="16" height="10" rx="2"/><line x1="22" y1="11" x2="22" y2="13"/></svg>}
+            {s.icon === 'motor' && <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>}
+            {s.icon === 'escudo' && <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>}
+            {s.icon === 'camion' && <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>}
+            {s.icon === 'llave' && <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>}
+            {(!s.icon || ['estrella', 'medida', 'ruido'].includes(s.icon)) && <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>}
+          </div>
+          <div>
+            <span class="spec-card__title">{s.title}</span>
+            {s.value && <strong class="spec-card__value">{s.value}</strong>}
+            {s.description && <p class="spec-card__desc">{s.description}</p>}
+          </div>
+        </div>
+      ))}
+    </div>
+  </section>
+)}
+
+{/* ─────────── 3 · Muro de pruebas (Opcional) ─────────── */}
+{showMuro && (
+  <section class="sec muro reveal">
+    <h2 class="sec__h">Clientes que confiaron en nuestro respaldo</h2>
+    <div class="muro__grid stagger">
+      {pruebas.map((p, i) => (
+        <article class={`prueba prueba--${p.tipo}`} style={`--i:${i}`}>
+          {p.src && <img class="prueba__img" src={p.src} alt={p.contexto || ''} loading="lazy" decoding="async" />}
+          {p.texto && <p class="prueba__texto">"{p.texto}"</p>}
+          <footer class="prueba__pie">
+            {p.autor && <span class="prueba__autor">{p.autor}</span>}
+            <span class="prueba__fuente">{p.fuente}</span>
+          </footer>
+          {p.contexto && <p class="prueba__ctx">{p.contexto}</p>}
+        </article>
+      ))}
+      {placeholders[0] && <Placeholder texto={placeholders[0]} />}
+    </div>
+  </section>
+)}
+
+{/* ─────────── 4 · El problema ─────────── */}
+{showProblema && (
+  <section class="sec reveal">
+    {c.problema.headline && <h2 class="sec__h">{c.problema.headline}</h2>}
+    {c.problema.parrafo && <p class="parrafo">{c.problema.parrafo}</p>}
+  </section>
+)}
+
+<div class="cta-wrap reveal">
+  <a class="cta" href={ctaHref} target="_blank" rel="noopener">{ctaTexto}</a>
+</div>
+
+{/* ─────────── 5 · Cómo funciona ─────────── */}
+{showComo && (
+  <section class="sec reveal">
+    {c.comoFunciona.headline && <h2 class="sec__h">{c.comoFunciona.headline}</h2>}
+    <ol class="pasos stagger" role="list">
+      {c.comoFunciona.pasos.map((p, i) => (
+        <li class="paso" style={`--i:${i}`}>
+          <span class="paso__n">{i + 1}</span>
+          <div>
+            {p.titulo && <p class="paso__t">{p.titulo}</p>}
+            {p.texto && <p class="paso__x">{p.texto}</p>}
+          </div>
+        </li>
+      ))}
+    </ol>
+  </section>
+)}
+
+{/* ─────────── 6 · Qué incluye ─────────── */}
+{showIncluye && (
+  <section class="sec reveal">
+    {c.incluye.headline && <h2 class="sec__h">{c.incluye.headline}</h2>}
+    <ul class="incluye stagger" role="list">
+      {c.incluye.items.map((it, i) => (
+        <li class="incluye__i" style={`--i:${i}`}>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="m5 13 4 4L19 7" />
+          </svg>
+          {it}
+        </li>
+      ))}
+    </ul>
+  </section>
+)}
+
+{/* ─────────── 7 · Riesgo cero ─────────── */}
+{showRiesgo && (
+  <section class="sec reveal">
+    <div class="riesgo">
+      {c.riesgo.headline && <p class="riesgo__h">{c.riesgo.headline}</p>}
+      <p class="riesgo__x">{c.riesgo.texto}</p>
+    </div>
+  </section>
+)}
+
+{/* ─────────── 8 · Quién lo vende / Respaldo ─────────── */}
+{showQuien && (
+  <section class="sec quien reveal">
+    <h2 class="sec__h">Quién te atiende</h2>
+    <div class="quien__grid">
+      {product.photo_story_url ? (
+        <img class="quien__foto" src={product.photo_story_url} alt={product.business_name} loading="lazy" decoding="async" width="120" height="120" />
+      ) : (
+        placeholders[1] && <Placeholder texto={placeholders[1]} />
+      )}
+      <div>
+        <p class="quien__n">{product.business_name}</p>
+        {c.profesional.bio && <p class="quien__bio">{c.profesional.bio}</p>}
+      </div>
+    </div>
+  </section>
+)}
+
+{/* ─────────── 9 · Preguntas Frecuentes ─────────── */}
+{showFaq && (
+  <section class="sec reveal">
+    <h2 class="sec__h">Preguntas Frecuentes</h2>
+    <div class="faqs">
+      {c.faq.map((f) => (
+        <details class="faq">
+          <summary class="faq__q">{f.pregunta}</summary>
+          <p class="faq__a">{f.respuesta}</p>
+        </details>
+      ))}
+    </div>
+  </section>
+)}
+
+{/* ─────────── 10 · Cierre ─────────── */}
+{showCierre && (
+  <section class="sec cierre reveal">
+    <h2 class="cierre__h">{c.cierre.headline}</h2>
+    <a class="cta" href={cierreHref} target="_blank" rel="noopener">{cierreTexto}</a>
+  </section>
+)}
+
+<div class="sticky" id="sticky-cta">
+  <a class="cta" href={ctaHref} target="_blank" rel="noopener">{ctaTexto}</a>
+</div>
+
+<script is:inline>
+  (() => {
+    const sticky = document.getElementById('sticky-cta');
+    if (!sticky) return;
+    const hero = document.querySelector('.hero');
+    function check() {
+      const fuera = hero ? hero.getBoundingClientRect().bottom < 0 : window.scrollY > 400;
+      sticky.classList.toggle('is-in', fuera);
+    }
+    window.addEventListener('scroll', check, { passive: true });
+    check();
+  })();
+</script>
+
+<style>
+  :global(html) {
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  .hero {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(10px, 2.2vh, 18px);
+    padding: clamp(14px, 3vh, 26px) 18px clamp(12px, 2vh, 20px);
+    min-height: 100svh;
+    justify-content: center;
+  }
+
+  .hero__anim-id { animation: fadeIn 0.5s cubic-bezier(0.2,0,0,1) 0.05s both; }
+  .hero__anim-h1 { animation: fadeUp 0.6s cubic-bezier(0.2,0,0,1) 0.12s both; }
+  .hero__anim-sub { animation: fadeUp 0.6s cubic-bezier(0.2,0,0,1) 0.22s both; }
+  .hero__anim-visual { animation: scaleIn 0.7s cubic-bezier(0.2,0,0,1) 0.18s both; }
+  .hero__anim-cta {
+    animation: fadeUp 0.55s cubic-bezier(0.2,0,0,1) 0.3s both,
+               ctaPulse 2.8s ease-in-out 1.2s infinite;
+  }
+  .hero__anim-badges { animation: fadeIn 0.5s cubic-bezier(0.2,0,0,1) 0.45s both; }
+
+  .hero__id { display: flex; align-items: center; gap: 9px; }
+  .hero__logo {
+    width: 40px; height: 40px; border-radius: 9px;
+    object-fit: cover; background: color-mix(in srgb, var(--acento) 12%, transparent);
+  }
+  .hero__negocio { font-size: 15px; font-weight: 700; color: color-mix(in srgb, var(--texto) 78%, transparent); }
+  .hero__city { font-size: 13px; font-weight: 500; color: color-mix(in srgb, var(--texto) 55%, transparent); }
+
+  .hero__h1 {
+    margin: 0; font-size: clamp(28px, 7vw, 40px); line-height: 1.1;
+    letter-spacing: -0.03em; font-weight: 800; text-wrap: balance;
+  }
+  .hero__sub {
+    margin: 0; font-size: clamp(15px, 4vw, 17px); line-height: 1.45;
+    color: color-mix(in srgb, var(--texto) 68%, transparent); text-wrap: pretty;
+  }
+
+  .price-tag {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 14px; border-radius: 999px; width: fit-content;
+    background: color-mix(in srgb, var(--acento) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--acento) 25%, transparent);
+  }
+  .price-tag__label { font-size: 12px; font-weight: 600; text-transform: uppercase; color: color-mix(in srgb, var(--texto) 65%, transparent); }
+  .price-tag__amount { font-size: 18px; font-weight: 800; color: var(--acento); }
+
+  .hero__visual { margin: 0; border-radius: 14px; overflow: hidden; }
+  .hero__media {
+    display: block; width: 100%; height: clamp(200px, 36vh, 340px);
+    object-fit: cover; background: color-mix(in srgb, var(--acento) 8%, transparent);
+  }
+
+  .cta {
+    display: flex; align-items: center; justify-content: center;
+    width: 100%; min-height: 54px; padding: 15px 22px; border-radius: 12px;
+    background: var(--acento); color: var(--acento-tinta);
+    font-size: 17px; font-weight: 700; text-align: center; text-decoration: none;
+    box-shadow: 0 6px 18px color-mix(in srgb, var(--acento) 28%, transparent);
+    transition: transform 0.22s cubic-bezier(0.2,0,0,1), box-shadow 0.22s cubic-bezier(0.2,0,0,1);
+  }
+  .cta:hover { transform: translateY(-3px); box-shadow: 0 12px 32px color-mix(in srgb, var(--acento) 42%, transparent); }
+  .cta:active { transform: translateY(1px); }
+
+  .cta-wrap { padding: 4px 18px 30px; }
+
+  .badges { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 14px; margin: 0; padding: 0; list-style: none; }
+  .badge { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 600; color: color-mix(in srgb, var(--texto) 62%, transparent); }
+  .badge svg { color: var(--acento); flex-shrink: 0; }
+
+  .franja {
+    padding: 13px 18px; background: color-mix(in srgb, var(--acento) 9%, transparent);
+    border-block: 1px solid color-mix(in srgb, var(--acento) 18%, transparent);
+    text-align: center; font-size: 13.5px; font-weight: 600;
+  }
+
+  .sec { padding: clamp(34px, 7vw, 56px) 18px; }
+  .sec__h { margin: 0 0 18px; font-size: clamp(22px, 5.6vw, 29px); line-height: 1.18; font-weight: 800; text-wrap: balance; }
+  .parrafo { margin: 0; font-size: 16px; line-height: 1.6; color: color-mix(in srgb, var(--texto) 74%, transparent); max-width: 60ch; }
+
+  /* ── Especificaciones ── */
+  .specs__grid { display: grid; gap: 12px; grid-template-columns: 1fr; }
+  @media (min-width: 600px) { .specs__grid { grid-template-columns: 1fr 1fr; } }
+
+  .spec-card {
+    display: flex; gap: 14px; align-items: flex-start;
+    padding: 16px; border-radius: 12px;
+    border: 1px solid color-mix(in srgb, var(--texto) 12%, transparent);
+    background: color-mix(in srgb, var(--acento) 3%, transparent);
+    transition: transform 0.25s, border-color 0.25s;
+  }
+  .spec-card:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--acento) 45%, transparent);
+  }
+  .spec-card__icon {
+    display: grid; place-items: center; width: 42px; height: 42px; border-radius: 10px;
+    background: color-mix(in srgb, var(--acento) 14%, transparent);
+    color: var(--acento); flex-shrink: 0;
+  }
+  .spec-card__title { display: block; font-size: 13px; font-weight: 600; color: color-mix(in srgb, var(--texto) 65%, transparent); }
+  .spec-card__value { display: block; font-size: 17px; font-weight: 800; margin-top: 1px; }
+  .spec-card__desc { margin: 4px 0 0; font-size: 13px; line-height: 1.4; color: color-mix(in srgb, var(--texto) 70%, transparent); }
+
+  /* ── Testimonios ── */
+  .muro__grid { display: grid; gap: 14px; }
+  @media (min-width: 720px) { .muro__grid { grid-template-columns: 1fr 1fr; } }
+  .prueba {
+    border: 1px solid color-mix(in srgb, var(--texto) 12%, transparent);
+    border-radius: 12px; padding: 15px; background: color-mix(in srgb, var(--texto) 2.5%, transparent);
+  }
+  .prueba__img { display: block; width: 100%; border-radius: 8px; margin-bottom: 11px; object-fit: cover; max-height: 300px; }
+  .prueba__texto { margin: 0; font-size: 15px; line-height: 1.5; }
+  .prueba__pie { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; }
+  .prueba__autor { font-size: 13px; font-weight: 700; }
+  .prueba__fuente { font-size: 11px; font-weight: 600; text-transform: uppercase; padding: 3px 7px; border-radius: 999px; background: color-mix(in srgb, var(--acento) 14%, transparent); color: var(--acento); }
+  .prueba__ctx { margin: 7px 0 0; font-size: 13px; color: color-mix(in srgb, var(--texto) 58%, transparent); }
+
+  /* ── Pasos ── */
+  .pasos { display: grid; gap: 16px; margin: 0; padding: 0; list-style: none; }
+  .paso { display: flex; gap: 13px; align-items: flex-start; }
+  .paso__n { flex-shrink: 0; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 999px; background: var(--acento); color: var(--acento-tinta); font-weight: 800; }
+  .paso__t { margin: 4px 0 0; font-size: 16px; font-weight: 700; }
+  .paso__x { margin: 4px 0 0; font-size: 15px; line-height: 1.5; color: color-mix(in srgb, var(--texto) 68%, transparent); }
+
+  /* ── Incluye ── */
+  .incluye { display: grid; gap: 11px; margin: 0; padding: 0; list-style: none; }
+  .incluye__i { display: flex; gap: 10px; align-items: flex-start; font-size: 15.5px; line-height: 1.45; }
+  .incluye__i svg { color: var(--acento); flex-shrink: 0; margin-top: 2px; }
+
+  /* ── Riesgo ── */
+  .riesgo { border: 1.5px solid color-mix(in srgb, var(--acento) 32%, transparent); border-radius: 14px; padding: 20px; background: color-mix(in srgb, var(--acento) 6%, transparent); }
+  .riesgo__h { margin: 0 0 8px; font-size: 18px; font-weight: 800; }
+  .riesgo__x { margin: 0; font-size: 15px; line-height: 1.55; }
+
+  /* ── Quién vende ── */
+  .quien__grid { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
+  .quien__foto { width: 108px; height: 108px; border-radius: 14px; object-fit: cover; flex-shrink: 0; }
+  .quien__n { margin: 0; font-size: 18px; font-weight: 800; }
+  .quien__bio { margin: 9px 0 0; font-size: 15px; line-height: 1.55; color: color-mix(in srgb, var(--texto) 70%, transparent); }
+
+  /* ── FAQ ── */
+  .faqs { display: grid; }
+  .faq { border-bottom: 1px solid color-mix(in srgb, var(--texto) 12%, transparent); }
+  .faq:first-child { border-top: 1px solid color-mix(in srgb, var(--texto) 12%, transparent); }
+  .faq__q { cursor: pointer; list-style: none; padding: 15px 0; font-size: 16px; font-weight: 700; display: flex; justify-content: space-between; gap: 14px; }
+  .faq__q::-webkit-details-marker { display: none; }
+  .faq__q::after { content: '+'; color: var(--acento); font-weight: 800; }
+  .faq[open] .faq__q::after { content: '−'; }
+  .faq__a { margin: 0; padding: 0 0 16px; font-size: 15px; line-height: 1.6; color: color-mix(in srgb, var(--texto) 70%, transparent); }
+
+  .cierre { text-align: center; padding-bottom: calc(clamp(34px, 7vw, 56px) + 130px); }
+  .cierre__h { margin: 0 0 22px; font-size: clamp(24px, 6vw, 33px); line-height: 1.14; font-weight: 800; text-wrap: balance; }
+
+  .sticky {
+    position: fixed; inset-inline: 0; bottom: var(--ab-h, 0px); z-index: 70;
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+    background: color-mix(in srgb, var(--fondo) 92%, transparent);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid color-mix(in srgb, var(--texto) 10%, transparent);
+    transform: translateY(120%); transition: transform 0.4s cubic-bezier(0.2,0,0,1), bottom 0.4s cubic-bezier(0.2,0,0,1);
+  }
+  .sticky.is-in { transform: none; }
+</style>
